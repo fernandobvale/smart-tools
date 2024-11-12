@@ -15,7 +15,6 @@ interface PDFData {
 
 export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
   try {
-    // Validate required data
     if (!data.payee || !data.amount || !data.reference || !data.date) {
       console.error("Missing required data for PDF generation");
       return false;
@@ -24,79 +23,76 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const maxWidth = pageWidth - 60; // 30px margin on each side
+    const leftMargin = 30;
+    let yPos = 30;
     
-    // Create PDF without logo first
+    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("RECIBO DE PAGAMENTO", 105, 30, { align: "center" });
+    doc.text("RECIBO DE PAGAMENTO", pageWidth/2, yPos, { align: "center" });
+    yPos += 15;
     
-    // Valor em destaque
+    // Amount highlight
     doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(data.amount, 105, 45, { align: "center" });
+    doc.text(data.amount, pageWidth/2, yPos, { align: "center" });
+    yPos += 20;
     
-    // Converter valor numérico para extenso
+    // Convert numeric value to words
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // Texto principal com quebras de linha apropriadas e margens ajustadas
-    doc.setFont("helvetica", "normal");
+    // Main text with proper line breaks and formatting
     doc.setFontSize(12);
-
-    // Primeiro parágrafo com quebra de linha automática
+    doc.setFont("helvetica", "bold");
     const text = "Recebi(emos) de ";
     const companyName = "Escola Web Unova Cursos Ltda";
     const cnpj = " - CNPJ nº: 12.301.010/0001-46";
     const importanceText = ", a importância de ";
 
-    let yPos = 65;
-    const leftMargin = 30;
-
-    // Primeiro parágrafo com quebra de linha automática
+    // First paragraph with automatic line breaks
+    doc.setFont("helvetica", "normal");
     let firstParagraph = text + companyName + cnpj + importanceText;
     let splitFirstParagraph = doc.splitTextToSize(firstParagraph, maxWidth);
     doc.text(splitFirstParagraph, leftMargin, yPos);
     yPos += (splitFirstParagraph.length * 7);
 
-    // Valor por extenso e referência
-    let valueAndReference = valueInWords + " referente " + data.reference;
+    // Value in words and reference
+    let valueAndReference = valueInWords + " referente " + data.reference + ".";
     let splitValueAndReference = doc.splitTextToSize(valueAndReference, maxWidth);
     doc.text(splitValueAndReference, leftMargin, yPos);
     yPos += (splitValueAndReference.length * 7) + 10;
 
-    // Segundo parágrafo com quebra de linha automática
-    let secondParagraph = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
-    let splitSecondParagraph = doc.splitTextToSize(secondParagraph, maxWidth);
-    doc.text(splitSecondParagraph, leftMargin, yPos);
-    yPos += (splitSecondParagraph.length * 7) + 10;
+    // Legal text
+    let legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
+    let splitLegalText = doc.splitTextToSize(legalText, maxWidth);
+    doc.text(splitLegalText, leftMargin, yPos);
+    yPos += (splitLegalText.length * 7) + 10;
 
-    // Informações do beneficiário com quebra de linha
-    doc.text("Pagamento recebido por: ", leftMargin, yPos);
+    // Payee information
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, leftMargin + doc.getTextWidth("Pagamento recebido por: "), yPos);
+    doc.text("Pagamento recebido por:", leftMargin, yPos);
+    const receivedByWidth = doc.getTextWidth("Pagamento recebido por: ");
+    doc.text(data.payee.full_name, leftMargin + receivedByWidth, yPos);
     yPos += 10;
 
-    // Informações bancárias com quebra de linha
+    // Bank information
+    doc.setFont("helvetica", "normal");
     let bankInfo = `Chave PIX: ${data.payee.pix_key} - Banco ${data.payee.bank_name}`;
     let splitBankInfo = doc.splitTextToSize(bankInfo, maxWidth);
-    doc.setFont("helvetica", "normal");
     doc.text(splitBankInfo, leftMargin, yPos);
     yPos += (splitBankInfo.length * 7) + 10;
 
-    // Data
+    // Date
     doc.text(`Goiânia, ${formatDate(data.date)}`, leftMargin, yPos);
-    
-    // Linha de assinatura e informações finais
-    doc.line(leftMargin, yPos + 30, pageWidth - leftMargin, yPos + 30);
+    yPos += 30;
+
+    // Signature line and final information
+    doc.line(leftMargin, yPos, pageWidth - leftMargin, yPos);
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, 105, yPos + 40, { align: "center" });
+    doc.text(data.payee.full_name, pageWidth/2, yPos + 10, { align: "center" });
     doc.setFont("helvetica", "normal");
-    
-    // Formatar CPF
-    const formattedCPF = `CPF ${formatCPF(data.payee.cpf)}`;
-    doc.text(formattedCPF, 105, yPos + 50, { align: "center" });
-    
-    // Download do PDF
+    doc.text(`CPF ${formatCPF(data.payee.cpf)}`, pageWidth/2, yPos + 20, { align: "center" });
+
     doc.save("recibo.pdf");
     return true;
   } catch (error) {
@@ -115,9 +111,6 @@ const formatDate = (dateString: string) => {
 };
 
 const formatCPF = (cpf: string) => {
-  // Remove qualquer caractere não numérico
   const numbers = cpf.replace(/\D/g, '');
-  
-  // Aplica a máscara do CPF (000.000.000-00)
   return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 };
