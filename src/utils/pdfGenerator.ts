@@ -22,8 +22,8 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
-    const maxWidth = pageWidth - 60; // 30px margin on each side
-    const leftMargin = 30;
+    const maxWidth = pageWidth - 40; // Increased text area width
+    const leftMargin = 20; // Reduced margin for better text flow
     let yPos = 30;
     
     // Title
@@ -45,25 +45,19 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     const firstLine = "Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a";
-    doc.text(firstLine, leftMargin, yPos);
-    yPos += 7;
+    doc.text(firstLine, leftMargin, yPos, { align: "justify", maxWidth });
+    yPos += 10;
 
-    // Second line - importance in words
-    const importanceText = "importância de " + valueInWords;
-    let splitImportance = doc.splitTextToSize(importanceText, maxWidth);
-    doc.text(splitImportance, leftMargin, yPos);
-    yPos += (splitImportance.length * 7);
-
-    // Third line - reference
-    const referenceText = "referente " + data.reference + ".";
-    let splitReference = doc.splitTextToSize(referenceText, maxWidth);
-    doc.text(splitReference, leftMargin, yPos);
-    yPos += (splitReference.length * 7) + 10;
+    // Second line - importance in words with reference
+    const fullText = `importância de ${valueInWords} referente ${data.reference}.`;
+    let splitText = doc.splitTextToSize(fullText, maxWidth);
+    doc.text(splitText, leftMargin, yPos, { align: "justify" });
+    yPos += (splitText.length * 7) + 10;
 
     // Legal text
     let legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
     let splitLegalText = doc.splitTextToSize(legalText, maxWidth);
-    doc.text(splitLegalText, leftMargin, yPos);
+    doc.text(splitLegalText, leftMargin, yPos, { align: "justify" });
     yPos += (splitLegalText.length * 7) + 10;
 
     // Payee information
