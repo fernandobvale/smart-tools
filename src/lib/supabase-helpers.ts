@@ -4,15 +4,14 @@ import { toast } from '@/hooks/use-toast';
 export const checkSupabaseConnection = async () => {
   try {
     console.log('Tentando conectar ao Supabase...');
-    const { error } = await supabase.from('_test_connection').select('*').limit(1);
+    const { data, error } = await supabase.from('_test_connection').select('count').single();
     
     if (error) {
       console.error('Erro na conexão com Supabase:', error);
       
-      // Mensagem mais específica baseada no tipo de erro
       let errorMessage = "Erro de conexão com Supabase. ";
       if (error.message.includes('Failed to fetch')) {
-        errorMessage += "Verifique se você está conectado à internet e se o projeto Supabase está acessível.";
+        errorMessage += "Verifique sua conexão com a internet.";
       } else {
         errorMessage += error.message;
       }
@@ -32,7 +31,7 @@ export const checkSupabaseConnection = async () => {
     
     toast({
       title: "Erro de Conexão",
-      description: "Não foi possível conectar ao Supabase. Verifique suas credenciais e conexão com a internet.",
+      description: "Não foi possível conectar ao Supabase. Verifique suas credenciais.",
       variant: "destructive",
     });
     return false;
@@ -42,25 +41,26 @@ export const checkSupabaseConnection = async () => {
 export const checkBucketExists = async (bucketName: string) => {
   try {
     console.log(`Verificando bucket ${bucketName}...`);
-    const { data: bucket, error } = await supabase
+    const { data: buckets, error } = await supabase
       .storage
-      .getBucket(bucketName);
+      .listBuckets();
 
     if (error) {
       console.error(`Erro ao verificar bucket ${bucketName}:`, error);
       toast({
         title: "Erro no Bucket",
-        description: `Não foi possível acessar o bucket ${bucketName}. Verifique suas credenciais e permissões.`,
+        description: `Não foi possível acessar o bucket ${bucketName}. Verifique suas permissões.`,
         variant: "destructive",
       });
       return false;
     }
 
-    if (!bucket) {
+    const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
+    if (!bucketExists) {
       console.log(`Bucket ${bucketName} não encontrado`);
       toast({
         title: "Bucket não encontrado",
-        description: `O bucket ${bucketName} não existe. Por favor, crie-o no painel do Supabase.`,
+        description: `O bucket ${bucketName} não existe no projeto.`,
         variant: "destructive",
       });
       return false;
@@ -72,7 +72,7 @@ export const checkBucketExists = async (bucketName: string) => {
     console.error(`Erro ao verificar bucket ${bucketName}:`, error);
     toast({
       title: "Erro no Bucket",
-      description: "Erro ao verificar o bucket de armazenamento. Verifique sua conexão.",
+      description: "Erro ao verificar o bucket de armazenamento.",
       variant: "destructive",
     });
     return false;

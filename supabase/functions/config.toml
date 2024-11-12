@@ -1,0 +1,4 @@
+project_id = "bgznszxombwvwhufowpm"
+
+[functions.convert-video-to-audio]
+verify_jwt = false
