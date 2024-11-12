@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -10,13 +10,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { supabase, checkSupabaseConnection, checkBucketExists } from "@/lib/supabase";
 
 export default function VideoToAudio() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isConverting, setIsConverting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isSupabaseReady, setIsSupabaseReady] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      const isConnected = await checkSupabaseConnection();
+      const hasBucket = await checkBucketExists('media');
+      
+      if (!isConnected) {
+        toast({
+          title: "Erro de Conexão",
+          description: "Não foi possível conectar ao Supabase. Por favor, verifique sua conexão.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!hasBucket) {
+        toast({
+          title: "Bucket não encontrado",
+          description: "O bucket 'media' não existe. Por favor, crie-o no painel do Supabase.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsSupabaseReady(true);
+    };
+
+    checkConnection();
+  }, [toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,26 +71,20 @@ export default function VideoToAudio() {
   };
 
   const handleExtract = async () => {
-    if (!videoFile) return;
+    if (!videoFile || !isSupabaseReady) {
+      toast({
+        title: "Não é possível processar",
+        description: isSupabaseReady 
+          ? "Selecione um arquivo de vídeo." 
+          : "Sistema não está pronto. Verifique sua conexão.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       setIsConverting(true);
       setProgress(10);
-
-      // Primeiro, verificar se temos acesso ao Storage
-      const { data: bucketExists, error: bucketError } = await supabase
-        .storage
-        .getBucket('media');
-
-      if (bucketError) {
-        throw new Error(`Erro ao acessar o Storage: ${bucketError.message}. Por favor, verifique se o bucket 'media' existe e se você tem as permissões necessárias.`);
-      }
-
-      if (!bucketExists) {
-        throw new Error("O bucket 'media' não existe no Supabase Storage. Por favor, crie-o primeiro.");
-      }
-
-      setProgress(20);
 
       // Upload do vídeo
       const videoFileName = `videos/${Date.now()}-${videoFile.name}`;
@@ -72,7 +96,6 @@ export default function VideoToAudio() {
         });
 
       if (uploadError) {
-        console.error('Erro no upload:', uploadError);
         throw new Error(`Erro no upload do vídeo: ${uploadError.message}`);
       }
 
@@ -85,7 +108,6 @@ export default function VideoToAudio() {
         });
 
       if (conversionError) {
-        console.error('Erro na conversão:', conversionError);
         throw new Error(`Erro na conversão do vídeo: ${conversionError.message}`);
       }
 
@@ -101,7 +123,6 @@ export default function VideoToAudio() {
         .createSignedUrl(conversionData.audioPath, 3600);
 
       if (audioError) {
-        console.error('Erro ao obter URL do áudio:', audioError);
         throw new Error(`Erro ao gerar URL do áudio: ${audioError.message}`);
       }
 
@@ -145,7 +166,7 @@ export default function VideoToAudio() {
               type="file"
               accept="video/mp4"
               onChange={handleFileChange}
-              disabled={isConverting}
+              disabled={isConverting || !isSupabaseReady}
             />
             {videoFile && (
               <p className="text-sm text-muted-foreground">
@@ -159,7 +180,7 @@ export default function VideoToAudio() {
               <div className="flex gap-2">
                 <Button
                   onClick={handleExtract}
-                  disabled={isConverting}
+                  disabled={isConverting || !isSupabaseReady}
                 >
                   {isConverting ? "Convertendo..." : "Extrair Áudio"}
                 </Button>
