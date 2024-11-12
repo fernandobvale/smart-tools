@@ -11,6 +11,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import PayeeForm from "./PayeeForm";
 
 interface Payee {
@@ -49,7 +60,6 @@ const PayeeList = () => {
         description: "O beneficiário foi excluído com sucesso.",
       });
 
-      // Refresh the payees list
       queryClient.invalidateQueries({ queryKey: ["payees"] });
     } catch (error) {
       console.error("Error deleting payee:", error);
@@ -107,13 +117,27 @@ const PayeeList = () => {
                 <PayeeForm payee={payee} mode="edit" />
               </DialogContent>
             </Dialog>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleDelete(payee.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir o beneficiário {payee.full_name}? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDelete(payee.id)}>
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button
               onClick={() => navigate(`/receipts/new/${payee.id}`)}
               variant="outline"
