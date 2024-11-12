@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScissorsLinear } from "lucide-react";
+import { Scissors } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -7,7 +7,7 @@ export default function Dashboard() {
     {
       title: "Divisor de Texto",
       description: "Divida textos longos em partes menores",
-      icon: <ScissorsLinear className="w-6 h-6" />,
+      icon: <Scissors className="w-6 h-6" />,
       href: "/text-splitter"
     }
   ];

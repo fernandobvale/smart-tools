@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Separator } from "./separator";
 import { ScrollArea } from "./scroll-area";
 import { 
-  ScissorsLinear, 
+  Scissors, 
   LayoutDashboard
 } from "lucide-react";
 
@@ -14,7 +14,7 @@ const menuItems = [
   },
   {
     title: "Divisor de Texto",
-    icon: <ScissorsLinear className="w-4 h-4" />,
+    icon: <Scissors className="w-4 h-4" />,
     href: "/text-splitter"
   }
 ];
