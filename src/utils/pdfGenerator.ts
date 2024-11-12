@@ -37,20 +37,27 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // Texto principal
+    // Texto principal com quebras de linha apropriadas
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     
     const text = "Recebi(emos) de ";
-    doc.text(text, 20, 65);
+    const companyName = "Escola Web Unova Cursos Ltda";
+    const cnpj = " - CNPJ nº: 12.301.010/0001-46";
+    const importanceText = ", a importância de ";
+
+    let xPos = 20;
+    const yPos = 65;
+
+    doc.text(text, xPos, yPos);
+    xPos += doc.getTextWidth(text);
     
-    // Empresa em negrito
     doc.setFont("helvetica", "bold");
-    doc.text("Escola Web Unova Cursos Ltda", 20 + doc.getTextWidth(text), 65);
+    doc.text(companyName, xPos, yPos);
+    xPos += doc.getTextWidth(companyName);
     
-    // CNPJ
     doc.setFont("helvetica", "normal");
-    doc.text(" - CNPJ nº: 12.301.010/0001-46, a importância de ", 20 + doc.getTextWidth(text + "Escola Web Unova Cursos Ltda"), 65);
+    doc.text(cnpj + importanceText, xPos, yPos);
     
     // Valor por extenso em negrito
     doc.setFont("helvetica", "bold");
@@ -93,7 +100,10 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.setFont("helvetica", "bold");
     doc.text(data.payee.full_name, 105, 195, { align: "center" });
     doc.setFont("helvetica", "normal");
-    doc.text(data.payee.cpf, 105, 205, { align: "center" });
+    
+    // Formatar CPF
+    const formattedCPF = `CPF ${formatCPF(data.payee.cpf)}`;
+    doc.text(formattedCPF, 105, 205, { align: "center" });
     
     // Download do PDF
     doc.save("recibo.pdf");
@@ -111,4 +121,12 @@ const formatDate = (dateString: string) => {
     "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
   ];
   return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
+};
+
+const formatCPF = (cpf: string) => {
+  // Remove qualquer caractere não numérico
+  const numbers = cpf.replace(/\D/g, '');
+  
+  // Aplica a máscara do CPF (000.000.000-00)
+  return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 };
