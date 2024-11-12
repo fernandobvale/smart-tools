@@ -57,10 +57,15 @@ const ReceiptForm = () => {
         throw new Error("Dados do beneficiário não encontrados");
       }
 
-      const success = await generateReceiptPDF({
-        ...values,
+      // Ensure all required fields are present before calling generateReceiptPDF
+      const pdfData = {
+        amount: values.amount,
+        reference: values.reference,
+        date: values.date,
         payee,
-      });
+      };
+
+      const success = await generateReceiptPDF(pdfData);
 
       if (!success) {
         throw new Error("Erro ao gerar o PDF do recibo");
