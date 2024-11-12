@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
+import VideoToAudio from "./pages/VideoToAudio";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/text-splitter" element={<Index />} />
+              <Route path="/video-to-audio" element={<VideoToAudio />} />
             </Route>
           </Routes>
         </BrowserRouter>
