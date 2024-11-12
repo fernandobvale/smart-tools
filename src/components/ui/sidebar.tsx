@@ -6,7 +6,6 @@ import {
   Music,
   Receipt
 } from "lucide-react";
-
 import { NavLink } from "react-router-dom";
 
 const items = [
@@ -34,7 +33,7 @@ const items = [
 
 export function Sidebar() {
   return (
-    <div className="space-y-4 py-4 min-h-screen border-r">
+    <div className="w-64 space-y-4 py-4 min-h-screen border-r bg-background">
       <div className="px-3 py-2">
         <h2 className="mb-2 px-4 text-lg font-semibold">
           Ferramentas
@@ -54,7 +53,7 @@ export function Sidebar() {
               }
             >
               {item.icon}
-              {item.title}
+              <span className="flex-1">{item.title}</span>
             </NavLink>
           ))}
         </div>
