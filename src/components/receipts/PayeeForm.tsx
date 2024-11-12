@@ -37,7 +37,23 @@ const PayeeForm = () => {
     try {
       const { error } = await supabase.from("payees").insert([values]);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        let errorMessage = "Ocorreu um erro ao cadastrar o beneficiário.";
+        
+        if (error.code === "23505") {
+          errorMessage = "Este CPF já está cadastrado.";
+        } else if (error.code === "42P01") {
+          errorMessage = "Erro de configuração: Tabela não encontrada.";
+        }
+        
+        toast({
+          title: "Erro ao cadastrar",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "Beneficiário cadastrado",
@@ -46,9 +62,10 @@ const PayeeForm = () => {
 
       form.reset();
     } catch (error) {
+      console.error("Error:", error);
       toast({
         title: "Erro ao cadastrar",
-        description: "Ocorreu um erro ao cadastrar o beneficiário.",
+        description: "Ocorreu um erro ao cadastrar o beneficiário. Verifique sua conexão.",
         variant: "destructive",
       });
     }
