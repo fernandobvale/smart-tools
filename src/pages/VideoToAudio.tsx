@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -10,60 +8,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase, checkSupabaseConnection, checkBucketExists } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
+import { checkSupabaseConnection, checkBucketExists } from "@/lib/supabase-helpers";
+import { VideoUploader } from "@/components/video-to-audio/VideoUploader";
+import { ConversionProgress } from "@/components/video-to-audio/ConversionProgress";
 
 export default function VideoToAudio() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isConverting, setIsConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isSupabaseReady, setIsSupabaseReady] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const checkConnection = async () => {
       const isConnected = await checkSupabaseConnection();
       const hasBucket = await checkBucketExists('media');
-      
-      if (!isConnected) {
-        toast({
-          title: "Erro de Conexão",
-          description: "Não foi possível conectar ao Supabase. Por favor, verifique sua conexão.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!hasBucket) {
-        toast({
-          title: "Bucket não encontrado",
-          description: "O bucket 'media' não existe. Por favor, crie-o no painel do Supabase.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setIsSupabaseReady(true);
+      setIsSupabaseReady(isConnected && hasBucket);
     };
 
     checkConnection();
-  }, [toast]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    
-    if (!file) return;
-    
-    if (!file.type.includes('video/mp4')) {
-      toast({
-        title: "Erro no arquivo",
-        description: "Por favor, selecione apenas arquivos MP4.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setVideoFile(file);
-  };
+  }, []);
 
   const handleClear = () => {
     setVideoFile(null);
@@ -86,49 +50,31 @@ export default function VideoToAudio() {
       setIsConverting(true);
       setProgress(10);
 
-      // Upload do vídeo
       const videoFileName = `videos/${Date.now()}-${videoFile.name}`;
       const { error: uploadError } = await supabase.storage
         .from('media')
-        .upload(videoFileName, videoFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(videoFileName, videoFile);
 
-      if (uploadError) {
-        throw new Error(`Erro no upload do vídeo: ${uploadError.message}`);
-      }
+      if (uploadError) throw new Error(`Erro no upload do vídeo: ${uploadError.message}`);
 
       setProgress(50);
 
-      // Chamar Edge Function
       const { data: conversionData, error: conversionError } = await supabase.functions
         .invoke('convert-video-to-audio', {
           body: { videoPath: videoFileName }
         });
 
-      if (conversionError) {
-        throw new Error(`Erro na conversão do vídeo: ${conversionError.message}`);
-      }
-
-      if (!conversionData?.audioPath) {
-        throw new Error('A função de conversão não retornou o caminho do áudio');
-      }
+      if (conversionError) throw new Error(`Erro na conversão do vídeo: ${conversionError.message}`);
+      if (!conversionData?.audioPath) throw new Error('A função de conversão não retornou o caminho do áudio');
 
       setProgress(80);
 
-      // Obter URL do áudio
       const { data: audioData, error: audioError } = await supabase.storage
         .from('media')
         .createSignedUrl(conversionData.audioPath, 3600);
 
-      if (audioError) {
-        throw new Error(`Erro ao gerar URL do áudio: ${audioError.message}`);
-      }
-
-      if (!audioData?.signedUrl) {
-        throw new Error('URL do áudio não foi gerada');
-      }
+      if (audioError) throw new Error(`Erro ao gerar URL do áudio: ${audioError.message}`);
+      if (!audioData?.signedUrl) throw new Error('URL do áudio não foi gerada');
       
       setProgress(100);
       toast({
@@ -136,7 +82,6 @@ export default function VideoToAudio() {
         description: "Seu arquivo está pronto para download.",
       });
 
-      // Iniciar download
       window.location.href = audioData.signedUrl;
 
     } catch (error) {
@@ -162,11 +107,10 @@ export default function VideoToAudio() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Input
-              type="file"
-              accept="video/mp4"
-              onChange={handleFileChange}
-              disabled={isConverting || !isSupabaseReady}
+            <VideoUploader
+              isConverting={isConverting}
+              isSupabaseReady={isSupabaseReady}
+              onFileChange={setVideoFile}
             />
             {videoFile && (
               <p className="text-sm text-muted-foreground">
@@ -193,14 +137,7 @@ export default function VideoToAudio() {
                 </Button>
               </div>
 
-              {isConverting && (
-                <div className="space-y-2">
-                  <Progress value={progress} />
-                  <p className="text-sm text-muted-foreground">
-                    Convertendo... {progress}%
-                  </p>
-                </div>
-              )}
+              {isConverting && <ConversionProgress progress={progress} />}
             </div>
           )}
         </CardContent>
