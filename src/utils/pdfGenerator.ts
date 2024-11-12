@@ -41,26 +41,24 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // Main text with proper line breaks and formatting
+    // First line - fixed text
     doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    const text = "Recebi(emos) de ";
-    const companyName = "Escola Web Unova Cursos Ltda";
-    const cnpj = " - CNPJ nº: 12.301.010/0001-46";
-    const importanceText = ", a importância de ";
-
-    // First paragraph with automatic line breaks
     doc.setFont("helvetica", "normal");
-    let firstParagraph = text + companyName + cnpj + importanceText;
-    let splitFirstParagraph = doc.splitTextToSize(firstParagraph, maxWidth);
-    doc.text(splitFirstParagraph, leftMargin, yPos);
-    yPos += (splitFirstParagraph.length * 7);
+    const firstLine = "Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a";
+    doc.text(firstLine, leftMargin, yPos);
+    yPos += 7;
 
-    // Value in words and reference
-    let valueAndReference = valueInWords + " referente " + data.reference + ".";
-    let splitValueAndReference = doc.splitTextToSize(valueAndReference, maxWidth);
-    doc.text(splitValueAndReference, leftMargin, yPos);
-    yPos += (splitValueAndReference.length * 7) + 10;
+    // Second line - importance in words
+    const importanceText = "importância de " + valueInWords;
+    let splitImportance = doc.splitTextToSize(importanceText, maxWidth);
+    doc.text(splitImportance, leftMargin, yPos);
+    yPos += (splitImportance.length * 7);
+
+    // Third line - reference
+    const referenceText = "referente " + data.reference + ".";
+    let splitReference = doc.splitTextToSize(referenceText, maxWidth);
+    doc.text(splitReference, leftMargin, yPos);
+    yPos += (splitReference.length * 7) + 10;
 
     // Legal text
     let legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
