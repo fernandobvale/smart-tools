@@ -13,38 +13,17 @@ interface PDFData {
   };
 }
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const months = [
-    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
-  ];
-  return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
-};
-
 export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
   try {
+    // Validate required data
+    if (!data.payee || !data.amount || !data.reference || !data.date) {
+      console.error("Missing required data for PDF generation");
+      return false;
+    }
+
     const doc = new jsPDF();
     
-    // Logo
-    const img = new Image();
-    img.crossOrigin = "Anonymous"; // Add this line to handle CORS
-    img.src = window.location.origin + '/unova-logo.png';
-    
-    // We need to wait for the image to load before adding it to the PDF
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = (e) => {
-        console.error("Error loading image:", e);
-        reject(e);
-      };
-    });
-    
-    const logoWidth = 50;
-    const logoHeight = 25;
-    doc.addImage(img, 'PNG', 20, 20, logoWidth, logoHeight);
-    
-    // Título
+    // Create PDF without logo first
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("RECIBO DE PAGAMENTO", 105, 30, { align: "center" });
@@ -123,4 +102,13 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     console.error("Erro ao gerar PDF:", error);
     return false;
   }
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const months = [
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+  ];
+  return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
 };
