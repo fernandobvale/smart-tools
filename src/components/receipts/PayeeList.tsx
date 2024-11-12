@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import PayeeForm from "./PayeeForm";
+import { useState } from "react";
 
 interface Payee {
   id: string;
@@ -35,6 +36,7 @@ interface Payee {
 const PayeeList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { data: payees, isLoading } = useQuery({
     queryKey: ["payees"],
@@ -104,7 +106,7 @@ const PayeeList = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Dialog>
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="icon">
                   <Pencil className="h-4 w-4" />
@@ -114,7 +116,11 @@ const PayeeList = () => {
                 <DialogHeader>
                   <DialogTitle>Editar Beneficiário</DialogTitle>
                 </DialogHeader>
-                <PayeeForm payee={payee} mode="edit" />
+                <PayeeForm 
+                  payee={payee} 
+                  mode="edit" 
+                  onClose={() => setEditDialogOpen(false)}
+                />
               </DialogContent>
             </Dialog>
             <AlertDialog>

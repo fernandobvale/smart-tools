@@ -13,9 +13,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { NumericFormat, PatternFormat } from "react-number-format";
+import { PatternFormat } from "react-number-format";
 import { useQueryClient } from "@tanstack/react-query";
-import { DialogClose } from "@/components/ui/dialog";
 
 const formSchema = z.object({
   full_name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -33,9 +32,10 @@ interface PayeeFormProps {
     bank_name: string;
   };
   mode?: "create" | "edit";
+  onClose?: () => void;
 }
 
-const PayeeForm = ({ payee, mode = "create" }: PayeeFormProps) => {
+const PayeeForm = ({ payee, mode = "create", onClose }: PayeeFormProps) => {
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -82,6 +82,9 @@ const PayeeForm = ({ payee, mode = "create" }: PayeeFormProps) => {
       }
 
       queryClient.invalidateQueries({ queryKey: ["payees"] });
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -160,11 +163,9 @@ const PayeeForm = ({ payee, mode = "create" }: PayeeFormProps) => {
         />
 
         <div className="flex justify-end gap-2">
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Cancelar
-            </Button>
-          </DialogClose>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
           <Button type="submit">
             {mode === "edit" ? "Salvar Alterações" : "Cadastrar Beneficiário"}
           </Button>
