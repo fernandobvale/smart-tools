@@ -80,9 +80,17 @@ const PayeeForm = () => {
               <FormControl>
                 <NumericFormat
                   customInput={Input}
-                  format="###.###.###-##"
+                  valueIsNumericString
+                  mask="_"
+                  allowEmptyFormatting={false}
+                  displayType="input"
+                  formatExact
+                  value={field.value}
+                  onValueChange={(values) => {
+                    field.onChange(values.value);
+                  }}
                   placeholder="Digite o CPF"
-                  {...field}
+                  format="###.###.###-##"
                 />
               </FormControl>
               <FormMessage />
