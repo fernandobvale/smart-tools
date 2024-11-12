@@ -123,11 +123,9 @@ const PayeeForm = ({ payee, mode = "create" }: PayeeFormProps) => {
                     field.onChange(values.value);
                   }}
                   placeholder="Digite o CPF"
-                  thousandSeparator="."
-                  decimalSeparator="-"
+                  format="###.###.###-##"
+                  mask="_"
                   allowNegative={false}
-                  decimalScale={0}
-                  maxLength={14}
                 />
               </FormControl>
               <FormMessage />
