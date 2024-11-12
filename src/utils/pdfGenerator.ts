@@ -62,49 +62,31 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
 
-    // Main text with improved formatting
+    // Main text with improved formatting and alignment
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
 
-    // Initial text with company name and CNPJ
-    let initialText = "Recebi(emos) de ";
-    let xPos = leftMargin;
-    doc.text(initialText, xPos, yPos);
-    xPos += doc.getTextWidth(initialText);
-
-    // Company name in bold
-    doc.setFont("helvetica", "bold");
-    const companyName = "Escola Web Unova Cursos Ltda";
-    doc.text(companyName, xPos, yPos);
-    xPos += doc.getTextWidth(companyName);
-
-    // CNPJ and amount text
-    doc.setFont("helvetica", "normal");
-    const cnpjText = " - CNPJ nº: 12.301.010/0001-46, a importância de ";
-    doc.text(cnpjText, xPos, yPos);
-    yPos += lineHeight;
-
-    // Value in words (bold) with improved line breaks
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5); // Slightly smaller font for better fit
-    const valueLines = doc.splitTextToSize(valueInWords, textWidth - 5);
-    valueLines.forEach((line: string) => {
-      doc.text(line, leftMargin, yPos, { align: 'justify' });
+    // Construct the first paragraph with better line breaks
+    const firstParagraph = `Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a importância de ${valueInWords}`;
+    
+    // Calculate optimal line width for better text flow
+    const maxWidth = textWidth - 5;
+    const lines = doc.splitTextToSize(firstParagraph, maxWidth);
+    
+    // Render first paragraph with proper spacing
+    lines.forEach((line: string) => {
+      doc.text(line, leftMargin, yPos, { align: 'justify', maxWidth: maxWidth });
       yPos += lineHeight;
     });
-    doc.setFontSize(11); // Reset font size
 
-    // Reference text
-    doc.setFont("helvetica", "normal");
-    const refText = "referente ";
-    doc.text(refText, leftMargin, yPos);
-    
-    // Reference value in bold
+    // Reference text with proper spacing
+    yPos += 2; // Add small gap
+    doc.text("referente ", leftMargin, yPos);
     doc.setFont("helvetica", "bold");
-    doc.text(data.reference, leftMargin + doc.getTextWidth(refText), yPos);
+    doc.text(data.reference, leftMargin + doc.getTextWidth("referente "), yPos);
     yPos += lineHeight + 5;
 
-    // Legal text with justified alignment
+    // Legal text
     doc.setFont("helvetica", "normal");
     const legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
     const wrappedLegal = doc.splitTextToSize(legalText, textWidth);
@@ -120,43 +102,21 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.text(data.payee.full_name, leftMargin + doc.getTextWidth("Pagamento recebido por: "), yPos);
     yPos += lineHeight + 5;
 
-    // PIX information with improved spacing
+    // PIX information
     doc.setFont("helvetica", "normal");
-    let pixText = "Chave ";
-    let pixXPos = leftMargin;
-    doc.text(pixText, pixXPos, yPos);
-    pixXPos += doc.getTextWidth(pixText);
-
+    doc.text("Chave PIX: ", leftMargin, yPos);
     doc.setFont("helvetica", "bold");
-    pixText = "PIX";
-    doc.text(pixText, pixXPos, yPos);
-    pixXPos += doc.getTextWidth(pixText);
-
-    doc.setFont("helvetica", "normal");
-    pixText = ": ";
-    doc.text(pixText, pixXPos, yPos);
-    pixXPos += doc.getTextWidth(pixText);
-
-    doc.setFont("helvetica", "bold");
-    doc.text(data.payee.pix_key, pixXPos, yPos);
-    pixXPos += doc.getTextWidth(data.payee.pix_key);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(" - ", pixXPos, yPos);
-    pixXPos += doc.getTextWidth(" - ");
-
-    doc.setFont("helvetica", "bold");
-    doc.text(`Banco ${data.payee.bank_name}`, pixXPos, yPos);
+    doc.text(`${data.payee.pix_key} - Banco ${data.payee.bank_name}`, leftMargin + doc.getTextWidth("Chave PIX: "), yPos);
     yPos += lineHeight + 10;
 
-    // Date with location
+    // Date and location
     doc.setFont("helvetica", "bold");
     doc.text("Goiânia", leftMargin, yPos);
     doc.setFont("helvetica", "normal");
     doc.text(`, ${formatDate(data.date)}`, leftMargin + doc.getTextWidth("Goiânia"), yPos);
     yPos += 25;
 
-    // Signature line and final information
+    // Signature line
     doc.line(leftMargin, yPos, pageWidth - rightMargin, yPos);
     doc.setFont("helvetica", "bold");
     doc.text(data.payee.full_name, pageWidth/2, yPos + 10, { align: "center" });
