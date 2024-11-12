@@ -43,7 +43,6 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
       });
     } catch (error) {
       console.error("Error loading logo:", error);
-      // Continue without logo if it fails to load
     }
     yPos += 25;
     
@@ -63,71 +62,99 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // Main paragraph with company info and amount
+    // Main text with company info and amount
     doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
     const companyInfo = "Escola Web Unova Cursos Ltda";
     const cnpj = "12.301.010/0001-46";
 
-    // Split the text into parts to apply different styles
-    doc.text("Recebi(emos) de ", leftMargin, yPos);
-    const receiptStart = doc.getTextWidth("Recebi(emos) de ");
-    
-    doc.setFont("helvetica", "bold");
-    doc.text(companyInfo, leftMargin + receiptStart, yPos);
-    const companyWidth = doc.getTextWidth(companyInfo);
-    
+    // First paragraph with wrapped text
+    let text = "Recebi(emos) de ";
     doc.setFont("helvetica", "normal");
-    doc.text(` - CNPJ nº: ${cnpj}, a importância de `, leftMargin + receiptStart + companyWidth, yPos);
-    
-    doc.setFont("helvetica", "bold");
-    doc.text(valueInWords, leftMargin, yPos + 7);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(" referente ", leftMargin, yPos + 14);
-    
-    doc.setFont("helvetica", "bold");
-    doc.text(data.reference, leftMargin + doc.getTextWidth(" referente "), yPos + 14);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(".", leftMargin + doc.getTextWidth(" referente ") + doc.getTextWidth(data.reference), yPos + 14);
-    yPos += 25;
+    let xPos = leftMargin;
+    let currentLine = "";
+    let lineHeight = 7;
 
-    // Legal text with proper splitting and justification
+    // Write "Recebi(emos) de"
+    doc.text(text, xPos, yPos);
+    xPos += doc.getTextWidth(text);
+
+    // Write company name in bold
+    doc.setFont("helvetica", "bold");
+    doc.text(companyInfo, xPos, yPos);
+    xPos += doc.getTextWidth(companyInfo);
+
+    // Write CNPJ info
+    doc.setFont("helvetica", "normal");
+    text = ` - CNPJ nº: ${cnpj}, a importância de `;
+    if (xPos + doc.getTextWidth(text) > pageWidth - rightMargin) {
+      yPos += lineHeight;
+      xPos = leftMargin;
+    }
+    doc.text(text, xPos, yPos);
+
+    // New line for value in words (in bold)
+    yPos += lineHeight;
+    doc.setFont("helvetica", "bold");
+    const wrappedValue = doc.splitTextToSize(valueInWords, textWidth);
+    doc.text(wrappedValue, leftMargin, yPos);
+    yPos += wrappedValue.length * lineHeight;
+
+    // Reference text
+    doc.setFont("helvetica", "normal");
+    text = "referente ";
+    doc.text(text, leftMargin, yPos);
+    xPos = leftMargin + doc.getTextWidth(text);
+
+    // Reference in bold
+    doc.setFont("helvetica", "bold");
+    const wrappedReference = doc.splitTextToSize(data.reference, textWidth - doc.getTextWidth(text));
+    doc.text(wrappedReference, xPos, yPos);
+    yPos += wrappedReference.length * lineHeight + 10;
+
+    // Legal text (normal font)
     doc.setFont("helvetica", "normal");
     const legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
-    const splitLegalText = doc.splitTextToSize(legalText, textWidth);
-    doc.text(splitLegalText, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
-    yPos += (splitLegalText.length * 7) + 15;
+    const wrappedLegal = doc.splitTextToSize(legalText, textWidth);
+    doc.text(wrappedLegal, leftMargin, yPos);
+    yPos += wrappedLegal.length * lineHeight + 15;
 
     // Payee information
     doc.text("Pagamento recebido por: ", leftMargin, yPos);
-    const receivedByWidth = doc.getTextWidth("Pagamento recebido por: ");
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, leftMargin + receivedByWidth, yPos);
+    doc.text(data.payee.full_name, leftMargin + doc.getTextWidth("Pagamento recebido por: "), yPos);
     yPos += 10;
 
-    // Bank information with specific parts in bold
+    // PIX information with specific parts in bold
+    xPos = leftMargin;
     doc.setFont("helvetica", "normal");
-    doc.text("Chave ", leftMargin, yPos);
+    doc.text("Chave ", xPos, yPos);
+    xPos += doc.getTextWidth("Chave ");
+
     doc.setFont("helvetica", "bold");
-    doc.text("PIX", leftMargin + doc.getTextWidth("Chave "), yPos);
+    doc.text("PIX", xPos, yPos);
+    xPos += doc.getTextWidth("PIX");
+
     doc.setFont("helvetica", "normal");
-    doc.text(": ", leftMargin + doc.getTextWidth("Chave PIX"), yPos);
+    doc.text(": ", xPos, yPos);
+    xPos += doc.getTextWidth(": ");
+
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.pix_key, leftMargin + doc.getTextWidth("Chave PIX: "), yPos);
+    doc.text(data.payee.pix_key, xPos, yPos);
+    xPos += doc.getTextWidth(data.payee.pix_key);
+
     doc.setFont("helvetica", "normal");
-    doc.text(" - ", leftMargin + doc.getTextWidth("Chave PIX: ") + doc.getTextWidth(data.payee.pix_key), yPos);
+    doc.text(" - ", xPos, yPos);
+    xPos += doc.getTextWidth(" - ");
+
     doc.setFont("helvetica", "bold");
-    doc.text("Banco " + data.payee.bank_name, leftMargin + doc.getTextWidth("Chave PIX: ") + doc.getTextWidth(data.payee.pix_key) + doc.getTextWidth(" - "), yPos);
+    doc.text(`Banco ${data.payee.bank_name}`, xPos, yPos);
     yPos += 15;
 
     // Date with bold city name
     doc.setFont("helvetica", "bold");
     doc.text("Goiânia", leftMargin, yPos);
-    const cityWidth = doc.getTextWidth("Goiânia");
     doc.setFont("helvetica", "normal");
-    doc.text(`, ${formatDate(data.date)}`, leftMargin + cityWidth, yPos);
+    doc.text(`, ${formatDate(data.date)}`, leftMargin + doc.getTextWidth("Goiânia"), yPos);
     yPos += 25;
 
     // Signature line and final information
