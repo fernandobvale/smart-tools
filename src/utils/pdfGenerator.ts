@@ -25,34 +25,42 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const leftMargin = 20;
     const rightMargin = 20;
     const textWidth = pageWidth - leftMargin - rightMargin;
-    let yPos = 30;
+    let yPos = 20;
+
+    // Add logo
+    const logoPath = "/unova-logo.png";
+    doc.addImage(logoPath, "PNG", leftMargin, yPos, 40, 15);
+    yPos += 25;
     
     // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("RECIBO DE PAGAMENTO", pageWidth/2, yPos, { align: "center" });
-    yPos += 20;
+    yPos += 15;
     
     // Amount highlight
     doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
     doc.text(data.amount, pageWidth/2, yPos, { align: "center" });
-    yPos += 25;
+    yPos += 20;
     
     // Convert numeric value to words
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // Combine the first paragraph into a single text block
+    // Main paragraph with company info and amount
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    const firstParagraph = `Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a importância de ${valueInWords} referente ${data.reference}.`;
+    const companyInfo = "Escola Web Unova Cursos Ltda";
+    const cnpj = "12.301.010/0001-46";
+    const firstParagraph = `Recebi(emos) de ${companyInfo} - CNPJ nº: ${cnpj}, a importância de ${valueInWords} referente ${data.reference}.`;
     
-    // Split text with proper width and render with justified alignment
     const splitFirstParagraph = doc.splitTextToSize(firstParagraph, textWidth);
     doc.text(splitFirstParagraph, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
-    yPos += (splitFirstParagraph.length * 7) + 15;
+    yPos += (splitFirstParagraph.length * 7) + 10;
 
     // Legal text with proper splitting and justification
+    doc.setFont("helvetica", "bold");
     const legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
     const splitLegalText = doc.splitTextToSize(legalText, textWidth);
     doc.text(splitLegalText, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
@@ -72,9 +80,13 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.text(splitBankInfo, leftMargin, yPos);
     yPos += (splitBankInfo.length * 7) + 15;
 
-    // Date
-    doc.text(`Goiânia, ${formatDate(data.date)}`, leftMargin, yPos);
-    yPos += 30;
+    // Date with bold city name
+    doc.setFont("helvetica", "bold");
+    doc.text("Goiânia", leftMargin, yPos);
+    const cityWidth = doc.getTextWidth("Goiânia");
+    doc.setFont("helvetica", "normal");
+    doc.text(`, ${formatDate(data.date)}`, leftMargin + cityWidth, yPos);
+    yPos += 25;
 
     // Signature line and final information
     doc.line(leftMargin, yPos, pageWidth - rightMargin, yPos);
