@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 interface Payee {
   id: string;
@@ -28,19 +29,34 @@ const PayeeList = () => {
   });
 
   if (isLoading) {
-    return <div>Carregando beneficiários...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!payees?.length) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground mb-4">
+          Nenhum beneficiário cadastrado ainda.
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
-      {payees?.map((payee) => (
+      {payees.map((payee) => (
         <div
           key={payee.id}
-          className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
         >
           <div>
             <h3 className="font-medium">{payee.full_name}</h3>
-            <p className="text-sm text-gray-500">CPF: {payee.cpf}</p>
+            <p className="text-sm text-muted-foreground">CPF: {payee.cpf}</p>
+            <p className="text-sm text-muted-foreground">Banco: {payee.bank_name}</p>
           </div>
           <Button
             onClick={() => navigate(`/receipts/new/${payee.id}`)}

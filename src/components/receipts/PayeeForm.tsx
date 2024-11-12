@@ -13,10 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { NumericFormat } from "react-number-format";
 
 const formSchema = z.object({
   full_name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-  cpf: z.string().min(11, "CPF inválido"),
+  cpf: z.string().min(11, "CPF inválido").max(14, "CPF inválido"),
   pix_key: z.string().min(1, "Chave PIX é obrigatória"),
   bank_name: z.string().min(1, "Nome do banco é obrigatório"),
 });
@@ -77,7 +78,12 @@ const PayeeForm = () => {
             <FormItem>
               <FormLabel>CPF</FormLabel>
               <FormControl>
-                <Input placeholder="Digite o CPF" {...field} />
+                <NumericFormat
+                  customInput={Input}
+                  format="###.###.###-##"
+                  placeholder="Digite o CPF"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
