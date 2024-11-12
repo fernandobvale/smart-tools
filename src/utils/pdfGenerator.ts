@@ -26,9 +26,8 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const rightMargin = 20;
     const textWidth = pageWidth - leftMargin - rightMargin;
     let yPos = 20;
-    const lineHeight = 7;
 
-    // Add logo
+    // Add logo from URL
     const logoUrl = "https://tools.unovacursos.com.br/public/images/logo-unova.png";
     try {
       const img = await fetch(logoUrl);
@@ -44,79 +43,67 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
       });
     } catch (error) {
       console.error("Error loading logo:", error);
+      // Continue without logo if it fails to load
     }
     yPos += 25;
-
+    
     // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("RECIBO DE PAGAMENTO", pageWidth/2, yPos, { align: "center" });
     yPos += 15;
-
-    // Amount
+    
+    // Amount highlight
     doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
     doc.text(data.amount, pageWidth/2, yPos, { align: "center" });
-    yPos += 15;
-
+    yPos += 20;
+    
     // Convert numeric value to words
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
-
-    // Main text with improved formatting and alignment
-    doc.setFontSize(11);
+    
+    // Main paragraph with company info and amount
+    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-
-    // Construct the first paragraph with better line breaks
-    const firstParagraph = `Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a importância de ${valueInWords}`;
+    const companyInfo = "Escola Web Unova Cursos Ltda";
+    const cnpj = "12.301.010/0001-46";
+    const firstParagraph = `Recebi(emos) de ${companyInfo} - CNPJ nº: ${cnpj}, a importância de ${valueInWords} referente ${data.reference}.`;
     
-    // Calculate optimal line width for better text flow
-    const maxWidth = textWidth - 5;
-    const lines = doc.splitTextToSize(firstParagraph, maxWidth);
-    
-    // Render first paragraph with proper spacing
-    lines.forEach((line: string) => {
-      doc.text(line, leftMargin, yPos, { align: 'justify', maxWidth: maxWidth });
-      yPos += lineHeight;
-    });
+    const splitFirstParagraph = doc.splitTextToSize(firstParagraph, textWidth);
+    doc.text(splitFirstParagraph, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
+    yPos += (splitFirstParagraph.length * 7) + 10;
 
-    // Reference text with proper spacing
-    yPos += 2; // Add small gap
-    doc.text("referente ", leftMargin, yPos);
+    // Legal text with proper splitting and justification
     doc.setFont("helvetica", "bold");
-    doc.text(data.reference, leftMargin + doc.getTextWidth("referente "), yPos);
-    yPos += lineHeight + 5;
-
-    // Legal text
-    doc.setFont("helvetica", "normal");
     const legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
-    const wrappedLegal = doc.splitTextToSize(legalText, textWidth);
-    wrappedLegal.forEach((line: string) => {
-      doc.text(line, leftMargin, yPos, { align: 'justify' });
-      yPos += lineHeight;
-    });
-    yPos += 10;
+    const splitLegalText = doc.splitTextToSize(legalText, textWidth);
+    doc.text(splitLegalText, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
+    yPos += (splitLegalText.length * 7) + 15;
 
     // Payee information
-    doc.text("Pagamento recebido por: ", leftMargin, yPos);
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, leftMargin + doc.getTextWidth("Pagamento recebido por: "), yPos);
-    yPos += lineHeight + 5;
+    doc.text("Pagamento recebido por:", leftMargin, yPos);
+    const receivedByWidth = doc.getTextWidth("Pagamento recebido por: ");
+    doc.text(data.payee.full_name, leftMargin + receivedByWidth, yPos);
+    yPos += 10;
 
-    // PIX information
+    // Bank information
     doc.setFont("helvetica", "normal");
-    doc.text("Chave PIX: ", leftMargin, yPos);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${data.payee.pix_key} - Banco ${data.payee.bank_name}`, leftMargin + doc.getTextWidth("Chave PIX: "), yPos);
-    yPos += lineHeight + 10;
+    const bankInfo = `Chave PIX: ${data.payee.pix_key} - Banco ${data.payee.bank_name}`;
+    const splitBankInfo = doc.splitTextToSize(bankInfo, textWidth);
+    doc.text(splitBankInfo, leftMargin, yPos);
+    yPos += (splitBankInfo.length * 7) + 15;
 
-    // Date and location
+    // Date with bold city name
     doc.setFont("helvetica", "bold");
     doc.text("Goiânia", leftMargin, yPos);
+    const cityWidth = doc.getTextWidth("Goiânia");
     doc.setFont("helvetica", "normal");
-    doc.text(`, ${formatDate(data.date)}`, leftMargin + doc.getTextWidth("Goiânia"), yPos);
+    doc.text(`, ${formatDate(data.date)}`, leftMargin + cityWidth, yPos);
     yPos += 25;
 
-    // Signature line
+    // Signature line and final information
     doc.line(leftMargin, yPos, pageWidth - rightMargin, yPos);
     doc.setFont("helvetica", "bold");
     doc.text(data.payee.full_name, pageWidth/2, yPos + 10, { align: "center" });
