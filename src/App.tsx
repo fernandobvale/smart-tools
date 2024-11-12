@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
 import VideoToAudio from "./pages/VideoToAudio";
 import Receipts from "./pages/Receipts";
+import ReceiptForm from "./components/receipts/ReceiptForm";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/text-splitter" element={<Index />} />
               <Route path="/video-to-audio" element={<VideoToAudio />} />
               <Route path="/receipts" element={<Receipts />} />
+              <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
             </Route>
           </Routes>
         </BrowserRouter>
