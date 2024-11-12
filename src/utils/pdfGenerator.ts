@@ -22,43 +22,41 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
-    const maxWidth = pageWidth - 40; // Increased text area width
-    const leftMargin = 20; // Reduced margin for better text flow
+    const leftMargin = 20;
+    const rightMargin = 20;
+    const textWidth = pageWidth - leftMargin - rightMargin;
     let yPos = 30;
     
     // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("RECIBO DE PAGAMENTO", pageWidth/2, yPos, { align: "center" });
-    yPos += 15;
+    yPos += 20;
     
     // Amount highlight
     doc.setFontSize(14);
     doc.text(data.amount, pageWidth/2, yPos, { align: "center" });
-    yPos += 20;
+    yPos += 25;
     
     // Convert numeric value to words
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // First line - fixed text
+    // Combine the first paragraph into a single text block
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    const firstLine = "Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a";
-    doc.text(firstLine, leftMargin, yPos, { align: "justify", maxWidth });
-    yPos += 10;
+    const firstParagraph = `Recebi(emos) de Escola Web Unova Cursos Ltda - CNPJ nº: 12.301.010/0001-46, a importância de ${valueInWords} referente ${data.reference}.`;
+    
+    // Split text with proper width and render with justified alignment
+    const splitFirstParagraph = doc.splitTextToSize(firstParagraph, textWidth);
+    doc.text(splitFirstParagraph, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
+    yPos += (splitFirstParagraph.length * 7) + 15;
 
-    // Second line - importance in words with reference
-    const fullText = `importância de ${valueInWords} referente ${data.reference}.`;
-    let splitText = doc.splitTextToSize(fullText, maxWidth);
-    doc.text(splitText, leftMargin, yPos, { align: "justify" });
-    yPos += (splitText.length * 7) + 10;
-
-    // Legal text
-    let legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
-    let splitLegalText = doc.splitTextToSize(legalText, maxWidth);
-    doc.text(splitLegalText, leftMargin, yPos, { align: "justify" });
-    yPos += (splitLegalText.length * 7) + 10;
+    // Legal text with proper splitting and justification
+    const legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
+    const splitLegalText = doc.splitTextToSize(legalText, textWidth);
+    doc.text(splitLegalText, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
+    yPos += (splitLegalText.length * 7) + 15;
 
     // Payee information
     doc.setFont("helvetica", "bold");
@@ -69,17 +67,17 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
 
     // Bank information
     doc.setFont("helvetica", "normal");
-    let bankInfo = `Chave PIX: ${data.payee.pix_key} - Banco ${data.payee.bank_name}`;
-    let splitBankInfo = doc.splitTextToSize(bankInfo, maxWidth);
+    const bankInfo = `Chave PIX: ${data.payee.pix_key} - Banco ${data.payee.bank_name}`;
+    const splitBankInfo = doc.splitTextToSize(bankInfo, textWidth);
     doc.text(splitBankInfo, leftMargin, yPos);
-    yPos += (splitBankInfo.length * 7) + 10;
+    yPos += (splitBankInfo.length * 7) + 15;
 
     // Date
     doc.text(`Goiânia, ${formatDate(data.date)}`, leftMargin, yPos);
     yPos += 30;
 
     // Signature line and final information
-    doc.line(leftMargin, yPos, pageWidth - leftMargin, yPos);
+    doc.line(leftMargin, yPos, pageWidth - rightMargin, yPos);
     doc.setFont("helvetica", "bold");
     doc.text(data.payee.full_name, pageWidth/2, yPos + 10, { align: "center" });
     doc.setFont("helvetica", "normal");
