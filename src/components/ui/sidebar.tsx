@@ -3,7 +3,8 @@ import { ScrollArea } from "./scroll-area";
 import { 
   Scissors, 
   LayoutDashboard,
-  Music
+  Music,
+  Receipt
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -23,6 +24,11 @@ const items = [
     title: "Conversor de Vídeo para Áudio",
     icon: <Music className="w-4 h-4" />,
     href: "/video-to-audio"
+  },
+  {
+    title: "Recibos",
+    icon: <Receipt className="w-4 h-4" />,
+    href: "/receipts"
   }
 ];
 

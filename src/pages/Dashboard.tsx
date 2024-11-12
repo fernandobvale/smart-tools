@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music } from "lucide-react";
+import { Scissors, Music, Receipt } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -15,6 +15,12 @@ export default function Dashboard() {
       description: "Extraia o áudio de seus vídeos MP4",
       icon: <Music className="w-6 h-6" />,
       href: "/video-to-audio"
+    },
+    {
+      title: "Sistema de Recibos",
+      description: "Gere e gerencie recibos facilmente",
+      icon: <Receipt className="w-6 h-6" />,
+      href: "/receipts"
     }
   ];
 
