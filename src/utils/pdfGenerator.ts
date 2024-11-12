@@ -22,6 +22,8 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     }
 
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const maxWidth = pageWidth - 60; // 30px margin on each side
     
     // Create PDF without logo first
     doc.setFont("helvetica", "bold");
@@ -40,70 +42,59 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     // Texto principal com quebras de linha apropriadas e margens ajustadas
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    
+
+    // Primeiro parágrafo com quebra de linha automática
     const text = "Recebi(emos) de ";
     const companyName = "Escola Web Unova Cursos Ltda";
     const cnpj = " - CNPJ nº: 12.301.010/0001-46";
     const importanceText = ", a importância de ";
 
-    let xPos = 30; // Aumentada a margem esquerda
-    const yPos = 65;
+    let yPos = 65;
+    const leftMargin = 30;
 
-    doc.text(text, xPos, yPos);
-    xPos += doc.getTextWidth(text);
-    
+    // Primeiro parágrafo com quebra de linha automática
+    let firstParagraph = text + companyName + cnpj + importanceText;
+    let splitFirstParagraph = doc.splitTextToSize(firstParagraph, maxWidth);
+    doc.text(splitFirstParagraph, leftMargin, yPos);
+    yPos += (splitFirstParagraph.length * 7);
+
+    // Valor por extenso e referência
+    let valueAndReference = valueInWords + " referente " + data.reference;
+    let splitValueAndReference = doc.splitTextToSize(valueAndReference, maxWidth);
+    doc.text(splitValueAndReference, leftMargin, yPos);
+    yPos += (splitValueAndReference.length * 7) + 10;
+
+    // Segundo parágrafo com quebra de linha automática
+    let secondParagraph = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
+    let splitSecondParagraph = doc.splitTextToSize(secondParagraph, maxWidth);
+    doc.text(splitSecondParagraph, leftMargin, yPos);
+    yPos += (splitSecondParagraph.length * 7) + 10;
+
+    // Informações do beneficiário com quebra de linha
+    doc.text("Pagamento recebido por: ", leftMargin, yPos);
     doc.setFont("helvetica", "bold");
-    doc.text(companyName, xPos, yPos);
-    xPos += doc.getTextWidth(companyName);
-    
+    doc.text(data.payee.full_name, leftMargin + doc.getTextWidth("Pagamento recebido por: "), yPos);
+    yPos += 10;
+
+    // Informações bancárias com quebra de linha
+    let bankInfo = `Chave PIX: ${data.payee.pix_key} - Banco ${data.payee.bank_name}`;
+    let splitBankInfo = doc.splitTextToSize(bankInfo, maxWidth);
     doc.setFont("helvetica", "normal");
-    doc.text(cnpj + importanceText, xPos, yPos);
+    doc.text(splitBankInfo, leftMargin, yPos);
+    yPos += (splitBankInfo.length * 7) + 10;
+
+    // Data
+    doc.text(`Goiânia, ${formatDate(data.date)}`, leftMargin, yPos);
     
-    // Valor por extenso em negrito com margem ajustada
+    // Linha de assinatura e informações finais
+    doc.line(leftMargin, yPos + 30, pageWidth - leftMargin, yPos + 30);
     doc.setFont("helvetica", "bold");
-    doc.text(valueInWords, 30, 75);
-    
-    // Referência com margem ajustada
-    doc.setFont("helvetica", "normal");
-    doc.text(" referente ", 30 + doc.getTextWidth(valueInWords), 75);
-    
-    // Referência em negrito
-    doc.setFont("helvetica", "bold");
-    doc.text(data.reference, 30 + doc.getTextWidth(valueInWords + " referente "), 75);
-    
-    // Segundo parágrafo com margem ajustada
-    doc.setFont("helvetica", "normal");
-    doc.text("Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos,", 30, 95);
-    doc.text("dando plena, rasa e irrevogável quitação, pelo valor recebido.", 30, 105);
-    
-    // Informações do beneficiário com margem ajustada
-    doc.text("Pagamento recebido por: ", 30, 125);
-    doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, 30 + doc.getTextWidth("Pagamento recebido por: "), 125);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text("Chave PIX: ", 30, 135);
-    doc.setFont("helvetica", "bold");
-    doc.text(data.payee.pix_key, 30 + doc.getTextWidth("Chave PIX: "), 135);
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(" - Banco ", 30 + doc.getTextWidth("Chave PIX: " + data.payee.pix_key), 135);
-    doc.setFont("helvetica", "bold");
-    doc.text(data.payee.bank_name, 30 + doc.getTextWidth("Chave PIX: " + data.payee.pix_key + " - Banco "), 135);
-    
-    // Data com margem ajustada
-    doc.setFont("helvetica", "normal");
-    doc.text(`Goiânia, ${formatDate(data.date)}`, 30, 155);
-    
-    // Linha de assinatura
-    doc.line(30, 185, 180, 185);
-    doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, 105, 195, { align: "center" });
+    doc.text(data.payee.full_name, 105, yPos + 40, { align: "center" });
     doc.setFont("helvetica", "normal");
     
     // Formatar CPF
     const formattedCPF = `CPF ${formatCPF(data.payee.cpf)}`;
-    doc.text(formattedCPF, 105, 205, { align: "center" });
+    doc.text(formattedCPF, 105, yPos + 50, { align: "center" });
     
     // Download do PDF
     doc.save("recibo.pdf");
