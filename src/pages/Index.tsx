@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { splitText } from "@/lib/textSplitter";
 import { Copy } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Index = () => {
   const [charLimit, setCharLimit] = useState<number>(800);
@@ -13,39 +14,43 @@ const Index = () => {
 
   const handleSplit = () => {
     if (!inputText.trim()) {
-      toast.error("Please enter some text to split");
+      toast.error("Por favor, insira algum texto para dividir");
       return;
     }
 
     if (charLimit < 100) {
-      toast.error("Character limit must be at least 100");
+      toast.error("O limite de caracteres deve ser pelo menos 100");
       return;
     }
 
     const results = splitText(inputText, charLimit);
     setSplitResults(results);
-    toast.success(`Text split into ${results.length} parts`);
+    toast.success(`Texto dividido em ${results.length} partes`);
   };
 
   const handleCopy = async (text: string, index: number) => {
     await navigator.clipboard.writeText(text);
-    toast.success(`Part ${index + 1} copied to clipboard`);
+    toast.success(`Parte ${index + 1} copiada para a área de transferência`);
   };
 
   const handleClear = () => {
     setInputText("");
     setSplitResults([]);
-    toast.success("All cleared!");
+    toast.success("Tudo limpo!");
   };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+        <div className="flex justify-end">
+          <ThemeToggle />
+        </div>
+        
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-foreground">Text Splitter</h1>
+          <h1 className="text-4xl font-bold text-foreground">Divisor de Texto</h1>
           <p className="text-muted-foreground">
-            Split your text into smaller chunks while preserving complete sentences
+            Divida seu texto em partes menores preservando frases completas
           </p>
         </div>
 
@@ -58,30 +63,30 @@ const Index = () => {
               onChange={(e) => setCharLimit(Number(e.target.value))}
               min={100}
               className="w-full"
-              placeholder="Character limit"
+              placeholder="Limite de caracteres"
             />
           </div>
           <Button onClick={handleSplit} className="w-full sm:w-auto">
-            Split Text
+            Dividir Texto
           </Button>
           <Button
             onClick={handleClear}
             variant="outline"
             className="w-full sm:w-auto"
           >
-            Clear All
+            Limpar Tudo
           </Button>
         </div>
 
         {/* Input Area */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">
-            Enter your text
+            Digite seu texto
           </label>
           <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Paste your text here..."
+            placeholder="Cole seu texto aqui..."
             className="min-h-[200px] bg-editor-bg border-editor-border"
           />
         </div>
@@ -90,7 +95,7 @@ const Index = () => {
         {splitResults.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-foreground">
-              Split Results
+              Resultados
             </h2>
             <div className="grid gap-6">
               {splitResults.map((result, index) => (
@@ -100,7 +105,7 @@ const Index = () => {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-muted-foreground">
-                      Part {index + 1} ({result.length} characters)
+                      Parte {index + 1} ({result.length} caracteres)
                     </span>
                     <Button
                       variant="ghost"
@@ -109,13 +114,13 @@ const Index = () => {
                       className="text-muted-foreground hover:text-foreground"
                     >
                       <Copy className="h-4 w-4 mr-2" />
-                      Copy
+                      Copiar
                     </Button>
                   </div>
                   <Textarea
                     value={result}
                     readOnly
-                    className="min-h-[100px] bg-white"
+                    className="min-h-[100px] bg-white dark:bg-gray-800"
                   />
                 </div>
               ))}
