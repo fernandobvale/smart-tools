@@ -87,7 +87,7 @@ const Index = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Cole seu texto aqui..."
-            className="min-h-[200px] bg-editor-bg border-editor-border"
+            className="min-h-[200px] bg-background text-foreground dark:bg-gray-900 dark:text-gray-100"
           />
         </div>
 
@@ -101,7 +101,7 @@ const Index = () => {
               {splitResults.map((result, index) => (
                 <div
                   key={index}
-                  className="relative bg-editor-bg border border-editor-border rounded-lg p-4"
+                  className="relative bg-background border border-input rounded-lg p-4 dark:bg-gray-900"
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-muted-foreground">
@@ -120,7 +120,7 @@ const Index = () => {
                   <Textarea
                     value={result}
                     readOnly
-                    className="min-h-[100px] bg-white dark:bg-gray-800"
+                    className="min-h-[100px] bg-background text-foreground dark:bg-gray-900 dark:text-gray-100"
                   />
                 </div>
               ))}
