@@ -56,7 +56,12 @@ const PayeeForm = ({ payee, mode = "create", onClose }: PayeeFormProps) => {
           .update(values)
           .eq("id", payee.id);
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === "23505") {
+            throw new Error("Este CPF já está cadastrado para outro beneficiário.");
+          }
+          throw error;
+        }
 
         toast({
           title: "Beneficiário atualizado",
@@ -66,11 +71,10 @@ const PayeeForm = ({ payee, mode = "create", onClose }: PayeeFormProps) => {
         const { error } = await supabase.from("payees").insert([values]);
 
         if (error) {
-          let errorMessage = "Ocorreu um erro ao cadastrar o beneficiário.";
           if (error.code === "23505") {
-            errorMessage = "Este CPF já está cadastrado.";
+            throw new Error("Este CPF já está cadastrado para outro beneficiário.");
           }
-          throw new Error(errorMessage);
+          throw error;
         }
 
         toast({
