@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { NumericFormat } from "react-number-format";
+import { useQueryClient } from "@tanstack/react-query";
+import { DialogClose } from "@/components/ui/dialog";
 
 const formSchema = z.object({
   full_name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -22,50 +24,69 @@ const formSchema = z.object({
   bank_name: z.string().min(1, "Nome do banco é obrigatório"),
 });
 
-const PayeeForm = () => {
+interface PayeeFormProps {
+  payee?: {
+    id: string;
+    full_name: string;
+    cpf: string;
+    pix_key: string;
+    bank_name: string;
+  };
+  mode?: "create" | "edit";
+}
+
+const PayeeForm = ({ payee, mode = "create" }: PayeeFormProps) => {
+  const queryClient = useQueryClient();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      full_name: "",
-      cpf: "",
-      pix_key: "",
-      bank_name: "",
+      full_name: payee?.full_name || "",
+      cpf: payee?.cpf || "",
+      pix_key: payee?.pix_key || "",
+      bank_name: payee?.bank_name || "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { error } = await supabase.from("payees").insert([values]);
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        let errorMessage = "Ocorreu um erro ao cadastrar o beneficiário.";
-        
-        if (error.code === "23505") {
-          errorMessage = "Este CPF já está cadastrado.";
-        } else if (error.code === "42P01") {
-          errorMessage = "Erro de configuração: Tabela não encontrada.";
-        }
-        
+      if (mode === "edit" && payee) {
+        const { error } = await supabase
+          .from("payees")
+          .update(values)
+          .eq("id", payee.id);
+
+        if (error) throw error;
+
         toast({
-          title: "Erro ao cadastrar",
-          description: errorMessage,
-          variant: "destructive",
+          title: "Beneficiário atualizado",
+          description: "Os dados do beneficiário foram atualizados com sucesso!",
         });
-        return;
+      } else {
+        const { error } = await supabase.from("payees").insert([values]);
+
+        if (error) {
+          let errorMessage = "Ocorreu um erro ao cadastrar o beneficiário.";
+          if (error.code === "23505") {
+            errorMessage = "Este CPF já está cadastrado.";
+          }
+          throw new Error(errorMessage);
+        }
+
+        toast({
+          title: "Beneficiário cadastrado",
+          description: "O beneficiário foi cadastrado com sucesso!",
+        });
+
+        form.reset();
       }
 
-      toast({
-        title: "Beneficiário cadastrado",
-        description: "O beneficiário foi cadastrado com sucesso!",
-      });
-
-      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["payees"] });
     } catch (error) {
       console.error("Error:", error);
       toast({
-        title: "Erro ao cadastrar",
-        description: "Ocorreu um erro ao cadastrar o beneficiário. Verifique sua conexão.",
+        title: "Erro ao salvar",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao salvar o beneficiário.",
         variant: "destructive",
       });
     }
@@ -142,9 +163,16 @@ const PayeeForm = () => {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Cadastrar Beneficiário
-        </Button>
+        <div className="flex justify-end gap-2">
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Cancelar
+            </Button>
+          </DialogClose>
+          <Button type="submit">
+            {mode === "edit" ? "Salvar Alterações" : "Cadastrar Beneficiário"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
