@@ -20,13 +20,26 @@ export default function VideoToAudio() {
   const [isSupabaseReady, setIsSupabaseReady] = useState(false);
 
   useEffect(() => {
-    const checkConnection = async () => {
+    const checkSetup = async () => {
       const isConnected = await checkSupabaseConnection();
       const hasBucket = await checkBucketExists('media');
-      setIsSupabaseReady(isConnected && hasBucket);
+      
+      // Verificar se a função existe
+      const { data, error } = await supabase.rpc('convert_video_to_audio', { video_path: 'test' });
+      
+      if (error && error.message.includes('function does not exist')) {
+        toast({
+          title: "Função não encontrada",
+          description: "A função de conversão não foi encontrada no Supabase.",
+          variant: "destructive",
+        });
+        setIsSupabaseReady(false);
+      } else {
+        setIsSupabaseReady(isConnected && hasBucket);
+      }
     };
 
-    checkConnection();
+    checkSetup();
   }, []);
 
   const handleClear = () => {
