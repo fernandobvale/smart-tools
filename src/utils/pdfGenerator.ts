@@ -22,7 +22,7 @@ const formatDate = (dateString: string) => {
   return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
 };
 
-export const generateReceiptPDF = async (data: PDFData) => {
+export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
   const doc = new jsPDF();
   
   try {

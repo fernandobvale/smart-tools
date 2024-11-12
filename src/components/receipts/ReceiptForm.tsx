@@ -57,12 +57,17 @@ const ReceiptForm = () => {
         throw new Error("Dados do beneficiário não encontrados");
       }
 
-      // Ensure all required fields are present before calling generateReceiptPDF
+      // Ensure all required fields are present and properly typed
       const pdfData = {
         amount: values.amount,
         reference: values.reference,
         date: values.date,
-        payee,
+        payee: {
+          full_name: payee.full_name,
+          pix_key: payee.pix_key,
+          bank_name: payee.bank_name,
+          cpf: payee.cpf,
+        },
       };
 
       const success = await generateReceiptPDF(pdfData);
