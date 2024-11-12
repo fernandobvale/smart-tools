@@ -26,7 +26,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const rightMargin = 20;
     const textWidth = pageWidth - leftMargin - rightMargin;
     let yPos = 20;
-    const lineHeight = 6; // Reduced line height
+    const lineHeight = 7;
 
     // Add logo
     const logoUrl = "https://tools.unovacursos.com.br/public/images/logo-unova.png";
@@ -46,49 +46,72 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
       console.error("Error loading logo:", error);
     }
     yPos += 25;
-    
-    // Title - Centered and bold
+
+    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("RECIBO DE PAGAMENTO", pageWidth/2, yPos, { align: "center" });
     yPos += 15;
-    
-    // Amount - Centered and bold
+
+    // Amount
     doc.setFontSize(14);
     doc.text(data.amount, pageWidth/2, yPos, { align: "center" });
     yPos += 15;
-    
+
     // Convert numeric value to words
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
-    
-    // Main text with company info and amount
+
+    // Main text
     doc.setFontSize(11);
     let text = "Recebi(emos) de ";
     let xPos = leftMargin;
 
-    // Write initial text
+    // Initial text
     doc.setFont("helvetica", "normal");
     doc.text(text, xPos, yPos);
     xPos += doc.getTextWidth(text);
 
-    // Write company name in bold
+    // Company name in bold
     doc.setFont("helvetica", "bold");
     const companyName = "Escola Web Unova Cursos Ltda";
     doc.text(companyName, xPos, yPos);
     xPos += doc.getTextWidth(companyName);
 
-    // Write CNPJ info
+    // CNPJ info
     doc.setFont("helvetica", "normal");
-    text = ` - CNPJ nº: 12.301.010/0001-46, a importância de `;
+    text = " - CNPJ nº: 12.301.010/0001-46, ";
     doc.text(text, xPos, yPos);
     yPos += lineHeight;
 
-    // Value in words (bold)
+    // Value text with manual line breaks
+    text = "a importância de ";
+    doc.text(text, leftMargin, yPos);
+    yPos += lineHeight;
+
+    // Value in words (bold) with manual line breaks
     doc.setFont("helvetica", "bold");
-    const wrappedValue = doc.splitTextToSize(valueInWords, textWidth);
-    doc.text(wrappedValue, leftMargin, yPos);
-    yPos += wrappedValue.length * lineHeight;
+    const words = valueInWords.split(' ');
+    let currentLine = '';
+    let lines = [];
+    
+    words.forEach(word => {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      if (doc.getTextWidth(testLine) > textWidth) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    lines.forEach(line => {
+      doc.text(line, leftMargin, yPos);
+      yPos += lineHeight;
+    });
 
     // Reference text
     doc.setFont("helvetica", "normal");
@@ -101,7 +124,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.text(data.reference, xPos, yPos);
     yPos += lineHeight + 5;
 
-    // Legal text (normal font, justified)
+    // Legal text
     doc.setFont("helvetica", "normal");
     const legalText = "Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos, dando plena, rasa e irrevogável quitação, pelo valor recebido.";
     const wrappedLegal = doc.splitTextToSize(legalText, textWidth);
@@ -129,7 +152,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.text(`Banco ${data.payee.bank_name}`, leftMargin + doc.getTextWidth("Chave PIX: " + data.payee.pix_key + " - "), yPos);
     yPos += lineHeight + 10;
 
-    // Date with bold city name
+    // Date
     doc.setFont("helvetica", "bold");
     doc.text("Goiânia", leftMargin, yPos);
     doc.setFont("helvetica", "normal");
