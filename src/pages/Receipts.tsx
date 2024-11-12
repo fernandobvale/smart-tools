@@ -7,7 +7,7 @@ const Receipts = () => {
   return (
     <div className="container mx-auto p-2 sm:p-4">
       <Card className="w-full">
-        <CardHeader className="text-center sm:text-left p-4 sm:p-6">
+        <CardHeader className="text-center sm:text-left p-4 pt-8 sm:p-6">
           <CardTitle className="text-xl sm:text-2xl">Sistema de Geração de Recibos</CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-6">
