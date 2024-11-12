@@ -9,6 +9,21 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      _test_connection: {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       payees: {
         Row: {
           bank_name: string
@@ -41,7 +56,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      convert_video_to_audio: {
+        Args: {
+          video_path: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
