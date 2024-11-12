@@ -16,23 +16,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { NumericFormat } from "react-number-format";
-import { jsPDF } from "jspdf";
-import extenso from "extenso";
+import { generateReceiptPDF } from "@/utils/pdfGenerator";
 
 const formSchema = z.object({
   amount: z.string().min(1, "Valor é obrigatório"),
   reference: z.string().min(1, "Referência é obrigatória"),
   date: z.string().min(1, "Data é obrigatória"),
 });
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const months = [
-    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
-  ];
-  return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
-};
 
 const ReceiptForm = () => {
   const { payeeId } = useParams();
@@ -61,101 +51,21 @@ const ReceiptForm = () => {
     },
   });
 
-  const generatePDF = async (values: z.infer<typeof formSchema>) => {
-    const doc = new jsPDF();
-    
-    // Adicionar logo
-    const logoWidth = 50;
-    const logoHeight = 25;
-    const img = new Image();
-    img.src = '/unova-logo.png';
-    doc.addImage(img, 'PNG', 20, 20, logoWidth, logoHeight);
-    
-    // Configurações do PDF
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    
-    // Título
-    doc.text("RECIBO DE PAGAMENTO", 105, 30, { align: "center" });
-    
-    // Valor em destaque
-    doc.setFontSize(14);
-    doc.text(`R$ ${values.amount}`, 105, 45, { align: "center" });
-    
-    // Converter valor numérico para extenso
-    const numericValue = parseFloat(values.amount.replace(/[^\d,]/g, '').replace(',', '.'));
-    const valueInWords = extenso(numericValue, { mode: 'currency' });
-    
-    // Texto principal
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    
-    const text = `Recebi(emos) de `;
-    doc.text(text, 20, 65);
-    
-    // Empresa em negrito
-    doc.setFont("helvetica", "bold");
-    doc.text("Escola Web Unova Cursos Ltda", 20 + doc.getTextWidth(text), 65);
-    
-    // Continuar com CNPJ
-    doc.setFont("helvetica", "normal");
-    doc.text(` - CNPJ nº: 12.301.010/0001-46, a importância de `, 20 + doc.getTextWidth(text + "Escola Web Unova Cursos Ltda"), 65);
-    
-    // Valor por extenso em negrito
-    doc.setFont("helvetica", "bold");
-    doc.text(valueInWords, 20, 75);
-    
-    // Referência
-    doc.setFont("helvetica", "normal");
-    doc.text(" referente ", 20 + doc.getTextWidth(valueInWords), 75);
-    
-    // Referência em negrito
-    doc.setFont("helvetica", "bold");
-    doc.text(values.reference, 20 + doc.getTextWidth(valueInWords + " referente "), 75);
-    
-    // Segundo parágrafo
-    doc.setFont("helvetica", "normal");
-    doc.text("Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos,", 20, 95);
-    doc.text("dando plena, rasa e irrevogável quitação, pelo valor recebido.", 20, 105);
-    
-    // Informações do beneficiário
-    if (payee) {
-      doc.text("Pagamento recebido por: ", 20, 125);
-      doc.setFont("helvetica", "bold");
-      doc.text(payee.full_name, 20 + doc.getTextWidth("Pagamento recebido por: "), 125);
-      
-      doc.setFont("helvetica", "normal");
-      doc.text(" chave PIX: ", 20, 135);
-      doc.setFont("helvetica", "bold");
-      doc.text(payee.pix_key, 20 + doc.getTextWidth(" chave PIX: "), 135);
-      
-      doc.setFont("helvetica", "normal");
-      doc.text(" - ", 20 + doc.getTextWidth(" chave PIX: " + payee.pix_key), 135);
-      doc.setFont("helvetica", "bold");
-      doc.text(payee.bank_name, 20 + doc.getTextWidth(" chave PIX: " + payee.pix_key + " - "), 135);
-    }
-    
-    // Data
-    doc.setFont("helvetica", "normal");
-    doc.text(`Goiânia, ${formatDate(values.date)}`, 20, 155);
-    
-    // Linha de assinatura
-    doc.line(20, 185, 190, 185);
-    if (payee) {
-      doc.setFont("helvetica", "bold");
-      doc.text(payee.full_name, 105, 195, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.text(payee.cpf, 105, 205, { align: "center" });
-    }
-    
-    // Download do PDF
-    doc.save("recibo.pdf");
-  };
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await generatePDF(values);
-      
+      if (!payee) {
+        throw new Error("Dados do beneficiário não encontrados");
+      }
+
+      const success = await generateReceiptPDF({
+        ...values,
+        payee,
+      });
+
+      if (!success) {
+        throw new Error("Erro ao gerar o PDF do recibo");
+      }
+
       toast({
         title: "Recibo gerado com sucesso!",
         description: "O recibo foi gerado e baixado automaticamente.",
@@ -163,6 +73,7 @@ const ReceiptForm = () => {
       
       navigate("/receipts");
     } catch (error) {
+      console.error("Erro ao gerar recibo:", error);
       toast({
         title: "Erro ao gerar recibo",
         description: "Ocorreu um erro ao gerar o recibo. Tente novamente.",
