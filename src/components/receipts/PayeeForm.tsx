@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
-import { NumericFormat } from "react-number-format";
+import { NumericFormat, PatternFormat } from "react-number-format";
 import { useQueryClient } from "@tanstack/react-query";
 import { DialogClose } from "@/components/ui/dialog";
 
@@ -116,16 +116,13 @@ const PayeeForm = ({ payee, mode = "create" }: PayeeFormProps) => {
             <FormItem>
               <FormLabel>CPF</FormLabel>
               <FormControl>
-                <NumericFormat
+                <PatternFormat
                   customInput={Input}
                   value={field.value}
                   onValueChange={(values) => {
                     field.onChange(values.value);
                   }}
                   placeholder="Digite o CPF"
-                  thousandSeparator="."
-                  decimalSeparator="-"
-                  allowNegative={false}
                   format="###.###.###-##"
                 />
               </FormControl>
