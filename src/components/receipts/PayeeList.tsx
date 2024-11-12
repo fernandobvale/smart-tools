@@ -83,8 +83,8 @@ const PayeeList = () => {
 
   if (!payees?.length) {
     return (
-      <div className="text-center p-8">
-        <p className="text-muted-foreground mb-4">
+      <div className="text-center p-4 sm:p-8">
+        <p className="text-muted-foreground">
           Nenhum beneficiário cadastrado ainda.
         </p>
       </div>
@@ -92,27 +92,27 @@ const PayeeList = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {payees.map((payee) => (
         <div
           key={payee.id}
-          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-accent transition-colors gap-3 sm:gap-4"
         >
           <div>
-            <h3 className="font-medium">{payee.full_name}</h3>
-            <p className="text-sm text-muted-foreground">CPF: {payee.cpf}</p>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="font-medium text-sm sm:text-base">{payee.full_name}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">CPF: {payee.cpf}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Banco: {payee.bank_name}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-end">
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="h-8 w-8">
                   <Pencil className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Editar Beneficiário</DialogTitle>
                 </DialogHeader>
@@ -125,7 +125,7 @@ const PayeeList = () => {
             </Dialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="h-8 w-8">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
@@ -147,6 +147,7 @@ const PayeeList = () => {
             <Button
               onClick={() => navigate(`/receipts/new/${payee.id}`)}
               variant="outline"
+              className="text-xs sm:text-sm h-8"
             >
               Gerar Recibo
             </Button>
