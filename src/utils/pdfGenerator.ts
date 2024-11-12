@@ -68,11 +68,22 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.setFont("helvetica", "normal");
     const companyInfo = "Escola Web Unova Cursos Ltda";
     const cnpj = "12.301.010/0001-46";
-    const firstParagraph = `Recebi(emos) de ${companyInfo} - CNPJ nº: ${cnpj}, a importância de ${valueInWords} referente ${data.reference}.`;
     
-    const splitFirstParagraph = doc.splitTextToSize(firstParagraph, textWidth);
-    doc.text(splitFirstParagraph, leftMargin, yPos, { align: "justify", maxWidth: textWidth });
-    yPos += (splitFirstParagraph.length * 7) + 10;
+    // First part of the text (before the amount in words)
+    const firstPart = `Recebi(emos) de ${companyInfo} - CNPJ nº: ${cnpj}, a importância de `;
+    doc.text(firstPart, leftMargin, yPos);
+    
+    // Add amount in words in bold
+    const firstPartWidth = doc.getTextWidth(firstPart);
+    doc.setFont("helvetica", "bold");
+    doc.text(valueInWords, leftMargin + firstPartWidth, yPos);
+    
+    // Add the rest of the text
+    doc.setFont("helvetica", "normal");
+    const finalPart = ` referente ${data.reference}.`;
+    const valueInWordsWidth = doc.getTextWidth(valueInWords);
+    doc.text(finalPart, leftMargin + firstPartWidth + valueInWordsWidth, yPos);
+    yPos += 10;
 
     // Legal text with proper splitting and justification
     doc.setFont("helvetica", "bold");
