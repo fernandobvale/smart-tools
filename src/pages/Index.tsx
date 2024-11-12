@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { splitText } from "@/lib/textSplitter";
 import { Copy } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 const Index = () => {
   const [charLimit, setCharLimit] = useState<number>(800);
@@ -42,11 +41,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-        <div className="flex justify-end">
-          <ThemeToggle />
-        </div>
-        
-        {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-foreground">Divisor de Texto</h1>
           <p className="text-muted-foreground">
@@ -54,7 +48,6 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <div className="w-full sm:w-48">
             <Input
@@ -78,7 +71,6 @@ const Index = () => {
           </Button>
         </div>
 
-        {/* Input Area */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">
             Digite seu texto
@@ -91,7 +83,6 @@ const Index = () => {
           />
         </div>
 
-        {/* Results */}
         {splitResults.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-foreground">
