@@ -47,17 +47,24 @@ export default function VideoToAudio() {
       setIsConverting(true);
       setProgress(10);
 
-      // Verificar se o bucket existe
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const mediaBucket = buckets?.find(b => b.name === 'media');
-      
-      if (!mediaBucket) {
-        throw new Error('Bucket "media" não encontrado. Por favor, crie o bucket no Supabase.');
+      // Primeiro, verificar se temos acesso ao Storage
+      const { data: bucketExists, error: bucketError } = await supabase
+        .storage
+        .getBucket('media');
+
+      if (bucketError) {
+        throw new Error(`Erro ao acessar o Storage: ${bucketError.message}. Por favor, verifique se o bucket 'media' existe e se você tem as permissões necessárias.`);
       }
+
+      if (!bucketExists) {
+        throw new Error("O bucket 'media' não existe no Supabase Storage. Por favor, crie-o primeiro.");
+      }
+
+      setProgress(20);
 
       // Upload do vídeo
       const videoFileName = `videos/${Date.now()}-${videoFile.name}`;
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('media')
         .upload(videoFileName, videoFile, {
           cacheControl: '3600',
@@ -66,9 +73,10 @@ export default function VideoToAudio() {
 
       if (uploadError) {
         console.error('Erro no upload:', uploadError);
-        throw new Error(`Erro no upload: ${uploadError.message}`);
+        throw new Error(`Erro no upload do vídeo: ${uploadError.message}`);
       }
-      setProgress(40);
+
+      setProgress(50);
 
       // Chamar Edge Function
       const { data: conversionData, error: conversionError } = await supabase.functions
@@ -78,13 +86,14 @@ export default function VideoToAudio() {
 
       if (conversionError) {
         console.error('Erro na conversão:', conversionError);
-        throw new Error(`Erro na conversão: ${conversionError.message}`);
+        throw new Error(`Erro na conversão do vídeo: ${conversionError.message}`);
       }
-      setProgress(80);
 
       if (!conversionData?.audioPath) {
-        throw new Error('Caminho do áudio não retornado pela função de conversão');
+        throw new Error('A função de conversão não retornou o caminho do áudio');
       }
+
+      setProgress(80);
 
       // Obter URL do áudio
       const { data: audioData, error: audioError } = await supabase.storage
@@ -93,11 +102,11 @@ export default function VideoToAudio() {
 
       if (audioError) {
         console.error('Erro ao obter URL do áudio:', audioError);
-        throw new Error(`Erro ao obter URL do áudio: ${audioError.message}`);
+        throw new Error(`Erro ao gerar URL do áudio: ${audioError.message}`);
       }
 
       if (!audioData?.signedUrl) {
-        throw new Error('URL do áudio não gerada');
+        throw new Error('URL do áudio não foi gerada');
       }
       
       setProgress(100);
