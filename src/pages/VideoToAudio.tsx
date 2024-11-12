@@ -112,7 +112,7 @@ export default function VideoToAudio() {
   return (
     <div className="container mx-auto p-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="text-center">
           <CardTitle>Conversor de Vídeo para Áudio</CardTitle>
           <CardDescription>
             Extraia o áudio de seus vídeos MP4 e salve como arquivo de áudio
