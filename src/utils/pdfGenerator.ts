@@ -37,7 +37,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
     const valueInWords = extenso(numericValue, { mode: 'currency' });
     
-    // Texto principal com quebras de linha apropriadas
+    // Texto principal com quebras de linha apropriadas e margens ajustadas
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     
@@ -46,7 +46,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const cnpj = " - CNPJ nº: 12.301.010/0001-46";
     const importanceText = ", a importância de ";
 
-    let xPos = 20;
+    let xPos = 30; // Aumentada a margem esquerda
     const yPos = 65;
 
     doc.text(text, xPos, yPos);
@@ -59,44 +59,44 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.setFont("helvetica", "normal");
     doc.text(cnpj + importanceText, xPos, yPos);
     
-    // Valor por extenso em negrito
+    // Valor por extenso em negrito com margem ajustada
     doc.setFont("helvetica", "bold");
-    doc.text(valueInWords, 20, 75);
+    doc.text(valueInWords, 30, 75);
     
-    // Referência
+    // Referência com margem ajustada
     doc.setFont("helvetica", "normal");
-    doc.text(" referente ", 20 + doc.getTextWidth(valueInWords), 75);
+    doc.text(" referente ", 30 + doc.getTextWidth(valueInWords), 75);
     
     // Referência em negrito
     doc.setFont("helvetica", "bold");
-    doc.text(data.reference, 20 + doc.getTextWidth(valueInWords + " referente "), 75);
+    doc.text(data.reference, 30 + doc.getTextWidth(valueInWords + " referente "), 75);
     
-    // Segundo parágrafo
+    // Segundo parágrafo com margem ajustada
     doc.setFont("helvetica", "normal");
-    doc.text("Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos,", 20, 95);
-    doc.text("dando plena, rasa e irrevogável quitação, pelo valor recebido.", 20, 105);
+    doc.text("Para maior clareza firmo(amos) o presente recibo para que produza os seus efeitos,", 30, 95);
+    doc.text("dando plena, rasa e irrevogável quitação, pelo valor recebido.", 30, 105);
     
-    // Informações do beneficiário
-    doc.text("Pagamento recebido por: ", 20, 125);
+    // Informações do beneficiário com margem ajustada
+    doc.text("Pagamento recebido por: ", 30, 125);
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.full_name, 20 + doc.getTextWidth("Pagamento recebido por: "), 125);
+    doc.text(data.payee.full_name, 30 + doc.getTextWidth("Pagamento recebido por: "), 125);
     
     doc.setFont("helvetica", "normal");
-    doc.text("Chave PIX: ", 20, 135);
+    doc.text("Chave PIX: ", 30, 135);
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.pix_key, 20 + doc.getTextWidth("Chave PIX: "), 135);
+    doc.text(data.payee.pix_key, 30 + doc.getTextWidth("Chave PIX: "), 135);
     
     doc.setFont("helvetica", "normal");
-    doc.text(" - ", 20 + doc.getTextWidth("Chave PIX: " + data.payee.pix_key), 135);
+    doc.text(" - Banco ", 30 + doc.getTextWidth("Chave PIX: " + data.payee.pix_key), 135);
     doc.setFont("helvetica", "bold");
-    doc.text(data.payee.bank_name, 20 + doc.getTextWidth("Chave PIX: " + data.payee.pix_key + " - "), 135);
+    doc.text(data.payee.bank_name, 30 + doc.getTextWidth("Chave PIX: " + data.payee.pix_key + " - Banco "), 135);
     
-    // Data
+    // Data com margem ajustada
     doc.setFont("helvetica", "normal");
-    doc.text(`Goiânia, ${formatDate(data.date)}`, 20, 155);
+    doc.text(`Goiânia, ${formatDate(data.date)}`, 30, 155);
     
     // Linha de assinatura
-    doc.line(20, 185, 190, 185);
+    doc.line(30, 185, 180, 185);
     doc.setFont("helvetica", "bold");
     doc.text(data.payee.full_name, 105, 195, { align: "center" });
     doc.setFont("helvetica", "normal");
