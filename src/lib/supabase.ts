@@ -7,36 +7,14 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-export const checkSupabaseConnection = async () => {
-  try {
-    const { data, error } = await supabase.from('_test_connection').select('*').limit(1);
-    if (error) {
-      console.error('Erro na conexão com Supabase:', error);
-      return false;
-    }
-    return true;
-  } catch (error) {
-    console.error('Erro ao tentar conectar com Supabase:', error);
-    return false;
-  }
-};
-
-export const checkBucketExists = async (bucketName: string) => {
-  try {
-    const { data: bucket, error } = await supabase
-      .storage
-      .getBucket(bucketName);
-
-    if (error) {
-      console.error(`Erro ao verificar bucket ${bucketName}:`, error);
-      return false;
-    }
-
-    return !!bucket;
-  } catch (error) {
-    console.error(`Erro ao verificar bucket ${bucketName}:`, error);
-    return false;
-  }
-};
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  },
+});

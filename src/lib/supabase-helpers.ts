@@ -9,7 +9,7 @@ export const checkSupabaseConnection = async () => {
       console.error('Erro na conexão com Supabase:', error);
       toast({
         title: "Erro de Conexão",
-        description: `Não foi possível conectar ao Supabase: ${error.message}. Por favor, verifique sua conexão e tente novamente.`,
+        description: "Não foi possível conectar ao Supabase. Verifique se você está conectado à internet e se o serviço está disponível.",
         variant: "destructive",
       });
       return false;
@@ -19,7 +19,7 @@ export const checkSupabaseConnection = async () => {
     console.error('Erro ao tentar conectar com Supabase:', error);
     toast({
       title: "Erro de Conexão",
-      description: "Erro ao tentar conectar com Supabase. Por favor, verifique sua conexão e tente novamente.",
+      description: "Erro ao tentar conectar com Supabase. Verifique sua conexão com a internet.",
       variant: "destructive",
     });
     return false;
@@ -36,18 +36,27 @@ export const checkBucketExists = async (bucketName: string) => {
       console.error(`Erro ao verificar bucket ${bucketName}:`, error);
       toast({
         title: "Erro no Bucket",
-        description: `Não foi possível acessar o bucket ${bucketName}. Verifique se ele existe e se você tem as permissões necessárias.`,
+        description: "Não foi possível acessar o bucket de armazenamento. Verifique se você tem as permissões necessárias.",
         variant: "destructive",
       });
       return false;
     }
 
-    return !!bucket;
+    if (!bucket) {
+      toast({
+        title: "Bucket não encontrado",
+        description: `O bucket ${bucketName} não existe. Por favor, crie-o no painel do Supabase.`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
   } catch (error) {
     console.error(`Erro ao verificar bucket ${bucketName}:`, error);
     toast({
       title: "Erro no Bucket",
-      description: `Erro ao verificar o bucket ${bucketName}. Verifique sua conexão e permissões.`,
+      description: "Erro ao verificar o bucket de armazenamento. Verifique sua conexão.",
       variant: "destructive",
     });
     return false;
