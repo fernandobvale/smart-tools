@@ -47,30 +47,58 @@ export default function VideoToAudio() {
       setIsConverting(true);
       setProgress(10);
 
-      // Upload do vídeo para o Supabase Storage
+      // Verificar se o bucket existe
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const mediaBucket = buckets?.find(b => b.name === 'media');
+      
+      if (!mediaBucket) {
+        throw new Error('Bucket "media" não encontrado. Por favor, crie o bucket no Supabase.');
+      }
+
+      // Upload do vídeo
       const videoFileName = `videos/${Date.now()}-${videoFile.name}`;
       const { error: uploadError, data: uploadData } = await supabase.storage
         .from('media')
-        .upload(videoFileName, videoFile);
+        .upload(videoFileName, videoFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Erro no upload:', uploadError);
+        throw new Error(`Erro no upload: ${uploadError.message}`);
+      }
       setProgress(40);
 
-      // Chamar Edge Function para converter o vídeo
+      // Chamar Edge Function
       const { data: conversionData, error: conversionError } = await supabase.functions
         .invoke('convert-video-to-audio', {
           body: { videoPath: videoFileName }
         });
 
-      if (conversionError) throw conversionError;
+      if (conversionError) {
+        console.error('Erro na conversão:', conversionError);
+        throw new Error(`Erro na conversão: ${conversionError.message}`);
+      }
       setProgress(80);
 
-      // Obter URL do áudio convertido
-      const { data: audioData } = await supabase.storage
-        .from('media')
-        .createSignedUrl(conversionData.audioPath, 3600); // URL válida por 1 hora
+      if (!conversionData?.audioPath) {
+        throw new Error('Caminho do áudio não retornado pela função de conversão');
+      }
 
-      if (!audioData?.signedUrl) throw new Error('Failed to get audio URL');
+      // Obter URL do áudio
+      const { data: audioData, error: audioError } = await supabase.storage
+        .from('media')
+        .createSignedUrl(conversionData.audioPath, 3600);
+
+      if (audioError) {
+        console.error('Erro ao obter URL do áudio:', audioError);
+        throw new Error(`Erro ao obter URL do áudio: ${audioError.message}`);
+      }
+
+      if (!audioData?.signedUrl) {
+        throw new Error('URL do áudio não gerada');
+      }
       
       setProgress(100);
       toast({
@@ -82,10 +110,10 @@ export default function VideoToAudio() {
       window.location.href = audioData.signedUrl;
 
     } catch (error) {
-      console.error('Conversion error:', error);
+      console.error('Erro detalhado:', error);
       toast({
         title: "Erro na conversão",
-        description: "Ocorreu um erro ao converter o vídeo para áudio.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao converter o vídeo para áudio.",
         variant: "destructive",
       });
     } finally {
