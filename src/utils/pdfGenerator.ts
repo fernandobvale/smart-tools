@@ -28,12 +28,16 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     
     // Logo
     const img = new Image();
-    img.src = '/unova-logo.png';
+    img.crossOrigin = "Anonymous"; // Add this line to handle CORS
+    img.src = window.location.origin + '/unova-logo.png';
     
     // We need to wait for the image to load before adding it to the PDF
     await new Promise((resolve, reject) => {
       img.onload = resolve;
-      img.onerror = reject;
+      img.onerror = (e) => {
+        console.error("Error loading image:", e);
+        reject(e);
+      };
     });
     
     const logoWidth = 50;
@@ -58,7 +62,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     
-    const text = `Recebi(emos) de `;
+    const text = "Recebi(emos) de ";
     doc.text(text, 20, 65);
     
     // Empresa em negrito
@@ -67,7 +71,7 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     
     // CNPJ
     doc.setFont("helvetica", "normal");
-    doc.text(` - CNPJ nº: 12.301.010/0001-46, a importância de `, 20 + doc.getTextWidth(text + "Escola Web Unova Cursos Ltda"), 65);
+    doc.text(" - CNPJ nº: 12.301.010/0001-46, a importância de ", 20 + doc.getTextWidth(text + "Escola Web Unova Cursos Ltda"), 65);
     
     // Valor por extenso em negrito
     doc.setFont("helvetica", "bold");
