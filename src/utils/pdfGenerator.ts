@@ -27,9 +27,24 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     const textWidth = pageWidth - leftMargin - rightMargin;
     let yPos = 20;
 
-    // Add logo
-    const logoPath = "/unova-logo.png";
-    doc.addImage(logoPath, "PNG", leftMargin, yPos, 40, 15);
+    // Add logo from URL
+    const logoUrl = "https://tools.unovacursos.com.br/public/images/logo-unova.png";
+    try {
+      const img = await fetch(logoUrl);
+      const blob = await img.blob();
+      const reader = new FileReader();
+      
+      await new Promise((resolve) => {
+        reader.onloadend = () => {
+          doc.addImage(reader.result as string, "PNG", leftMargin, yPos, 40, 15);
+          resolve(true);
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Error loading logo:", error);
+      // Continue without logo if it fails to load
+    }
     yPos += 25;
     
     // Title
