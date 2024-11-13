@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Copy } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
 
@@ -57,6 +57,22 @@ export default function SeoGenerator() {
     }
   };
 
+  const handleCopyDescription = async () => {
+    try {
+      await navigator.clipboard.writeText(description);
+      toast({
+        title: "Copiado!",
+        description: "Descrição copiada para a área de transferência",
+      });
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar a descrição",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="container max-w-3xl py-8 space-y-8">
       <div className="space-y-2">
@@ -97,14 +113,25 @@ export default function SeoGenerator() {
               ({description.length}/150)
             </span>
           </label>
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="A descrição será gerada automaticamente"
-            maxLength={150}
-            className="h-24"
-            readOnly
-          />
+          <div className="flex gap-2">
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="A descrição será gerada automaticamente"
+              maxLength={150}
+              className="h-24"
+              readOnly
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyDescription}
+              disabled={!description}
+              title="Copiar descrição"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <Button
