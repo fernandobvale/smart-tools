@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
+import { Copy, Bold, Italic, List, Link, ListOrdered } from "lucide-react";
 
 const MarkdownEditor = () => {
   const [markdown, setMarkdown] = useState("");
@@ -19,6 +19,7 @@ const MarkdownEditor = () => {
       },
     },
     content: "",
+    editable: true,
   });
 
   useEffect(() => {
@@ -73,7 +74,54 @@ const MarkdownEditor = () => {
               Copiar
             </Button>
           </div>
-          <div className="min-h-[300px] border rounded-md bg-editor-bg">
+          <div className="border rounded-md bg-editor-bg">
+            <div className="border-b p-2 flex gap-2 bg-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => editor?.chain().focus().toggleBold().run()}
+                className={editor?.isActive("bold") ? "bg-muted" : ""}
+              >
+                <Bold className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => editor?.chain().focus().toggleItalic().run()}
+                className={editor?.isActive("italic") ? "bg-muted" : ""}
+              >
+                <Italic className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                className={editor?.isActive("bulletList") ? "bg-muted" : ""}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                className={editor?.isActive("orderedList") ? "bg-muted" : ""}
+              >
+                <ListOrdered className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const url = window.prompt("URL:");
+                  if (url) {
+                    editor?.chain().focus().setLink({ href: url }).run();
+                  }
+                }}
+                className={editor?.isActive("link") ? "bg-muted" : ""}
+              >
+                <Link className="h-4 w-4" />
+              </Button>
+            </div>
             <EditorContent editor={editor} />
           </div>
         </div>
