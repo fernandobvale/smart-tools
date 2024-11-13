@@ -83,7 +83,7 @@ const MarkdownEditor = () => {
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
             placeholder="Digite ou cole seu texto em Markdown aqui..."
-            className="min-h-[200px] font-mono text-gray-900"
+            className="min-h-[200px] font-mono bg-gray-900 text-white"
           />
         </div>
 
