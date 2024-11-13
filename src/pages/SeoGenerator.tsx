@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 export default function SeoGenerator() {
   const [title, setTitle] = useState("");
@@ -32,22 +33,12 @@ export default function SeoGenerator() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "https://bgznszxombwvwhufowpm.supabase.co/functions/v1/generate-seo",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ title }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('generate-seo', {
+        body: { title }
+      });
 
-      if (!response.ok) {
-        throw new Error("Falha ao gerar descrição");
-      }
+      if (error) throw error;
 
-      const data = await response.json();
       setGeneratedResult({
         title: title,
         description: data.generatedText,
@@ -55,6 +46,7 @@ export default function SeoGenerator() {
       });
       setDescription(data.generatedText);
     } catch (error) {
+      console.error('Error:', error);
       toast({
         title: "Erro",
         description: "Falha ao gerar descrição. Tente novamente.",
