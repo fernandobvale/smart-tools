@@ -151,29 +151,25 @@ const Notes = () => {
 
   return (
     <div className="container py-8 animate-fade-in h-[calc(100vh-4rem)]">
-      <div className="flex flex-col h-full gap-4">
-        <div className="flex gap-4">
-          <div className="w-64">
-            <Button 
-              onClick={() => createNoteMutation.mutate()} 
-              className="w-full mb-4"
-            >
-              Nova Nota
-            </Button>
-            <NotesList
-              notes={notes || []}
-              onNoteSelect={setSelectedNoteId}
-              selectedNoteId={selectedNoteId}
-            />
-          </div>
+      <div className="flex h-full gap-4">
+        <div className="w-64 flex flex-col">
+          <Button 
+            onClick={() => createNoteMutation.mutate()} 
+            className="w-full mb-4"
+          >
+            Nova Nota
+          </Button>
+          <NotesList
+            notes={notes || []}
+            onNoteSelect={setSelectedNoteId}
+            selectedNoteId={selectedNoteId}
+          />
         </div>
         
         {selectedNoteId && (
           <div className="flex-1 border rounded-lg overflow-hidden flex flex-col bg-background">
-            <div className="border-b">
-              <EditorToolbar editor={editor} addImage={addImage} />
-            </div>
-            <div className="flex-1 overflow-auto min-h-[500px]">
+            <EditorToolbar editor={editor} addImage={addImage} />
+            <div className="flex-1 overflow-auto">
               <EditorContent editor={editor} />
             </div>
             <div className="p-4 border-t flex justify-end gap-2">
