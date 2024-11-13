@@ -110,13 +110,13 @@ const CpfConsulta = () => {
   const totalPages = Math.ceil((historyData?.total || 0) / 10);
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="text-xl md:text-2xl">Consulta de CPF</CardTitle>
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-4xl">
+      <Card className="mb-4 sm:mb-8">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg sm:text-2xl font-bold">Consulta de CPF</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <CpfInput cpf={cpf} onChange={setCpf} />
             <Button
               onClick={handleConsulta}
@@ -135,12 +135,14 @@ const CpfConsulta = () => {
           </div>
 
           {cpfData && (
-            <div className="mt-4 p-4 bg-muted rounded-lg space-y-2">
-              <p className="font-medium text-sm md:text-base">
-                <span className="text-muted-foreground">Nome:</span> {cpfData.nome}
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-2 animate-fade-in">
+              <p className="font-medium text-sm sm:text-base">
+                <span className="text-muted-foreground">Nome:</span>{" "}
+                <span className="font-semibold">{cpfData.nome}</span>
               </p>
-              <p className="font-medium text-sm md:text-base">
-                <span className="text-muted-foreground">Saldo:</span> {cpfData.saldo}
+              <p className="font-medium text-sm sm:text-base">
+                <span className="text-muted-foreground">Saldo:</span>{" "}
+                <span className="font-semibold">{cpfData.saldo}</span>
               </p>
             </div>
           )}
@@ -148,8 +150,8 @@ const CpfConsulta = () => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl md:text-2xl">Histórico de Consultas</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg sm:text-2xl font-bold">Histórico de Consultas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -159,7 +161,7 @@ const CpfConsulta = () => {
             className="mb-4"
           />
 
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="-mx-4 sm:mx-0">
             <SearchHistory
               data={historyData?.items || []}
               isLoading={isLoadingHistory}

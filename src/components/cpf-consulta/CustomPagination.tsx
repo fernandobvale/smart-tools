@@ -30,6 +30,7 @@ const CustomPagination = ({
             size="sm"
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
+            className="text-xs sm:text-sm px-2 sm:px-4"
           >
             Anterior
           </Button>
@@ -40,6 +41,7 @@ const CustomPagination = ({
               variant={currentPage === page ? "default" : "outline"}
               size="sm"
               onClick={() => onPageChange(page)}
+              className="text-xs sm:text-sm min-w-[32px]"
             >
               {page}
             </Button>
@@ -51,6 +53,7 @@ const CustomPagination = ({
             size="sm"
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
+            className="text-xs sm:text-sm px-2 sm:px-4"
           >
             Próximo
           </Button>
