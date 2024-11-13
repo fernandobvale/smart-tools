@@ -8,10 +8,9 @@ import {
   UserSearch,
   FileText,
   FileEdit,
-  Navigation
+  StickyNote
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { CommandMenu } from "@/components/CommandMenu";
 
 const items = [
   {
@@ -48,6 +47,11 @@ const items = [
     title: "Editor Markdown",
     icon: <FileEdit className="w-4 h-4" />,
     href: "/markdown-editor"
+  },
+  {
+    title: "Notas",
+    icon: <StickyNote className="w-4 h-4" />,
+    href: "/notes"
   }
 ];
 
@@ -57,7 +61,6 @@ export function Sidebar() {
       <div className="px-3 py-2">
         <div className="flex items-center justify-between mb-2 px-4">
           <h2 className="text-lg font-semibold">Ferramentas</h2>
-          <CommandMenu />
         </div>
         <Separator />
       </div>

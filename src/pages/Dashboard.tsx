@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, Navigation } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote } from "lucide-react";
 import { Link } from "react-router-dom";
-import { CommandMenu } from "@/components/CommandMenu";
 
 export default function Dashboard() {
   const tools = [
@@ -40,6 +39,12 @@ export default function Dashboard() {
       description: "Edite e visualize textos em Markdown em tempo real",
       icon: <FileEdit className="w-6 h-6" />,
       href: "/markdown-editor"
+    },
+    {
+      title: "Notas",
+      description: "Crie e gerencie suas notas com um editor rico",
+      icon: <StickyNote className="w-6 h-6" />,
+      href: "/notes"
     }
   ];
 
@@ -47,7 +52,6 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center mt-14 md:mt-0">
         <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
-        <CommandMenu />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {tools.map((tool, index) => (
