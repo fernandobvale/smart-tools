@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import CpfInput from "@/components/cpf-consulta/CpfInput";
 import SearchHistory from "@/components/cpf-consulta/SearchHistory";
