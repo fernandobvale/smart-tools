@@ -7,9 +7,10 @@ interface NoteHeaderProps {
   title: string;
   onRename: (newTitle: string) => void;
   onDelete: () => void;
+  onNewNote: () => void;
 }
 
-export const NoteHeader = ({ title, onRename, onDelete }: NoteHeaderProps) => {
+export const NoteHeader = ({ title, onRename, onDelete, onNewNote }: NoteHeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
 
@@ -27,6 +28,9 @@ export const NoteHeader = ({ title, onRename, onDelete }: NoteHeaderProps) => {
   return (
     <div className="border-b p-2 flex items-center justify-between">
       <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={onNewNote}>
+          Nova nota
+        </Button>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">

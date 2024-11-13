@@ -16,6 +16,7 @@ import Color from '@tiptap/extension-color';
 import Image from '@tiptap/extension-image';
 import { NoteHeader } from "@/components/notes/NoteHeader";
 import { useNoteMutations } from "@/components/notes/NoteMutations";
+import { toast } from "sonner";
 
 const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -89,6 +90,30 @@ const Notes = () => {
     }
   };
 
+  const handleNewNote = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert([
+          { 
+            title: 'Nova nota', 
+            content: '<p>Digite o conteúdo da sua nota aqui...</p>' 
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setSelectedNoteId(data.id);
+        toast.success('Nova nota criada');
+      }
+    } catch (error) {
+      toast.error('Erro ao criar nova nota');
+    }
+  };
+
   const addImage = () => {
     const url = window.prompt('URL da imagem:');
     if (url && editor) {
@@ -140,6 +165,7 @@ const Notes = () => {
             title={selectedNote.title}
             onRename={handleRename}
             onDelete={handleDelete}
+            onNewNote={handleNewNote}
           />
           <EditorToolbar editor={editor} addImage={addImage} />
           <div className="flex-1 overflow-auto">
