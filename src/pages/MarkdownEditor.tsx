@@ -27,7 +27,9 @@ const MarkdownEditor = () => {
   const handleCopy = async () => {
     try {
       if (editor) {
-        await navigator.clipboard.writeText(editor.getHTML());
+        // Get the text content instead of HTML
+        const textContent = editor.getText();
+        await navigator.clipboard.writeText(textContent);
         toast.success("Texto formatado copiado para a área de transferência");
       }
     } catch (error) {
@@ -36,33 +38,28 @@ const MarkdownEditor = () => {
   };
 
   return (
-    <div className="container max-w-6xl py-8 space-y-8 animate-fade-in">
+    <div className="container max-w-4xl py-8 space-y-8 animate-fade-in">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Editor Markdown</h1>
+        <h1 className="text-3xl font-bold">Converta Markdown para Texto</h1>
         <p className="text-muted-foreground">
-          Digite ou cole seu texto em Markdown e veja o resultado formatado em tempo real
+          Cole ou digite seu markdown e veja-o renderizado como texto.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="space-y-8">
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-medium">Markdown</label>
-            <span className="text-xs text-muted-foreground">
-              {markdown.length} caracteres
-            </span>
-          </div>
+          <label className="text-lg font-medium">Insira o Markdown</label>
           <Textarea
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
             placeholder="Digite ou cole seu texto em Markdown aqui..."
-            className="min-h-[500px] font-mono"
+            className="min-h-[200px] font-mono"
           />
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <label className="text-sm font-medium">Visualização</label>
+            <label className="text-lg font-medium">Resultado</label>
             <Button
               variant="outline"
               size="sm"
@@ -73,8 +70,11 @@ const MarkdownEditor = () => {
               Copiar
             </Button>
           </div>
-          <div className="min-h-[500px] border rounded-md p-4 prose prose-sm max-w-none dark:prose-invert">
-            <EditorContent editor={editor} />
+          <div className="min-h-[300px] border rounded-md bg-background">
+            <EditorContent 
+              editor={editor} 
+              className="prose prose-sm max-w-none dark:prose-invert p-4"
+            />
           </div>
         </div>
       </div>
