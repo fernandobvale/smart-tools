@@ -41,7 +41,7 @@ const MarkdownEditor = () => {
     ],
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none text-gray-900",
+        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none text-gray-900 [&>*]:text-gray-900",
       },
     },
     content: "",
