@@ -95,6 +95,13 @@ const Notes = () => {
     },
   });
 
+  const addImage = () => {
+    const url = window.prompt('URL da imagem:');
+    if (url && editor) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
   useEffect(() => {
     if (notes?.length && !selectedNoteId) {
       setSelectedNoteId(notes[0].id);
@@ -155,7 +162,7 @@ const Notes = () => {
         </div>
         <div className="flex-1 border rounded-lg overflow-hidden flex flex-col">
           <div className="border-b bg-background">
-            <EditorToolbar editor={editor} />
+            <EditorToolbar editor={editor} addImage={addImage} />
           </div>
           <div className="flex-1 overflow-auto bg-background">
             <EditorContent editor={editor} />
