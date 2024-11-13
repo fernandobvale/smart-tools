@@ -22,7 +22,18 @@ const MarkdownEditor = () => {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          HTMLAttributes: {
+            class: 'text-gray-900',
+          },
+        },
+        bold: {
+          HTMLAttributes: {
+            class: 'text-gray-900 font-bold',
+          },
+        },
+      }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -41,7 +52,7 @@ const MarkdownEditor = () => {
     ],
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none text-gray-900 [&>*]:text-gray-900",
+        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none [&>*]:text-gray-900",
       },
     },
     content: "",
