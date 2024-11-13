@@ -24,7 +24,7 @@ export const NotesList = ({ notes, onNoteSelect, selectedNoteId }: NotesListProp
   );
 
   return (
-    <div className="w-64 border-r h-full flex flex-col">
+    <div className="w-full border rounded-lg mt-4">
       <div className="p-4 border-b">
         <Input
           placeholder="Pesquisar notas..."
@@ -33,7 +33,7 @@ export const NotesList = ({ notes, onNoteSelect, selectedNoteId }: NotesListProp
           className="w-full"
         />
       </div>
-      <ScrollArea className="flex-1">
+      <ScrollArea className="h-[200px]">
         <div className="space-y-1 p-2">
           {filteredNotes.map((note) => (
             <button

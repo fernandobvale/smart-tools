@@ -133,17 +133,9 @@ const Notes = () => {
   const selectedNote = notes?.find((note) => note.id === selectedNoteId);
 
   return (
-    <div className="container py-8 animate-fade-in h-[calc(100vh-4rem)] flex flex-col gap-4">
-      <div className="h-[250px]">
-        <NotesList
-          notes={notes || []}
-          onNoteSelect={setSelectedNoteId}
-          selectedNoteId={selectedNoteId}
-        />
-      </div>
-      
+    <div className="container py-8 animate-fade-in flex flex-col gap-4">
       {selectedNoteId && selectedNote && (
-        <div className="flex-1 border rounded-lg overflow-hidden flex flex-col bg-background min-h-[400px]">
+        <div className="flex-1 border rounded-lg overflow-hidden flex flex-col bg-background">
           <NoteHeader
             title={selectedNote.title}
             onRename={handleRename}
@@ -161,6 +153,12 @@ const Notes = () => {
           </div>
         </div>
       )}
+      
+      <NotesList
+        notes={notes || []}
+        onNoteSelect={setSelectedNoteId}
+        selectedNoteId={selectedNoteId}
+      />
     </div>
   );
 };
