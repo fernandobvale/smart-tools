@@ -24,7 +24,7 @@ const MarkdownEditor = () => {
     ],
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none",
+        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none text-gray-900",
       },
     },
     content: "",
@@ -66,7 +66,7 @@ const MarkdownEditor = () => {
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
             placeholder="Digite ou cole seu texto em Markdown aqui..."
-            className="min-h-[200px] font-mono"
+            className="min-h-[200px] font-mono text-gray-900"
           />
         </div>
 
@@ -83,13 +83,13 @@ const MarkdownEditor = () => {
               Copiar
             </Button>
           </div>
-          <div className="border rounded-md bg-editor-bg">
+          <div className="border rounded-md bg-white">
             <div className="border-b p-2 flex gap-2 bg-white">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => editor?.chain().focus().toggleBold().run()}
-                className={editor?.isActive("bold") ? "bg-muted" : ""}
+                className={`text-gray-900 ${editor?.isActive("bold") ? "bg-muted" : ""}`}
               >
                 <Bold className="h-4 w-4" />
               </Button>
@@ -97,7 +97,7 @@ const MarkdownEditor = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => editor?.chain().focus().toggleItalic().run()}
-                className={editor?.isActive("italic") ? "bg-muted" : ""}
+                className={`text-gray-900 ${editor?.isActive("italic") ? "bg-muted" : ""}`}
               >
                 <Italic className="h-4 w-4" />
               </Button>
@@ -105,7 +105,7 @@ const MarkdownEditor = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                className={editor?.isActive("bulletList") ? "bg-muted" : ""}
+                className={`text-gray-900 ${editor?.isActive("bulletList") ? "bg-muted" : ""}`}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -113,7 +113,7 @@ const MarkdownEditor = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                className={editor?.isActive("orderedList") ? "bg-muted" : ""}
+                className={`text-gray-900 ${editor?.isActive("orderedList") ? "bg-muted" : ""}`}
               >
                 <ListOrdered className="h-4 w-4" />
               </Button>
@@ -126,7 +126,7 @@ const MarkdownEditor = () => {
                     editor?.chain().focus().setLink({ href: url }).run();
                   }
                 }}
-                className={editor?.isActive("link") ? "bg-muted" : ""}
+                className={`text-gray-900 ${editor?.isActive("link") ? "bg-muted" : ""}`}
               >
                 <LinkIcon className="h-4 w-4" />
               </Button>
