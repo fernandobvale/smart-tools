@@ -150,8 +150,8 @@ const Notes = () => {
   }
 
   return (
-    <div className="container py-8 animate-fade-in">
-      <div className="flex flex-col gap-6">
+    <div className="container py-8 animate-fade-in h-[calc(100vh-4rem)]">
+      <div className="flex flex-col h-full gap-4">
         <div className="flex gap-4">
           <div className="w-64">
             <Button 
@@ -169,11 +169,11 @@ const Notes = () => {
         </div>
         
         {selectedNoteId && (
-          <div className="border rounded-lg overflow-hidden flex flex-col bg-background">
+          <div className="flex-1 border rounded-lg overflow-hidden flex flex-col bg-background">
             <div className="border-b">
               <EditorToolbar editor={editor} addImage={addImage} />
             </div>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto min-h-[500px]">
               <EditorContent editor={editor} />
             </div>
             <div className="p-4 border-t flex justify-end gap-2">
