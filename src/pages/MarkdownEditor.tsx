@@ -67,12 +67,28 @@ const MarkdownEditor = () => {
     }
   }, [markdown, editor]);
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     try {
       if (editor) {
-        const textContent = editor.getText();
-        await navigator.clipboard.writeText(textContent);
-        toast.success("Texto formatado copiado para a área de transferência");
+        const editorElement = document.querySelector('.ProseMirror');
+        if (editorElement) {
+          // Create a selection range
+          const range = document.createRange();
+          range.selectNodeContents(editorElement);
+
+          // Apply the selection
+          const selection = window.getSelection();
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+
+          // Simulate Ctrl+C keyboard shortcut
+          document.execCommand('copy');
+
+          // Clear selection
+          selection?.removeAllRanges();
+
+          toast.success("Texto formatado copiado para a área de transferência");
+        }
       }
     } catch (error) {
       toast.error("Erro ao copiar o texto");
