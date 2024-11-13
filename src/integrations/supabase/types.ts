@@ -30,21 +30,21 @@ export type Database = {
           created_at: string
           id: string
           nome: string
-          result: string | null
+          saldo: string | null
         }
         Insert: {
           cpf: string
           created_at?: string
           id?: string
           nome: string
-          result?: string | null
+          saldo?: string | null
         }
         Update: {
           cpf?: string
           created_at?: string
           id?: string
           nome?: string
-          result?: string | null
+          saldo?: string | null
         }
         Relationships: []
       }
