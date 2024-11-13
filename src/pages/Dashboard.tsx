@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -21,6 +21,12 @@ export default function Dashboard() {
       description: "Gere e gerencie recibos facilmente",
       icon: <Receipt className="w-6 h-6" />,
       href: "/receipts"
+    },
+    {
+      title: "Consulta CPF",
+      description: "Consulte dados de CPF e veja histórico",
+      icon: <UserSearch className="w-6 h-6" />,
+      href: "/cpf-consulta"
     }
   ];
 

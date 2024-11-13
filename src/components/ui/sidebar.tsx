@@ -4,7 +4,8 @@ import {
   Scissors, 
   LayoutDashboard,
   Music,
-  Receipt
+  Receipt,
+  UserSearch
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -28,6 +29,11 @@ const items = [
     title: "Recibos",
     icon: <Receipt className="w-4 h-4" />,
     href: "/receipts"
+  },
+  {
+    title: "Consulta CPF",
+    icon: <UserSearch className="w-4 h-4" />,
+    href: "/cpf-consulta"
   }
 ];
 
