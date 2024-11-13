@@ -1,50 +1,33 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import TextAlign from "@tiptap/extension-text-align";
-import Underline from "@tiptap/extension-underline";
-import Subscript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
-import TextStyle from "@tiptap/extension-text-style";
-import Color from "@tiptap/extension-color";
-import Image from "@tiptap/extension-image";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { EditorToolbar } from "@/components/markdown-editor/EditorToolbar";
+import { toast } from "sonner";
 import { NotesList } from "@/components/notes/NotesList";
-import { supabase } from "@/lib/supabase";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Download } from "lucide-react";
+import { EditorToolbar } from "@/components/markdown-editor/EditorToolbar";
+import Link from "@tiptap/extension-link";
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import TextStyle from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import Image from '@tiptap/extension-image';
 
 const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
   const queryClient = useQueryClient();
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        heading: {
-          HTMLAttributes: {
-            class: "text-gray-900 font-bold",
-          },
-        },
-        bold: {
-          HTMLAttributes: {
-            class: "text-gray-900 font-bold",
-          },
-        },
-      }),
+      StarterKit,
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          class: "text-gray-900 underline font-medium",
-        },
       }),
       TextAlign.configure({
-        types: ["heading", "paragraph"],
+        types: ['heading', 'paragraph'],
       }),
       Underline,
       Subscript,
@@ -55,129 +38,134 @@ const Notes = () => {
     ],
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none [&>*]:text-gray-900",
+        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[500px] outline-none",
       },
     },
   });
 
-  const { data: notes = [] } = useQuery({
-    queryKey: ["notes"],
+  const { data: notes, isLoading } = useQuery({
+    queryKey: ['notes'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("notes")
-        .select("*")
-        .order("updated_at", { ascending: false });
-
+        .from('notes')
+        .select('*')
+        .order('updated_at', { ascending: false });
+      
       if (error) throw error;
       return data;
     },
   });
 
-  const createNote = useMutation({
+  const createNoteMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.from("notes").insert({
-        title: "Nova nota",
-        content: "",
-      }).select().single();
-
+      const { data, error } = await supabase
+        .from('notes')
+        .insert([{ title: 'Nova nota', content: '' }])
+        .select()
+        .single();
+      
       if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
       setSelectedNoteId(data.id);
-      setTitle("Nova nota");
-      editor?.commands.setContent("");
+      toast.success('Nova nota criada');
+    },
+    onError: () => {
+      toast.error('Erro ao criar nota');
     },
   });
 
-  const updateNote = useMutation({
+  const updateNoteMutation = useMutation({
     mutationFn: async ({ id, title, content }: { id: string; title: string; content: string }) => {
       const { error } = await supabase
-        .from("notes")
-        .update({ title, content })
-        .eq("id", id);
-
+        .from('notes')
+        .update({ title, content, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Nota salva com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      toast.success('Nota salva');
+    },
+    onError: () => {
+      toast.error('Erro ao salvar nota');
     },
   });
 
   useEffect(() => {
-    if (selectedNoteId) {
-      const note = notes.find((n) => n.id === selectedNoteId);
-      if (note) {
-        setTitle(note.title);
-        editor?.commands.setContent(note.content);
+    if (notes?.length && !selectedNoteId) {
+      setSelectedNoteId(notes[0].id);
+    }
+  }, [notes, selectedNoteId]);
+
+  useEffect(() => {
+    if (selectedNoteId && notes) {
+      const selectedNote = notes.find((note) => note.id === selectedNoteId);
+      if (selectedNote && editor) {
+        editor.commands.setContent(selectedNote.content);
       }
     }
   }, [selectedNoteId, notes, editor]);
 
   const handleSave = () => {
     if (selectedNoteId && editor) {
-      updateNote.mutate({
-        id: selectedNoteId,
-        title,
-        content: editor.getHTML(),
-      });
+      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
+      if (selectedNote) {
+        updateNoteMutation.mutate({
+          id: selectedNoteId,
+          title: selectedNote.title,
+          content: editor.getHTML(),
+        });
+      }
     }
   };
 
-  const exportToDoc = () => {
-    if (!editor || !title) return;
-    
-    const content = editor.getHTML();
-    const blob = new Blob([content], { type: "application/msword" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${title}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleExport = () => {
+    if (editor) {
+      const content = editor.getHTML();
+      const blob = new Blob([content], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'note.doc';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
+
   return (
-    <div className="container max-w-screen-xl py-8 h-[calc(100vh-4rem)] flex animate-fade-in">
-      <NotesList
-        notes={notes}
-        onNoteSelect={setSelectedNoteId}
-        selectedNoteId={selectedNoteId}
-      />
-      
-      <div className="flex-1 flex flex-col h-full">
-        <div className="p-4 border-b flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => createNote.mutate()}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título da nota"
-              className="max-w-md"
-            />
+    <div className="container py-8 animate-fade-in">
+      <div className="flex gap-4 h-[calc(100vh-12rem)]">
+        <div className="flex flex-col gap-4">
+          <Button onClick={() => createNoteMutation.mutate()}>Nova Nota</Button>
+          <NotesList
+            notes={notes || []}
+            onNoteSelect={setSelectedNoteId}
+            selectedNoteId={selectedNoteId}
+          />
+        </div>
+        <div className="flex-1 border rounded-lg overflow-hidden flex flex-col">
+          <div className="border-b bg-background">
+            <EditorToolbar editor={editor} />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={exportToDoc}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar DOC
+          <div className="flex-1 overflow-auto bg-background">
+            <EditorContent editor={editor} />
+          </div>
+          <div className="p-4 border-t bg-background flex justify-end gap-2">
+            <Button variant="outline" onClick={handleExport}>
+              Exportar como DOC
             </Button>
             <Button onClick={handleSave}>Salvar</Button>
           </div>
-        </div>
-
-        <div className="flex-1 border rounded-md bg-white overflow-hidden">
-          <EditorToolbar editor={editor} addImage={() => {}} />
-          <EditorContent editor={editor} />
         </div>
       </div>
     </div>
