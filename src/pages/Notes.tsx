@@ -15,9 +15,12 @@ import Superscript from '@tiptap/extension-superscript';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Image from '@tiptap/extension-image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState("");
   const queryClient = useQueryClient();
 
   const editor = useEditor({
@@ -95,6 +98,25 @@ const Notes = () => {
     },
   });
 
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      setSelectedNoteId(null);
+      toast.success('Nota excluída');
+    },
+    onError: () => {
+      toast.error('Erro ao excluir nota');
+    },
+  });
+
   const addImage = () => {
     const url = window.prompt('URL da imagem:');
     if (url && editor) {
@@ -113,6 +135,7 @@ const Notes = () => {
       const selectedNote = notes.find((note) => note.id === selectedNoteId);
       if (selectedNote && editor) {
         editor.commands.setContent(selectedNote.content);
+        setNewTitle(selectedNote.title);
       }
     }
   }, [selectedNoteId, notes, editor]);
@@ -127,6 +150,16 @@ const Notes = () => {
           content: editor.getHTML(),
         });
       }
+    }
+  };
+
+  const handleRename = () => {
+    if (selectedNoteId && newTitle.trim()) {
+      updateNoteMutation.mutate({
+        id: selectedNoteId,
+        title: newTitle,
+        content: editor?.getHTML() || '',
+      });
     }
   };
 
@@ -149,6 +182,8 @@ const Notes = () => {
     return <div>Carregando...</div>;
   }
 
+  const selectedNote = notes?.find((note) => note.id === selectedNoteId);
+
   return (
     <div className="container py-8 animate-fade-in h-[calc(100vh-4rem)] flex flex-col gap-4">
       <div className="h-[250px]">
@@ -169,6 +204,46 @@ const Notes = () => {
       
       {selectedNoteId && (
         <div className="flex-1 border rounded-lg overflow-hidden flex flex-col bg-background min-h-[400px]">
+          <div className="border-b p-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Renomear
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Renomear Nota</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Input
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      placeholder="Digite o novo título"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button onClick={handleRename}>Salvar</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => {
+                  if (window.confirm('Tem certeza que deseja excluir esta nota?')) {
+                    deleteNoteMutation.mutate(selectedNoteId);
+                  }
+                }}
+              >
+                Excluir
+              </Button>
+            </div>
+            <span className="text-sm font-medium">
+              {selectedNote?.title}
+            </span>
+          </div>
           <EditorToolbar editor={editor} addImage={addImage} />
           <div className="flex-1 overflow-auto">
             <EditorContent editor={editor} />
