@@ -1,34 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-
-interface CpfSearchHistory {
-  id: string;
-  cpf: string;
-  nome: string;
-  created_at: string;
-}
+import CpfInput from "@/components/cpf-consulta/CpfInput";
+import SearchHistory from "@/components/cpf-consulta/SearchHistory";
+import CustomPagination from "@/components/cpf-consulta/CustomPagination";
+import { validateCPF } from "@/lib/cpf-utils";
 
 const CpfConsulta = () => {
   const [cpf, setCpf] = useState("");
@@ -36,19 +17,9 @@ const CpfConsulta = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/g, "$1.$2.$3-$4");
-  };
-
-  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedCpf = formatCPF(e.target.value);
-    setCpf(formattedCpf.slice(0, 14));
-  };
-
   const consultarCpf = async () => {
     const cleanCpf = cpf.replace(/\D/g, "");
-    if (cleanCpf.length !== 11) {
+    if (!validateCPF(cleanCpf)) {
       throw new Error("CPF inválido");
     }
 
@@ -62,11 +33,12 @@ const CpfConsulta = () => {
 
     const data = await response.json();
     
-    // Save to history
-    await supabase.from("cpf_searches").insert({
-      cpf: cleanCpf,
-      nome: data.nome,
-    });
+    await supabase
+      .from("cpf_searches")
+      .insert({
+        cpf: cleanCpf,
+        nome: data.nome,
+      });
 
     return data;
   };
@@ -76,17 +48,17 @@ const CpfConsulta = () => {
     queryFn: consultarCpf,
     enabled: false,
     retry: false,
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
-      });
-    },
     onSuccess: (data) => {
       toast({
         title: "Sucesso",
         description: `CPF encontrado: ${data.nome}`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message,
       });
     },
   });
@@ -94,12 +66,12 @@ const CpfConsulta = () => {
   const { data: historyData, isLoading: isLoadingHistory } = useQuery({
     queryKey: ["cpf-history", searchTerm, currentPage],
     queryFn: async () => {
-      const query = supabase
+      let query = supabase
         .from("cpf_searches")
         .select("*", { count: "exact" });
 
       if (searchTerm) {
-        query.or(`nome.ilike.%${searchTerm}%,cpf.ilike.%${searchTerm}%`);
+        query = query.or(`nome.ilike.%${searchTerm}%,cpf.ilike.%${searchTerm}%`);
       }
 
       const { data, error, count } = await query
@@ -109,7 +81,7 @@ const CpfConsulta = () => {
       if (error) throw error;
 
       return {
-        items: data as CpfSearchHistory[],
+        items: data,
         total: count || 0,
       };
     },
@@ -125,13 +97,7 @@ const CpfConsulta = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
-            <Input
-              placeholder="Digite o CPF"
-              value={cpf}
-              onChange={handleCpfChange}
-              maxLength={14}
-              className="flex-1"
-            />
+            <CpfInput cpf={cpf} onChange={setCpf} />
             <Button
               onClick={() => consultarCpf()}
               disabled={isLoadingCpf}
@@ -168,69 +134,16 @@ const CpfConsulta = () => {
             className="mb-4"
           />
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Data da Consulta</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoadingHistory ? (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  historyData?.items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{formatCPF(item.cpf)}</TableCell>
-                      <TableCell>{item.nome}</TableCell>
-                      <TableCell>
-                        {new Date(item.created_at).toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <SearchHistory
+            data={historyData?.items || []}
+            isLoading={isLoadingHistory}
+          />
 
-          {totalPages > 1 && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(page)}
-                        isActive={currentPage === page}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                )}
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
     </div>

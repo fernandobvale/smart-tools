@@ -24,6 +24,27 @@ export type Database = {
         }
         Relationships: []
       }
+      cpf_searches: {
+        Row: {
+          cpf: string
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          cpf: string
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          cpf?: string
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       payees: {
         Row: {
           bank_name: string
