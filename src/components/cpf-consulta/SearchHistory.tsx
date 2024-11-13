@@ -24,11 +24,9 @@ interface SearchHistoryProps {
 const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
   if (isLoading) {
     return (
-      <TableRow>
-        <TableCell colSpan={4} className="text-center">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-        </TableCell>
-      </TableRow>
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
@@ -37,19 +35,19 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>CPF</TableHead>
+            <TableHead className="w-[120px]">CPF</TableHead>
             <TableHead>Nome</TableHead>
-            <TableHead>Saldo</TableHead>
-            <TableHead>Data da Consulta</TableHead>
+            <TableHead className="w-[100px]">Saldo</TableHead>
+            <TableHead className="hidden sm:table-cell">Data da Consulta</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((item) => (
             <TableRow key={item.id}>
-              <TableCell>{formatCPF(item.cpf)}</TableCell>
-              <TableCell>{item.nome}</TableCell>
+              <TableCell className="font-medium">{formatCPF(item.cpf)}</TableCell>
+              <TableCell className="max-w-[200px] truncate">{item.nome}</TableCell>
               <TableCell>{item.saldo}</TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 {new Date(item.created_at).toLocaleString()}
               </TableCell>
             </TableRow>

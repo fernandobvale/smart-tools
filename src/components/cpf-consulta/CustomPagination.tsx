@@ -3,7 +3,6 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
@@ -24,20 +23,22 @@ const CustomPagination = ({
 
   return (
     <Pagination>
-      <PaginationContent>
+      <PaginationContent className="flex flex-wrap gap-2 justify-center">
         <PaginationItem>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
           >
-            Previous
+            Anterior
           </Button>
         </PaginationItem>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <PaginationItem key={page}>
+          <PaginationItem key={page} className="hidden sm:block">
             <Button
               variant={currentPage === page ? "default" : "outline"}
+              size="sm"
               onClick={() => onPageChange(page)}
             >
               {page}
@@ -47,10 +48,11 @@ const CustomPagination = ({
         <PaginationItem>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
           >
-            Next
+            Próximo
           </Button>
         </PaginationItem>
       </PaginationContent>

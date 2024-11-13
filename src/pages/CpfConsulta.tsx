@@ -110,10 +110,10 @@ const CpfConsulta = () => {
   const totalPages = Math.ceil((historyData?.total || 0) / 10);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-2xl">Consulta de CPF</CardTitle>
+          <CardTitle className="text-xl md:text-2xl">Consulta de CPF</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -121,7 +121,7 @@ const CpfConsulta = () => {
             <Button
               onClick={handleConsulta}
               disabled={isLoadingCpf}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto whitespace-nowrap"
             >
               {isLoadingCpf ? (
                 <>
@@ -135,9 +135,13 @@ const CpfConsulta = () => {
           </div>
 
           {cpfData && (
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <p className="font-medium">Nome: {cpfData.nome}</p>
-              <p className="font-medium">Saldo: {cpfData.saldo}</p>
+            <div className="mt-4 p-4 bg-muted rounded-lg space-y-2">
+              <p className="font-medium text-sm md:text-base">
+                <span className="text-muted-foreground">Nome:</span> {cpfData.nome}
+              </p>
+              <p className="font-medium text-sm md:text-base">
+                <span className="text-muted-foreground">Saldo:</span> {cpfData.saldo}
+              </p>
             </div>
           )}
         </CardContent>
@@ -145,7 +149,7 @@ const CpfConsulta = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Histórico de Consultas</CardTitle>
+          <CardTitle className="text-xl md:text-2xl">Histórico de Consultas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -155,16 +159,20 @@ const CpfConsulta = () => {
             className="mb-4"
           />
 
-          <SearchHistory
-            data={historyData?.items || []}
-            isLoading={isLoadingHistory}
-          />
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <SearchHistory
+              data={historyData?.items || []}
+              isLoading={isLoadingHistory}
+            />
+          </div>
 
-          <CustomPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <div className="mt-4 flex justify-center">
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
