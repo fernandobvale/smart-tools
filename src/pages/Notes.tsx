@@ -44,7 +44,7 @@ const Notes = () => {
     },
   });
 
-  const { data: notes, isLoading } = useQuery({
+  const { data: notes, isLoading, refetch } = useQuery({
     queryKey: ['notes'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -92,6 +92,10 @@ const Notes = () => {
 
   const handleNewNote = async () => {
     try {
+      if (editor) {
+        editor.commands.clearContent();
+      }
+      
       const { data, error } = await supabase
         .from('notes')
         .insert([
@@ -107,6 +111,7 @@ const Notes = () => {
       
       if (data) {
         setSelectedNoteId(data.id);
+        refetch(); // Refresh the notes list
         toast.success('Nova nota criada');
       }
     } catch (error) {
