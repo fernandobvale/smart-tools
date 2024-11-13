@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 import CpfInput from "@/components/cpf-consulta/CpfInput";
 import SearchHistory from "@/components/cpf-consulta/SearchHistory";
@@ -20,7 +20,7 @@ const CpfConsulta = () => {
   const consultarCpf = async () => {
     const cleanCpf = cpf.replace(/\D/g, "");
     if (!validateCPF(cleanCpf)) {
-      throw new Error("CPF inválido");
+      throw new Error("CPF inválido. Por favor, insira um CPF válido com 11 dígitos.");
     }
 
     const response = await fetch(
@@ -43,25 +43,27 @@ const CpfConsulta = () => {
     return data;
   };
 
-  const { data: cpfData, isLoading: isLoadingCpf } = useQuery({
+  const { data: cpfData, isLoading: isLoadingCpf, refetch } = useQuery({
     queryKey: ["cpf", cpf],
     queryFn: consultarCpf,
     enabled: false,
     retry: false,
-    onSuccess: (data) => {
-      toast({
-        title: "Sucesso",
-        description: `CPF encontrado: ${data.nome}`,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Erro",
-        description: error.message,
-      });
-    }
   });
+
+  const handleSuccess = (data: any) => {
+    toast({
+      title: "Sucesso",
+      description: `CPF encontrado: ${data.nome}`,
+    });
+  };
+
+  const handleError = (error: Error) => {
+    toast({
+      variant: "destructive",
+      title: "Erro",
+      description: error.message,
+    });
+  };
 
   const { data: historyData, isLoading: isLoadingHistory } = useQuery({
     queryKey: ["cpf-history", searchTerm, currentPage],
@@ -87,6 +89,20 @@ const CpfConsulta = () => {
     },
   });
 
+  const handleConsulta = async () => {
+    try {
+      const result = await refetch();
+      if (result.data) {
+        handleSuccess(result.data);
+      }
+      if (result.error) {
+        handleError(result.error);
+      }
+    } catch (error) {
+      handleError(error as Error);
+    }
+  };
+
   const totalPages = Math.ceil((historyData?.total || 0) / 10);
 
   return (
@@ -99,7 +115,7 @@ const CpfConsulta = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <CpfInput cpf={cpf} onChange={setCpf} />
             <Button
-              onClick={() => consultarCpf()}
+              onClick={handleConsulta}
               disabled={isLoadingCpf}
               className="w-full sm:w-auto"
             >
