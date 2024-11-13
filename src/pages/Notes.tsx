@@ -151,29 +151,39 @@ const Notes = () => {
 
   return (
     <div className="container py-8 animate-fade-in">
-      <div className="flex gap-4 h-[calc(100vh-12rem)]">
-        <div className="flex flex-col gap-4">
-          <Button onClick={() => createNoteMutation.mutate()}>Nova Nota</Button>
-          <NotesList
-            notes={notes || []}
-            onNoteSelect={setSelectedNoteId}
-            selectedNoteId={selectedNoteId}
-          />
-        </div>
-        <div className="flex-1 border rounded-lg overflow-hidden flex flex-col">
-          <div className="border-b bg-background">
-            <EditorToolbar editor={editor} addImage={addImage} />
-          </div>
-          <div className="flex-1 overflow-auto bg-background">
-            <EditorContent editor={editor} />
-          </div>
-          <div className="p-4 border-t bg-background flex justify-end gap-2">
-            <Button variant="outline" onClick={handleExport}>
-              Exportar como DOC
+      <div className="flex flex-col gap-6">
+        <div className="flex gap-4">
+          <div className="w-64">
+            <Button 
+              onClick={() => createNoteMutation.mutate()} 
+              className="w-full mb-4"
+            >
+              Nova Nota
             </Button>
-            <Button onClick={handleSave}>Salvar</Button>
+            <NotesList
+              notes={notes || []}
+              onNoteSelect={setSelectedNoteId}
+              selectedNoteId={selectedNoteId}
+            />
           </div>
         </div>
+        
+        {selectedNoteId && (
+          <div className="border rounded-lg overflow-hidden flex flex-col bg-background">
+            <div className="border-b">
+              <EditorToolbar editor={editor} addImage={addImage} />
+            </div>
+            <div className="flex-1 overflow-auto">
+              <EditorContent editor={editor} />
+            </div>
+            <div className="p-4 border-t flex justify-end gap-2">
+              <Button variant="outline" onClick={handleExport}>
+                Exportar como DOC
+              </Button>
+              <Button onClick={handleSave}>Salvar</Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
