@@ -25,7 +25,7 @@ const MarkdownEditor = () => {
       StarterKit.configure({
         heading: {
           HTMLAttributes: {
-            class: 'text-gray-900',
+            class: 'text-gray-900 font-bold',
           },
         },
         bold: {
@@ -37,7 +37,7 @@ const MarkdownEditor = () => {
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-primary underline',
+          class: 'text-gray-900 underline font-medium',
         },
       }),
       TextAlign.configure({
