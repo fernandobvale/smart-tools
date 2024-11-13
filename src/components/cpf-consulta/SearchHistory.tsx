@@ -15,6 +15,7 @@ interface SearchHistoryProps {
     id: string;
     cpf: string;
     nome: string;
+    result: string;
     created_at: string;
   }>;
   isLoading: boolean;
@@ -24,7 +25,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
   if (isLoading) {
     return (
       <TableRow>
-        <TableCell colSpan={3} className="text-center">
+        <TableCell colSpan={4} className="text-center">
           <Loader2 className="h-6 w-6 animate-spin mx-auto" />
         </TableCell>
       </TableRow>
@@ -38,6 +39,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
           <TableRow>
             <TableHead>CPF</TableHead>
             <TableHead>Nome</TableHead>
+            <TableHead>Resultado</TableHead>
             <TableHead>Data da Consulta</TableHead>
           </TableRow>
         </TableHeader>
@@ -46,6 +48,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
             <TableRow key={item.id}>
               <TableCell>{formatCPF(item.cpf)}</TableCell>
               <TableCell>{item.nome}</TableCell>
+              <TableCell>{item.result}</TableCell>
               <TableCell>
                 {new Date(item.created_at).toLocaleString()}
               </TableCell>

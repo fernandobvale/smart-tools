@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ const CpfConsulta = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const consultarCpf = async () => {
     const cleanCpf = cpf.replace(/\D/g, "");
@@ -33,12 +34,17 @@ const CpfConsulta = () => {
 
     const data = await response.json();
     
+    // Save the search result including the 'result' field
     await supabase
       .from("cpf_searches")
       .insert({
         cpf: cleanCpf,
         nome: data.nome,
+        result: data.result,
       });
+
+    // Invalidate the history query to force a refresh
+    queryClient.invalidateQueries({ queryKey: ["cpf-history"] });
 
     return data;
   };
@@ -133,6 +139,7 @@ const CpfConsulta = () => {
           {cpfData && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
               <p className="font-medium">Nome: {cpfData.nome}</p>
+              <p className="font-medium">Resultado: {cpfData.result}</p>
             </div>
           )}
         </CardContent>
