@@ -129,11 +129,49 @@ const Notes = () => {
   const handleExport = () => {
     if (selectedNoteId && editor) {
       const content = editor.getHTML();
-      const blob = new Blob([content], { type: 'text/html' });
+      
+      // Add HTML wrapper with proper encoding and styling
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              margin: 40px;
+            }
+            img {
+              max-width: 100%;
+              height: auto;
+            }
+            p {
+              margin-bottom: 1em;
+            }
+            h1, h2, h3, h4, h5, h6 {
+              margin-top: 1.5em;
+              margin-bottom: 0.5em;
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([htmlContent], { 
+        type: 'application/vnd.ms-word;charset=utf-8' 
+      });
+      
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'note.doc';
+      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
+      const fileName = `${selectedNote?.title || 'nota'}.doc`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
