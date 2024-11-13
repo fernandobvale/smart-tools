@@ -2,17 +2,26 @@ import { useState, useEffect } from "react";
 import MarkdownIt from "markdown-it";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Copy, Bold, Italic, List, Link, ListOrdered } from "lucide-react";
+import { Copy, Bold, Italic, List, Link as LinkIcon, ListOrdered } from "lucide-react";
 
 const MarkdownEditor = () => {
   const [markdown, setMarkdown] = useState("");
   const md = new MarkdownIt();
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary underline',
+        },
+      }),
+    ],
     editorProps: {
       attributes: {
         class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none",
@@ -119,7 +128,7 @@ const MarkdownEditor = () => {
                 }}
                 className={editor?.isActive("link") ? "bg-muted" : ""}
               >
-                <Link className="h-4 w-4" />
+                <LinkIcon className="h-4 w-4" />
               </Button>
             </div>
             <EditorContent editor={editor} />
