@@ -7,9 +7,11 @@ import {
   Receipt,
   UserSearch,
   FileText,
-  FileEdit
+  FileEdit,
+  Navigation
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { CommandMenu } from "@/components/CommandMenu";
 
 const items = [
   {
@@ -53,9 +55,10 @@ export function Sidebar() {
   return (
     <div className="w-64 space-y-4 py-4 min-h-screen border-r bg-background">
       <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold">
-          Ferramentas
-        </h2>
+        <div className="flex items-center justify-between mb-2 px-4">
+          <h2 className="text-lg font-semibold">Ferramentas</h2>
+          <CommandMenu />
+        </div>
         <Separator />
       </div>
       <ScrollArea className="h-[calc(100vh-8rem)] px-2">

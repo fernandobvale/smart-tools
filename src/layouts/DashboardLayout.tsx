@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CommandMenu } from "@/components/CommandMenu";
 
 export default function DashboardLayout() {
   return (
@@ -28,9 +27,6 @@ export default function DashboardLayout() {
       </div>
 
       <main className="flex-1 p-4 md:p-6">
-        <div className="flex justify-end mb-4">
-          <CommandMenu />
-        </div>
         <Outlet />
       </main>
     </div>
