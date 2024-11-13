@@ -48,19 +48,18 @@ const CpfConsulta = () => {
     queryFn: consultarCpf,
     enabled: false,
     retry: false,
-    onSettled: (data, error) => {
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
-          description: error.message,
-        });
-      } else if (data) {
-        toast({
-          title: "Sucesso",
-          description: `CPF encontrado: ${data.nome}`,
-        });
-      }
+    onSuccess: (data) => {
+      toast({
+        title: "Sucesso",
+        description: `CPF encontrado: ${data.nome}`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: error.message,
+      });
     }
   });
 
