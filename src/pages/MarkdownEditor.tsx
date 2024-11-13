@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MarkdownIt from "markdown-it";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -47,6 +47,14 @@ const MarkdownEditor = () => {
     content: "",
     editable: true,
   });
+
+  // Update editor content when markdown changes
+  useEffect(() => {
+    if (editor && markdown) {
+      const html = md.render(markdown);
+      editor.commands.setContent(html);
+    }
+  }, [markdown, editor]);
 
   const handleCopy = async () => {
     try {
