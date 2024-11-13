@@ -96,6 +96,21 @@ const Notes = () => {
     }
   };
 
+  const handleExport = () => {
+    if (selectedNoteId && editor) {
+      const content = editor.getHTML();
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'note.doc';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   useEffect(() => {
     if (notes?.length && !selectedNoteId) {
       setSelectedNoteId(notes[0].id);
