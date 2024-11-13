@@ -13,7 +13,11 @@ const MarkdownEditor = () => {
 
   const editor = useEditor({
     extensions: [StarterKit],
-    editable: true,
+    editorProps: {
+      attributes: {
+        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[300px] outline-none",
+      },
+    },
     content: "",
   });
 
@@ -27,7 +31,6 @@ const MarkdownEditor = () => {
   const handleCopy = async () => {
     try {
       if (editor) {
-        // Get the text content instead of HTML
         const textContent = editor.getText();
         await navigator.clipboard.writeText(textContent);
         toast.success("Texto formatado copiado para a área de transferência");
@@ -70,11 +73,8 @@ const MarkdownEditor = () => {
               Copiar
             </Button>
           </div>
-          <div className="min-h-[300px] border rounded-md bg-background">
-            <EditorContent 
-              editor={editor} 
-              className="prose prose-sm max-w-none dark:prose-invert p-4"
-            />
+          <div className="min-h-[300px] border rounded-md bg-editor-bg">
+            <EditorContent editor={editor} />
           </div>
         </div>
       </div>
