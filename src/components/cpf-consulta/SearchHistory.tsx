@@ -15,7 +15,7 @@ interface SearchHistoryProps {
     id: string;
     cpf: string;
     nome: string;
-    result: string;
+    saldo: string;
     created_at: string;
   }>;
   isLoading: boolean;
@@ -39,7 +39,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
           <TableRow>
             <TableHead>CPF</TableHead>
             <TableHead>Nome</TableHead>
-            <TableHead>Resultado</TableHead>
+            <TableHead>Saldo</TableHead>
             <TableHead>Data da Consulta</TableHead>
           </TableRow>
         </TableHeader>
@@ -48,7 +48,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
             <TableRow key={item.id}>
               <TableCell>{formatCPF(item.cpf)}</TableCell>
               <TableCell>{item.nome}</TableCell>
-              <TableCell>{item.result}</TableCell>
+              <TableCell>{item.saldo}</TableCell>
               <TableCell>
                 {new Date(item.created_at).toLocaleString()}
               </TableCell>

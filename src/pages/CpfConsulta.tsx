@@ -34,16 +34,14 @@ const CpfConsulta = () => {
 
     const data = await response.json();
     
-    // Save the search result including the 'result' field
     await supabase
       .from("cpf_searches")
       .insert({
         cpf: cleanCpf,
         nome: data.nome,
-        result: data.result,
+        saldo: data.saldo,
       });
 
-    // Invalidate the history query to force a refresh
     queryClient.invalidateQueries({ queryKey: ["cpf-history"] });
 
     return data;
@@ -139,7 +137,7 @@ const CpfConsulta = () => {
           {cpfData && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
               <p className="font-medium">Nome: {cpfData.nome}</p>
-              <p className="font-medium">Resultado: {cpfData.result}</p>
+              <p className="font-medium">Saldo: {cpfData.saldo}</p>
             </div>
           )}
         </CardContent>
