@@ -5,7 +5,8 @@ import {
   LayoutDashboard,
   Music,
   Receipt,
-  UserSearch
+  UserSearch,
+  FileText
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -34,6 +35,11 @@ const items = [
     title: "Consulta CPF",
     icon: <UserSearch className="w-4 h-4" />,
     href: "/cpf-consulta"
+  },
+  {
+    title: "Gerador de SEO",
+    icon: <FileText className="w-4 h-4" />,
+    href: "/seo-generator"
   }
 ];
 

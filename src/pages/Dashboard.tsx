@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt, UserSearch } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -27,6 +27,12 @@ export default function Dashboard() {
       description: "Consulte dados de CPF e veja histórico",
       icon: <UserSearch className="w-6 h-6" />,
       href: "/cpf-consulta"
+    },
+    {
+      title: "Gerador de SEO",
+      description: "Gere descrições otimizadas para SEO utilizando IA",
+      icon: <FileText className="w-6 h-6" />,
+      href: "/seo-generator"
     }
   ];
 
