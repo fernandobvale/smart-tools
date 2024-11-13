@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt, UserSearch, FileText } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -33,6 +33,12 @@ export default function Dashboard() {
       description: "Gere descrições otimizadas para SEO utilizando IA",
       icon: <FileText className="w-6 h-6" />,
       href: "/seo-generator"
+    },
+    {
+      title: "Editor Markdown",
+      description: "Edite e visualize textos em Markdown em tempo real",
+      icon: <FileEdit className="w-6 h-6" />,
+      href: "/markdown-editor"
     }
   ];
 

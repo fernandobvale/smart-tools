@@ -12,6 +12,7 @@ import Receipts from "./pages/Receipts";
 import ReceiptForm from "./components/receipts/ReceiptForm";
 import CpfConsulta from "./pages/CpfConsulta";
 import SeoGenerator from "./pages/SeoGenerator";
+import MarkdownEditor from "./pages/MarkdownEditor";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
               <Route path="/cpf-consulta" element={<CpfConsulta />} />
               <Route path="/seo-generator" element={<SeoGenerator />} />
+              <Route path="/markdown-editor" element={<MarkdownEditor />} />
             </Route>
           </Routes>
         </BrowserRouter>

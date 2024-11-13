@@ -6,7 +6,8 @@ import {
   Music,
   Receipt,
   UserSearch,
-  FileText
+  FileText,
+  FileEdit
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -40,6 +41,11 @@ const items = [
     title: "Gerador de SEO",
     icon: <FileText className="w-4 h-4" />,
     href: "/seo-generator"
+  },
+  {
+    title: "Editor Markdown",
+    icon: <FileEdit className="w-4 h-4" />,
+    href: "/markdown-editor"
   }
 ];
 
