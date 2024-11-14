@@ -2,18 +2,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { CertificateTable } from "@/components/certificates/CertificateTable";
+import { ShippingDataDialog } from "@/components/certificates/ShippingDataDialog";
 
 type Certificate = {
   id: string;
@@ -23,11 +16,18 @@ type Certificate = {
   cidade_estado: string;
   codigo_rastreio: string | null;
   numero_pedido: string;
+  endereco: string;
+  complemento: string | null;
+  bairro: string;
+  cep: string;
+  site_referencia: string;
 };
 
 export default function CertificateManagement() {
   const [selectedCertificates, setSelectedCertificates] = useState<string[]>([]);
   const [trackingCode, setTrackingCode] = useState("");
+  const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
+  const [isShippingDataDialogOpen, setIsShippingDataDialogOpen] = useState(false);
 
   const { data: certificates, refetch } = useQuery({
     queryKey: ["certificates"],
@@ -96,23 +96,20 @@ export default function CertificateManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: "Código de rastreio atualizado",
-        description: "Os certificados foram atualizados com sucesso.",
-      });
-
+      toast.success("Código de rastreio atualizado");
       setTrackingCode("");
       setSelectedCertificates([]);
+      setIsTrackingDialogOpen(false);
       refetch();
     } catch (error) {
       console.error("Error updating tracking code:", error);
-      toast({
-        title: "Erro ao atualizar código de rastreio",
-        description: "Ocorreu um erro ao atualizar os certificados.",
-        variant: "destructive",
-      });
+      toast.error("Erro ao atualizar código de rastreio");
     }
   };
+
+  const selectedCertificate = certificates?.find(
+    (cert) => cert.id === selectedCertificates[0]
+  );
 
   return (
     <div className="container mx-auto py-6">
@@ -131,28 +128,18 @@ export default function CertificateManagement() {
           >
             Ver Etiquetas
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button disabled={selectedCertificates.length === 0}>
-                Informar Rastreio
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Informar Código de Rastreio</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <Input
-                  placeholder="Digite o código de rastreio"
-                  value={trackingCode}
-                  onChange={(e) => setTrackingCode(e.target.value)}
-                />
-                <Button onClick={handleTrackingSubmit} className="w-full">
-                  Salvar
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            onClick={() => setIsTrackingDialogOpen(true)}
+            disabled={selectedCertificates.length === 0}
+          >
+            Informar Rastreio
+          </Button>
+          <Button
+            onClick={() => setIsShippingDataDialogOpen(true)}
+            disabled={selectedCertificates.length !== 1}
+          >
+            Dados de Envio
+          </Button>
         </div>
       </div>
 
@@ -160,66 +147,50 @@ export default function CertificateManagement() {
         <div>
           <h2 className="text-xl font-semibold mb-4">Certificados Não Enviados</h2>
           <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox />
-                  </TableHead>
-                  <TableHead>Nome do Aluno</TableHead>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Localização</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {nonShippedCertificates.map((certificate) => (
-                  <TableRow key={certificate.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedCertificates.includes(certificate.id)}
-                        onCheckedChange={() =>
-                          handleCheckboxChange(certificate.id)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>{certificate.nome_aluno}</TableCell>
-                    <TableCell>{certificate.email_aluno}</TableCell>
-                    <TableCell>{certificate.status_envio}</TableCell>
-                    <TableCell>{certificate.cidade_estado}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <CertificateTable
+              certificates={nonShippedCertificates}
+              selectedCertificates={selectedCertificates}
+              onCheckboxChange={handleCheckboxChange}
+            />
           </div>
         </div>
 
         <div>
           <h2 className="text-xl font-semibold mb-4">Certificados Enviados</h2>
           <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome do Aluno</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Localização</TableHead>
-                  <TableHead>Código de Rastreio</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {shippedCertificates.map((certificate) => (
-                  <TableRow key={certificate.id}>
-                    <TableCell>{certificate.nome_aluno}</TableCell>
-                    <TableCell>{certificate.status_envio}</TableCell>
-                    <TableCell>{certificate.cidade_estado}</TableCell>
-                    <TableCell>{certificate.codigo_rastreio}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <CertificateTable
+              certificates={shippedCertificates}
+              selectedCertificates={selectedCertificates}
+              onCheckboxChange={handleCheckboxChange}
+              showCheckboxes={false}
+            />
           </div>
         </div>
       </div>
+
+      <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Informar Código de Rastreio</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="Digite o código de rastreio"
+              value={trackingCode}
+              onChange={(e) => setTrackingCode(e.target.value)}
+            />
+            <Button onClick={handleTrackingSubmit} className="w-full">
+              Salvar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ShippingDataDialog
+        open={isShippingDataDialogOpen}
+        onOpenChange={setIsShippingDataDialogOpen}
+        certificate={selectedCertificate}
+      />
     </div>
   );
 }
