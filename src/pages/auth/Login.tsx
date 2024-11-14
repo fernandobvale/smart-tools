@@ -19,6 +19,17 @@ const Login = () => {
     }
   }, [session, navigate, from]);
 
+  // Handle auth state changes to show custom error messages
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_DELETED') {
+        toast.error('Usuário excluído');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
