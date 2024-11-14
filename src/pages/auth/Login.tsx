@@ -45,6 +45,8 @@ const Login = () => {
                 container: 'w-full',
                 button: 'w-full',
                 anchor: 'text-primary hover:text-primary/80',
+                input: 'text-foreground',
+                label: 'text-foreground',
               },
             }}
             providers={[]}
@@ -53,6 +55,8 @@ const Login = () => {
                 sign_in: {
                   email_label: "Email",
                   password_label: "Senha",
+                  email_input_placeholder: "seu@email.com",
+                  password_input_placeholder: "Sua senha",
                   button_label: "Entrar",
                   loading_button_label: "Entrando...",
                   social_provider_text: "Entre com {{provider}}",
@@ -61,6 +65,8 @@ const Login = () => {
                 sign_up: {
                   email_label: "Email",
                   password_label: "Senha",
+                  email_input_placeholder: "seu@email.com",
+                  password_input_placeholder: "Escolha uma senha",
                   button_label: "Cadastrar",
                   loading_button_label: "Cadastrando...",
                   social_provider_text: "Cadastre-se com {{provider}}",
@@ -68,6 +74,8 @@ const Login = () => {
                 },
                 forgotten_password: {
                   email_label: "Email",
+                  password_label: "Senha",
+                  email_input_placeholder: "seu@email.com",
                   button_label: "Enviar instruções",
                   loading_button_label: "Enviando instruções...",
                   link_text: "Esqueceu sua senha?",
