@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/command";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Navigation } from "lucide-react";
+import { Navigation, LogOut } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const tools = [
   {
@@ -56,6 +57,7 @@ const tools = [
 export function CommandMenu() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const { signOut } = useAuth();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -99,6 +101,18 @@ export function CommandMenu() {
                 </span>
               </CommandItem>
             ))}
+          </CommandGroup>
+          <CommandGroup heading="Conta">
+            <CommandItem
+              onSelect={() => {
+                signOut();
+                setOpen(false);
+              }}
+              className="text-red-500 hover:text-red-600"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
