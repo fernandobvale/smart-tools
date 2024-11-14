@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { CertificateSection } from "@/components/certificates/CertificateSection";
 import { ShippingDataDialog } from "@/components/certificates/ShippingDataDialog";
+import { FileText } from "lucide-react";
 
 interface Certificate {
   id: string;
@@ -114,6 +115,10 @@ export default function CertificateManagement() {
     }
   };
 
+  const handleOpenNewCertificateForm = () => {
+    window.open("/certificates/new", "_blank");
+  };
+
   const selectedCertificate = certificates?.find(
     (cert) => cert.id === selectedCertificates[0]
   );
@@ -146,6 +151,10 @@ export default function CertificateManagement() {
             disabled={selectedCertificates.length !== 1}
           >
             Dados de Envio
+          </Button>
+          <Button onClick={handleOpenNewCertificateForm} variant="outline">
+            <FileText className="w-4 h-4 mr-2" />
+            Formulário
           </Button>
         </div>
       </div>
