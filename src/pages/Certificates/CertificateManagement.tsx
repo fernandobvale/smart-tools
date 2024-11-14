@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { CertificateTable } from "@/components/certificates/CertificateTable";
+import { CertificateSection } from "@/components/certificates/CertificateSection";
 import { ShippingDataDialog } from "@/components/certificates/ShippingDataDialog";
 
-type Certificate = {
+interface Certificate {
   id: string;
   nome_aluno: string;
   email_aluno: string;
@@ -28,7 +28,7 @@ type Certificate = {
   observacoes: string | null;
   created_at: string;
   updated_at: string;
-};
+}
 
 export default function CertificateManagement() {
   const [selectedCertificates, setSelectedCertificates] = useState<string[]>([]);
@@ -151,28 +151,23 @@ export default function CertificateManagement() {
       </div>
 
       <div className="space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Certificados Não Enviados</h2>
-          <div className="border rounded-lg">
-            <CertificateTable
-              certificates={nonShippedCertificates}
-              selectedCertificates={selectedCertificates}
-              onCheckboxChange={handleCheckboxChange}
-            />
-          </div>
-        </div>
+        <CertificateSection
+          title="Certificados Não Enviados"
+          certificates={nonShippedCertificates}
+          selectedCertificates={selectedCertificates}
+          onCheckboxChange={handleCheckboxChange}
+          showCheckboxes={true}
+          showSearch={false}
+        />
 
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Certificados Enviados</h2>
-          <div className="border rounded-lg">
-            <CertificateTable
-              certificates={shippedCertificates}
-              selectedCertificates={selectedCertificates}
-              onCheckboxChange={handleCheckboxChange}
-              showCheckboxes={false}
-            />
-          </div>
-        </div>
+        <CertificateSection
+          title="Certificados Enviados"
+          certificates={shippedCertificates}
+          selectedCertificates={selectedCertificates}
+          onCheckboxChange={handleCheckboxChange}
+          showCheckboxes={false}
+          showSearch={true}
+        />
       </div>
 
       <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
