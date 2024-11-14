@@ -61,16 +61,7 @@ const Login = () => {
                   button_label: "Entrar",
                   loading_button_label: "Entrando...",
                   social_provider_text: "Entre com {{provider}}",
-                  link_text: "Já tem uma conta? Entre",
-                  error_message: {
-                    "Invalid login credentials": "Credenciais de login inválidas",
-                    "User already registered": "Usuário já cadastrado",
-                    "Invalid email": "Email inválido",
-                    "Password is too short": "A senha é muito curta",
-                    "Email not confirmed": "Email não confirmado",
-                    "Invalid credentials": "Credenciais inválidas",
-                    "Unable to validate email address: invalid format": "Formato de email inválido",
-                  }
+                  link_text: "Já tem uma conta? Entre"
                 },
                 sign_up: {
                   email_label: "Email",
