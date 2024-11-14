@@ -59,6 +59,27 @@ export default function CertificateForm() {
 
       if (error) throw error;
 
+      // Send email notification
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-certificate-notification`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            studentName: values.nome_aluno,
+            studentEmail: values.email_aluno,
+            orderNumber: values.numero_pedido,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Failed to send email notification");
+      }
+
       toast({
         title: "Certificado registrado com sucesso!",
         description: "O certificado foi salvo e está pronto para envio.",
@@ -74,6 +95,8 @@ export default function CertificateForm() {
       });
     }
   }
+
+  // ... keep existing code (form fields JSX)
 
   return (
     <div className="min-h-screen bg-background">
@@ -352,7 +375,7 @@ export default function CertificateForm() {
               )}
             />
 
-            <Button type="submit" className="w-full">Enviar Certificado</Button>
+            <Button type="submit" className="w-full">Informar Dados</Button>
           </form>
         </Form>
       </div>
