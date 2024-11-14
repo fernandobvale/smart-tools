@@ -45,7 +45,7 @@ const Login = () => {
                 container: 'w-full',
                 button: 'w-full',
                 anchor: 'text-primary hover:text-primary/80',
-                input: 'text-foreground',
+                input: 'text-foreground bg-background',
                 label: 'text-foreground',
               },
             }}
