@@ -9,8 +9,7 @@ import {
   FileText,
   FileEdit,
   StickyNote,
-  LogOut,
-  Certificate
+  LogOut
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -58,7 +57,7 @@ const items = [
   },
   {
     title: "Gestão de Certificados",
-    icon: <Certificate className="w-4 h-4" />,
+    icon: <FileText className="w-4 h-4" />,
     href: "/certificates/manage"
   }
 ];
