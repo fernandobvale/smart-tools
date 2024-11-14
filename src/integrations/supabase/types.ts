@@ -24,6 +24,72 @@ export type Database = {
         }
         Relationships: []
       }
+      certificates: {
+        Row: {
+          bairro: string
+          canal_contato: string
+          cep: string
+          cidade_estado: string
+          codigo_rastreio: string | null
+          complemento: string | null
+          created_at: string
+          dados_confirmados: boolean
+          email_aluno: string
+          endereco: string
+          id: string
+          nome_aluno: string
+          numero_pedido: string
+          observacoes: string | null
+          quantidade: number
+          site_referencia: string
+          status_envio: string
+          status_pagamento: string
+          updated_at: string
+        }
+        Insert: {
+          bairro: string
+          canal_contato: string
+          cep: string
+          cidade_estado: string
+          codigo_rastreio?: string | null
+          complemento?: string | null
+          created_at?: string
+          dados_confirmados?: boolean
+          email_aluno: string
+          endereco: string
+          id?: string
+          nome_aluno: string
+          numero_pedido: string
+          observacoes?: string | null
+          quantidade?: number
+          site_referencia: string
+          status_envio: string
+          status_pagamento: string
+          updated_at?: string
+        }
+        Update: {
+          bairro?: string
+          canal_contato?: string
+          cep?: string
+          cidade_estado?: string
+          codigo_rastreio?: string | null
+          complemento?: string | null
+          created_at?: string
+          dados_confirmados?: boolean
+          email_aluno?: string
+          endereco?: string
+          id?: string
+          nome_aluno?: string
+          numero_pedido?: string
+          observacoes?: string | null
+          quantidade?: number
+          site_referencia?: string
+          status_envio?: string
+          status_pagamento?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cpf_searches: {
         Row: {
           cpf: string

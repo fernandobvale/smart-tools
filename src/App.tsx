@@ -17,6 +17,8 @@ import CpfConsulta from "./pages/CpfConsulta";
 import SeoGenerator from "./pages/SeoGenerator";
 import MarkdownEditor from "./pages/MarkdownEditor";
 import Notes from "./pages/Notes";
+import CertificateForm from "./pages/Certificates/CertificateForm";
+import CertificateManagement from "./pages/Certificates/CertificateManagement";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
                 <Route path="/seo-generator" element={<SeoGenerator />} />
                 <Route path="/markdown-editor" element={<MarkdownEditor />} />
                 <Route path="/notes" element={<Notes />} />
+                <Route path="/certificates/new" element={<CertificateForm />} />
+                <Route path="/certificates/manage" element={<CertificateManagement />} />
               </Route>
             </Routes>
           </AuthProvider>
