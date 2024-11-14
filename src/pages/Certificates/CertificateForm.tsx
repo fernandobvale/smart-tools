@@ -18,10 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { Send } from "lucide-react";
 import { CONTACT_CHANNELS, SHIPPING_STATUS, REFERENCE_SITES } from "./constants";
 
 const formSchema = z.object({
@@ -76,7 +78,11 @@ export default function CertificateForm() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-6">
-        <h1 className="text-2xl font-bold mb-6 text-center">Formulário Envio de Certificado</h1>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <h1 className="text-2xl font-bold text-center">Formulário Envio de Certificado</h1>
+          <Send className="h-6 w-6" />
+        </div>
+        <Separator className="mb-8" />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
