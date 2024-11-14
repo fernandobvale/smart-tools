@@ -7,21 +7,28 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Certificate {
   id: string;
   nome_aluno: string;
   email_aluno: string;
+  canal_contato: string;
+  status_pagamento: string;
+  dados_confirmados: boolean;
   endereco: string;
   complemento: string | null;
   bairro: string;
   cidade_estado: string;
   cep: string;
-  numero_pedido: string;
+  status_envio: string;
   site_referencia: string;
+  numero_pedido: string;
+  quantidade: number;
+  observacoes: string | null;
 }
 
 interface ShippingDataDialogProps {
@@ -35,11 +42,17 @@ export function ShippingDataDialog({
   onOpenChange,
   certificate,
 }: ShippingDataDialogProps) {
-  const [formData, setFormData] = useState<Partial<Certificate>>(certificate || {});
+  const [formData, setFormData] = useState<Partial<Certificate>>({});
+
+  useEffect(() => {
+    if (certificate) {
+      setFormData(certificate);
+    }
+  }, [certificate]);
 
   if (!certificate) return null;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -52,12 +65,18 @@ export function ShippingDataDialog({
         .update({
           nome_aluno: formData.nome_aluno,
           email_aluno: formData.email_aluno,
+          canal_contato: formData.canal_contato,
+          status_pagamento: formData.status_pagamento,
           endereco: formData.endereco,
           complemento: formData.complemento,
           bairro: formData.bairro,
           cidade_estado: formData.cidade_estado,
           cep: formData.cep,
+          status_envio: formData.status_envio,
           site_referencia: formData.site_referencia,
+          numero_pedido: formData.numero_pedido,
+          quantidade: formData.quantidade,
+          observacoes: formData.observacoes,
         })
         .eq("id", certificate.id);
 
@@ -73,7 +92,7 @@ export function ShippingDataDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Dados de Envio</DialogTitle>
         </DialogHeader>
@@ -84,7 +103,7 @@ export function ShippingDataDialog({
               <Input
                 id="nome_aluno"
                 name="nome_aluno"
-                value={formData.nome_aluno}
+                value={formData.nome_aluno || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -94,7 +113,25 @@ export function ShippingDataDialog({
                 id="email_aluno"
                 name="email_aluno"
                 type="email"
-                value={formData.email_aluno}
+                value={formData.email_aluno || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="canal_contato">Canal de Contato</Label>
+              <Input
+                id="canal_contato"
+                name="canal_contato"
+                value={formData.canal_contato || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status_pagamento">Status do Pagamento</Label>
+              <Input
+                id="status_pagamento"
+                name="status_pagamento"
+                value={formData.status_pagamento || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -103,7 +140,7 @@ export function ShippingDataDialog({
               <Input
                 id="endereco"
                 name="endereco"
-                value={formData.endereco}
+                value={formData.endereco || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -121,7 +158,7 @@ export function ShippingDataDialog({
               <Input
                 id="bairro"
                 name="bairro"
-                value={formData.bairro}
+                value={formData.bairro || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -130,7 +167,7 @@ export function ShippingDataDialog({
               <Input
                 id="cidade_estado"
                 name="cidade_estado"
-                value={formData.cidade_estado}
+                value={formData.cidade_estado || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -139,7 +176,16 @@ export function ShippingDataDialog({
               <Input
                 id="cep"
                 name="cep"
-                value={formData.cep}
+                value={formData.cep || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status_envio">Status do Envio</Label>
+              <Input
+                id="status_envio"
+                name="status_envio"
+                value={formData.status_envio || ""}
                 onChange={handleInputChange}
               />
             </div>
@@ -148,10 +194,38 @@ export function ShippingDataDialog({
               <Input
                 id="site_referencia"
                 name="site_referencia"
-                value={formData.site_referencia}
+                value={formData.site_referencia || ""}
                 onChange={handleInputChange}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="numero_pedido">Número do Pedido</Label>
+              <Input
+                id="numero_pedido"
+                name="numero_pedido"
+                value={formData.numero_pedido || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quantidade">Quantidade</Label>
+              <Input
+                id="quantidade"
+                name="quantidade"
+                type="number"
+                value={formData.quantidade || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="observacoes">Observações</Label>
+            <Textarea
+              id="observacoes"
+              name="observacoes"
+              value={formData.observacoes || ""}
+              onChange={handleInputChange}
+            />
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
