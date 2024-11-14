@@ -38,6 +38,7 @@ const Login = () => {
                   colors: {
                     brand: 'rgb(var(--primary))',
                     brandAccent: 'rgb(var(--primary))',
+                    inputText: 'white',
                   },
                 },
               },
@@ -45,7 +46,7 @@ const Login = () => {
                 container: 'w-full',
                 button: 'w-full',
                 anchor: 'text-primary hover:text-primary/80',
-                input: 'text-foreground bg-background',
+                input: 'text-white bg-background',
                 label: 'text-foreground',
               },
             }}
