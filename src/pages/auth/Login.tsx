@@ -84,7 +84,7 @@ const Login = () => {
                 },
               },
             }}
-            messages={{
+            customMessages={{
               "Invalid login credentials": "Credenciais de login inválidas",
               "User already registered": "Usuário já cadastrado",
               "Invalid email": "Email inválido",
