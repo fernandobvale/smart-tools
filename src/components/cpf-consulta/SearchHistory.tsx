@@ -43,7 +43,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[120px] px-2 sm:px-4">CPF</TableHead>
+            <TableHead className="w-[160px] px-2 sm:px-4">CPF</TableHead>
             <TableHead className="px-2 sm:px-4">Nome</TableHead>
             <TableHead className="w-[100px] px-2 sm:px-4">Saldo</TableHead>
             <TableHead className="hidden sm:table-cell">Data</TableHead>
@@ -52,7 +52,7 @@ const SearchHistory = ({ data, isLoading }: SearchHistoryProps) => {
         <TableBody>
           {data.map((item) => (
             <TableRow key={item.id}>
-              <TableCell className="font-medium px-2 sm:px-4 text-xs sm:text-sm">
+              <TableCell className="font-medium px-2 sm:px-4 text-xs sm:text-sm whitespace-nowrap">
                 {formatCPF(item.cpf)}
               </TableCell>
               <TableCell className="max-w-[150px] sm:max-w-[200px] truncate px-2 sm:px-4 text-xs sm:text-sm">
