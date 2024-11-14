@@ -152,7 +152,10 @@ export default function CertificateManagement() {
           >
             Dados de Envio
           </Button>
-          <Button onClick={handleOpenNewCertificateForm} variant="outline">
+          <Button 
+            onClick={handleOpenNewCertificateForm} 
+            variant="default"
+          >
             <FileText className="w-4 h-4 mr-2" />
             Formulário
           </Button>
