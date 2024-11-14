@@ -76,9 +76,9 @@ export default function CertificateForm() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-6">
-        <h1 className="text-2xl font-bold mb-6">Novo Certificado</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Formulário Envio de Certificado</h1>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
