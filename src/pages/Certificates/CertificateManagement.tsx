@@ -12,6 +12,9 @@ type Certificate = {
   id: string;
   nome_aluno: string;
   email_aluno: string;
+  canal_contato: string;
+  status_pagamento: string;
+  dados_confirmados: boolean;
   status_envio: string;
   cidade_estado: string;
   codigo_rastreio: string | null;
@@ -21,6 +24,10 @@ type Certificate = {
   bairro: string;
   cep: string;
   site_referencia: string;
+  quantidade: number;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export default function CertificateManagement() {
