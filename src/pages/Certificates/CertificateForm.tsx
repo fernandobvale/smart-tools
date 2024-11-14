@@ -79,8 +79,8 @@ export default function CertificateForm() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-6">
         <div className="flex items-center justify-center gap-2 mb-6">
+          <Send className="h-6 w-6 mr-2" />
           <h1 className="text-2xl font-bold text-center">Formulário Envio de Certificado</h1>
-          <Send className="h-6 w-6" />
         </div>
         <Separator className="mb-8" />
         <Form {...form}>
