@@ -33,6 +33,7 @@ const App = () => (
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/certificates/new" element={<CertificateForm />} />
               <Route
                 element={
                   <RequireAuth>
@@ -49,7 +50,6 @@ const App = () => (
                 <Route path="/seo-generator" element={<SeoGenerator />} />
                 <Route path="/markdown-editor" element={<MarkdownEditor />} />
                 <Route path="/notes" element={<Notes />} />
-                <Route path="/certificates/new" element={<CertificateForm />} />
                 <Route path="/certificates/manage" element={<CertificateManagement />} />
               </Route>
             </Routes>
