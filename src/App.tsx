@@ -4,7 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import DashboardLayout from "./layouts/DashboardLayout";
+import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
 import VideoToAudio from "./pages/VideoToAudio";
@@ -24,20 +27,29 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/text-splitter" element={<Index />} />
-              <Route path="/video-to-audio" element={<VideoToAudio />} />
-              <Route path="/receipts" element={<Receipts />} />
-              <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
-              <Route path="/cpf-consulta" element={<CpfConsulta />} />
-              <Route path="/seo-generator" element={<SeoGenerator />} />
-              <Route path="/markdown-editor" element={<MarkdownEditor />} />
-              <Route path="/notes" element={<Notes />} />
-            </Route>
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route
+                element={
+                  <RequireAuth>
+                    <DashboardLayout />
+                  </RequireAuth>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/text-splitter" element={<Index />} />
+                <Route path="/video-to-audio" element={<VideoToAudio />} />
+                <Route path="/receipts" element={<Receipts />} />
+                <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
+                <Route path="/cpf-consulta" element={<CpfConsulta />} />
+                <Route path="/seo-generator" element={<SeoGenerator />} />
+                <Route path="/markdown-editor" element={<MarkdownEditor />} />
+                <Route path="/notes" element={<Notes />} />
+              </Route>
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
