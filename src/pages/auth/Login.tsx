@@ -21,9 +21,9 @@ const Login = () => {
 
   // Handle auth state changes to show custom error messages
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'USER_DELETED') {
-        toast.error('Usuário excluído');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        toast.error('Credenciais inválidas');
       }
     });
 
