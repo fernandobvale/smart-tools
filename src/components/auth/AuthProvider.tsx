@@ -3,17 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   loading: true,
+  signOut: async () => {},
 });
 
 export const useAuth = () => {
@@ -44,6 +47,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/login");
+      toast.success("Logout realizado com sucesso!");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Erro ao fazer logout");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -53,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, loading }}>
+    <AuthContext.Provider value={{ session, user, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
