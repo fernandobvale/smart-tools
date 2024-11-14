@@ -80,6 +80,7 @@ const Login = () => {
                   button_label: "Enviar instruções",
                   loading_button_label: "Enviando instruções...",
                   link_text: "Esqueceu sua senha?",
+                  confirmation_text: "Verifique seu email para o link de redefinição de senha"
                 },
               },
             }}
