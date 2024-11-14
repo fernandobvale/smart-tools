@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote, Certificate } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -45,6 +45,12 @@ export default function Dashboard() {
       description: "Crie e gerencie suas notas com um editor rico",
       icon: <StickyNote className="w-6 h-6" />,
       href: "/notes"
+    },
+    {
+      title: "Gestão de Certificados",
+      description: "Gerencie e acompanhe o envio de certificados",
+      icon: <Certificate className="w-6 h-6" />,
+      href: "/certificates/manage"
     }
   ];
 
