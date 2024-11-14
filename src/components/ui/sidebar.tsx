@@ -8,9 +8,11 @@ import {
   UserSearch,
   FileText,
   FileEdit,
-  StickyNote
+  StickyNote,
+  LogOut
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const items = [
   {
@@ -56,6 +58,8 @@ const items = [
 ];
 
 export function Sidebar() {
+  const { signOut } = useAuth();
+
   return (
     <div className="w-64 space-y-4 py-4 min-h-screen border-r bg-background">
       <div className="px-3 py-2">
@@ -80,6 +84,14 @@ export function Sidebar() {
               <span className="flex-1">{item.title}</span>
             </NavLink>
           ))}
+          
+          <button
+            onClick={signOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent text-destructive hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="flex-1">Sair</span>
+          </button>
         </div>
       </ScrollArea>
     </div>
