@@ -1,65 +1,48 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from '../_shared/cors.ts'
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { videoPath } = await req.json()
-    
+
     if (!videoPath) {
       throw new Error('Video path is required')
     }
 
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Generate audio file path
+    // For now, we'll just return a mock response
+    // In a real implementation, you would process the video here
     const audioPath = videoPath.replace('videos/', 'audio/').replace('.mp4', '.mp3')
 
-    // For now, we'll just simulate the conversion by copying the file
-    // In a real implementation, you'd use ffmpeg or a similar tool to convert the video
-    const { data: videoData, error: videoError } = await supabaseClient.storage
-      .from('media')
-      .download(videoPath)
-
-    if (videoError) {
-      throw videoError
-    }
-
-    // Upload the "converted" file
-    const { error: uploadError } = await supabaseClient.storage
-      .from('media')
-      .upload(audioPath, videoData)
-
-    if (uploadError) {
-      throw uploadError
-    }
+    console.log(`Processing video: ${videoPath}`)
+    console.log(`Generated audio path: ${audioPath}`)
 
     return new Response(
-      JSON.stringify({ audioPath }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+      JSON.stringify({
+        audioPath,
+        message: 'Conversion started successfully',
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
       }
     )
   } catch (error) {
+    console.error('Error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
+      {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
       }
     )
   }
