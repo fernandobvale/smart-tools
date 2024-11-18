@@ -8,3 +8,8 @@ export interface TeacherApplicationForm {
   motivation: string;
   privacy_accepted: boolean;
 }
+
+export interface TeacherApplicationFormProps {
+  onSubmit: (data: TeacherApplicationForm) => Promise<void>;
+  isSubmitting: boolean;
+}
