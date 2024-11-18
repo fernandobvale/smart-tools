@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote, GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -51,6 +51,12 @@ export default function Dashboard() {
       description: "Gerencie e acompanhe o envio de certificados",
       icon: <FileText className="w-6 h-6" />,
       href: "/certificates/manage"
+    },
+    {
+      title: "Lista de Professores",
+      description: "Gerencie e visualize inscrições de professores",
+      icon: <GraduationCap className="w-6 h-6" />,
+      href: "/teacher-list"
     }
   ];
 
