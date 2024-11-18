@@ -9,7 +9,8 @@ import {
   FileText,
   FileEdit,
   StickyNote,
-  LogOut
+  LogOut,
+  GraduationCap
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -59,6 +60,11 @@ const items = [
     title: "Gestão de Certificados",
     icon: <FileText className="w-4 h-4" />,
     href: "/certificates/manage"
+  },
+  {
+    title: "Lista de Professores",
+    icon: <GraduationCap className="w-4 h-4" />,
+    href: "/teacher-list"
   }
 ];
 

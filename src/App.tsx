@@ -37,7 +37,6 @@ const App = () => (
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/certificates/new" element={<CertificateForm />} />
               <Route path="/teacher-application" element={<TeacherApplication />} />
-              <Route path="/teacher-list" element={<TeacherList />} />
               <Route
                 element={
                   <RequireAuth>
@@ -55,6 +54,7 @@ const App = () => (
                 <Route path="/markdown-editor" element={<MarkdownEditor />} />
                 <Route path="/notes" element={<Notes />} />
                 <Route path="/certificates/manage" element={<CertificateManagement />} />
+                <Route path="/teacher-list" element={<TeacherList />} />
               </Route>
             </Routes>
           </AuthProvider>
