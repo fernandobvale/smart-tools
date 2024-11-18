@@ -31,7 +31,7 @@ export default function TeacherApplication() {
       if (dbError) {
         // Check if the error is due to duplicate email
         if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
-          toast.error("Este email já está cadastrado em nossa base de dados.");
+          toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
           return;
         }
         throw dbError;
