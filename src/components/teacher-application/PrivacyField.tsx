@@ -24,7 +24,7 @@ export const PrivacyField = ({ form }: PrivacyFieldProps) => {
             <FormLabel>
               Aceito a{" "}
               <a
-                href="/privacy-policy"
+                href="https://www.unovacursos.com.br/politica-de-privacidade-e-seguranca"
                 target="_blank"
                 className="text-blue-400 hover:underline"
               >

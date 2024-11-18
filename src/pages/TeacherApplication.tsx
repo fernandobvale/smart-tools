@@ -26,12 +26,10 @@ export default function TeacherApplication() {
 
   const onSubmit = async (values: TeacherApplicationFormData) => {
     try {
-      // Save to Supabase
       const { error } = await supabase.from("teacher_applications").insert([values]);
 
       if (error) throw error;
 
-      // Send email notification via Edge Function
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-teacher-application-email`,
         {
@@ -71,11 +69,6 @@ export default function TeacherApplication() {
     <div className="min-h-screen bg-[#1A1F2C] text-white">
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col items-center mb-8">
-          <img
-            src="https://tools.unovacursos.com.br/public/images/logo-unova.png"
-            alt="Unova Cursos"
-            className="h-16 mb-6"
-          />
           <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">
             Formulário de Inscrição para Professor
           </h1>
