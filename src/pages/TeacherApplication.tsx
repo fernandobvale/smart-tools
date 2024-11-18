@@ -26,30 +26,18 @@ export default function TeacherApplication() {
 
   const onSubmit = async (values: TeacherApplicationFormData) => {
     try {
-      const { error } = await supabase.from("teacher_applications").insert([values]);
+      const { error: dbError } = await supabase.from("teacher_applications").insert([values]);
 
-      if (error) throw error;
+      if (dbError) throw dbError;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-teacher-application-email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            name: values.full_name,
-            email: values.email,
-          }),
-        }
-      );
+      const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
+        body: {
+          name: values.full_name,
+          email: values.email,
+        },
+      });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error("Error response from email function:", errorData);
-        throw new Error("Failed to send confirmation email");
-      }
+      if (functionError) throw functionError;
 
       toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
       form.reset();
