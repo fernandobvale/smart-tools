@@ -72,7 +72,7 @@ export default function TeacherApplication() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col items-center mb-8">
           <img
-            src="/unova-logo.png"
+            src="https://tools.unovacursos.com.br/public/images/logo-unova.png"
             alt="Unova Cursos"
             className="h-16 mb-6"
           />
