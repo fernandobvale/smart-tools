@@ -28,7 +28,14 @@ export default function TeacherApplication() {
     try {
       const { error: dbError } = await supabase.from("teacher_applications").insert([values]);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        // Check if the error is due to duplicate email
+        if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
+          toast.error("Este email já está cadastrado em nossa base de dados.");
+          return;
+        }
+        throw dbError;
+      }
 
       const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
         body: {
