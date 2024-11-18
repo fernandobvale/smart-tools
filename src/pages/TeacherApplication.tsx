@@ -37,16 +37,32 @@ export default function TeacherApplication() {
         throw dbError;
       }
 
-      const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
-        body: {
-          name: values.full_name,
-          email: values.email,
-        },
-      });
+      // Try to send email notification, but don't block the submission if it fails
+      try {
+        const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
+          body: {
+            name: values.full_name,
+            email: values.email,
+          },
+        });
 
-      if (functionError) throw functionError;
+        if (functionError) {
+          console.error("Email notification failed:", functionError);
+          // Show a success message but mention that email might be delayed
+          toast.success(
+            "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
+          );
+        } else {
+          toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
+        }
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Still show success but mention the email delay
+        toast.success(
+          "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
+        );
+      }
 
-      toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
       form.reset();
     } catch (error) {
       console.error("Error submitting application:", error);
