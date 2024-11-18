@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { PersonalInfoFields } from "@/components/teacher-application/PersonalInfoFields";
 import { ExperienceFields } from "@/components/teacher-application/ExperienceFields";
@@ -46,22 +46,20 @@ export default function TeacherApplication() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to send email notification");
+        const errorData = await response.text();
+        console.error("Error response from email function:", errorData);
+        throw new Error("Failed to send confirmation email");
       }
 
-      toast({
-        title: "Inscrição enviada com sucesso!",
-        description: "Agradecemos seu interesse. Você receberá um email de confirmação em breve.",
-      });
-
+      toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
       form.reset();
     } catch (error) {
       console.error("Error submitting application:", error);
-      toast({
-        title: "Erro ao enviar inscrição",
-        description: "Ocorreu um erro ao enviar sua inscrição. Por favor, tente novamente.",
-        variant: "destructive",
-      });
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : "Ocorreu um erro ao enviar sua inscrição. Por favor, tente novamente."
+      );
     }
   };
 

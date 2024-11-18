@@ -14,18 +14,26 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: { ...corsHeaders }
+    });
   }
 
   try {
     const { name, email }: EmailRequest = await req.json();
+    console.log(`Processing email request for ${name} (${email})`);
+
+    if (!BREVO_API_KEY) {
+      throw new Error("BREVO_API_KEY is not set");
+    }
 
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY!,
+        "api-key": BREVO_API_KEY,
       },
       body: JSON.stringify({
         sender: {
@@ -58,20 +66,35 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
+    console.log('Brevo API response status:', res.status);
+
     if (!res.ok) {
-      throw new Error("Failed to send email");
+      const errorText = await res.text();
+      console.error('Brevo API error:', errorText);
+      throw new Error(`Failed to send email: ${errorText}`);
     }
 
     const data = await res.json();
+    console.log('Email sent successfully:', data);
+
     return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "application/json" 
+      },
       status: 200,
     });
   } catch (error) {
+    console.error("Error in send-teacher-application-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : "An unknown error occurred" 
+      }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json" 
+        },
         status: 500,
       }
     );
