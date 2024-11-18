@@ -26,7 +26,6 @@ interface TeacherApplication {
 }
 
 export default function TeacherList() {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherApplication | null>(null);
 
@@ -54,13 +53,18 @@ export default function TeacherList() {
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-2xl font-bold">Lista de Professores Inscritos</h1>
-        <Button
-          onClick={() => navigate("/teacher-application")}
-          className="bg-[#9b87f5] hover:bg-[#7E69AB]"
+        <a
+          href="/teacher-application"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Nova Inscrição
-        </Button>
+          <Button
+            className="bg-[#9b87f5] hover:bg-[#7E69AB]"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Nova Inscrição
+          </Button>
+        </a>
       </div>
 
       <div className="relative mb-6">
