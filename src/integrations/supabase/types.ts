@@ -189,6 +189,45 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_applications: {
+        Row: {
+          academic_background: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          motivation: string
+          privacy_accepted: boolean
+          teaching_experience: string
+          video_experience: string
+          whatsapp: string
+        }
+        Insert: {
+          academic_background: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          motivation: string
+          privacy_accepted?: boolean
+          teaching_experience: string
+          video_experience: string
+          whatsapp: string
+        }
+        Update: {
+          academic_background?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          motivation?: string
+          privacy_accepted?: boolean
+          teaching_experience?: string
+          video_experience?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
