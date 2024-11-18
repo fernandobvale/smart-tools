@@ -66,12 +66,25 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    console.log('Brevo API response status:', res.status);
-
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Brevo API error:', errorText);
-      throw new Error(`Failed to send email: ${errorText}`);
+      const errorData = await res.json();
+      console.error('Brevo API error:', errorData);
+      
+      // Check if it's an IP authorization error
+      if (errorData.message?.includes('unrecognised IP address')) {
+        return new Response(
+          JSON.stringify({
+            error: "IP authorization required. Please contact support to authorize the server IP address.",
+            details: errorData.message
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 403
+          }
+        );
+      }
+      
+      throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
     }
 
     const data = await res.json();
@@ -88,7 +101,8 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Error in send-teacher-application-email function:", error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "An unknown error occurred" 
+        error: error instanceof Error ? error.message : "An unknown error occurred",
+        type: "email_error"
       }),
       {
         headers: { 
