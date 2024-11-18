@@ -8,6 +8,14 @@ interface PersonalInfoFieldsProps {
 }
 
 export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    }
+    return numbers.slice(0, 11).replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  };
+
   return (
     <>
       <FormField
@@ -46,12 +54,14 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
             <FormLabel>WhatsApp</FormLabel>
             <FormControl>
               <Input
-                placeholder="DDD + Número"
+                placeholder="(XX) XXXXX-XXXX"
                 {...field}
+                value={formatPhoneNumber(field.value)}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, "");
                   field.onChange(value);
                 }}
+                maxLength={15}
               />
             </FormControl>
             <FormMessage />
