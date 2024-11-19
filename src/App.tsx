@@ -11,7 +11,6 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Login from "./pages/auth/Login";
 import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
-import VideoToAudio from "./pages/VideoToAudio";
 import Receipts from "./pages/Receipts";
 import ReceiptForm from "./components/receipts/ReceiptForm";
 import CpfConsulta from "./pages/CpfConsulta";
@@ -58,7 +57,6 @@ const App = () => {
                 >
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/text-splitter" element={<Index />} />
-                  <Route path="/video-to-audio" element={<VideoToAudio />} />
                   <Route path="/receipts" element={<Receipts />} />
                   <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
                   <Route path="/cpf-consulta" element={<CpfConsulta />} />

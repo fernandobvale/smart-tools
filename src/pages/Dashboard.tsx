@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  Scissors, 
-  Music, 
+  Scissors,
   Receipt, 
   UserSearch, 
   FileText, 
@@ -20,12 +19,6 @@ export default function Dashboard() {
       description: "Divida textos longos em partes menores",
       icon: <Scissors className="w-6 h-6 text-[#9b87f5]" />,
       href: "/text-splitter"
-    },
-    {
-      title: "Conversor de Vídeo para Áudio",
-      description: "Extraia o áudio de seus vídeos MP4",
-      icon: <Music className="w-6 h-6 text-[#7E69AB]" />,
-      href: "/video-to-audio"
     },
     {
       title: "Sistema de Recibos",

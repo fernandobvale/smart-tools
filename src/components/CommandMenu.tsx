@@ -23,11 +23,6 @@ const tools = [
     description: "Divida textos longos em partes menores",
   },
   {
-    title: "Conversor de Vídeo para Áudio",
-    href: "/video-to-audio",
-    description: "Extraia o áudio de seus vídeos MP4",
-  },
-  {
     title: "Recibos",
     href: "/receipts",
     description: "Gere e gerencie recibos facilmente",
