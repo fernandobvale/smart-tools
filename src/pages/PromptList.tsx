@@ -6,6 +6,16 @@ import { SearchInput } from "@/components/certificates/SearchInput";
 import { Plus, Copy, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Prompt {
   id: string;
@@ -15,6 +25,7 @@ interface Prompt {
 
 export default function PromptList() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [promptToDelete, setPromptToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -66,58 +77,82 @@ export default function PromptList() {
         description: "Não foi possível excluir o prompt.",
         variant: "destructive",
       });
+    } finally {
+      setPromptToDelete(null);
     }
   };
 
   return (
-    <div className="container max-w-4xl py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Lista de Prompts</h1>
-        <Button onClick={() => navigate("/prompt-generator")} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Prompt
-        </Button>
-      </div>
+    <>
+      <div className="container max-w-4xl py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Lista de Prompts</h1>
+          <Button onClick={() => navigate("/prompt-generator")} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Novo Prompt
+          </Button>
+        </div>
 
-      <SearchInput
-        value={searchTerm}
-        onChange={setSearchTerm}
-        placeholder="Pesquisar por nome do curso..."
-      />
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Pesquisar por nome do curso..."
+        />
 
-      <div className="space-y-4">
-        {filteredPrompts?.map((prompt) => (
-          <div
-            key={prompt.id}
-            className="flex items-center justify-between p-4 bg-card rounded-lg border"
-          >
-            <span className="font-medium">{prompt.course_name}</span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyPrompt(prompt.generated_prompt)}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/prompt-generator/${prompt.id}`)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => deletePrompt(prompt.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+        <div className="space-y-4">
+          {filteredPrompts?.map((prompt) => (
+            <div
+              key={prompt.id}
+              className="flex items-center justify-between p-4 bg-card rounded-lg border"
+            >
+              <span className="font-medium">{prompt.course_name}</span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyPrompt(prompt.generated_prompt)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/prompt-generator/${prompt.id}`)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPromptToDelete(prompt.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+
+      <AlertDialog open={!!promptToDelete} onOpenChange={() => setPromptToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este prompt? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => promptToDelete && deletePrompt(promptToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
