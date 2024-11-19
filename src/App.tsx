@@ -22,6 +22,7 @@ import CertificateManagement from "./pages/Certificates/CertificateManagement";
 import TeacherApplication from "./pages/TeacherApplication";
 import TeacherList from "./pages/TeacherList";
 import PromptGenerator from "./pages/PromptGenerator";
+import PromptList from "./pages/PromptList";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
                 <Route path="/certificates/manage" element={<CertificateManagement />} />
                 <Route path="/teacher-list" element={<TeacherList />} />
                 <Route path="/prompt-generator" element={<PromptGenerator />} />
+                <Route path="/prompt-list" element={<PromptList />} />
               </Route>
             </Routes>
           </AuthProvider>
