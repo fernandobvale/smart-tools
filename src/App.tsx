@@ -36,47 +36,45 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <React.StrictMode>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            <TooltipProvider>
-              <AuthProvider>
-                <Toaster />
-                <Sonner />
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/certificates/new" element={<CertificateForm />} />
-                  <Route path="/teacher-application" element={<TeacherApplication />} />
-                  <Route
-                    element={
-                      <RequireAuth>
-                        <DashboardLayout />
-                      </RequireAuth>
-                    }
-                  >
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/text-splitter" element={<Index />} />
-                    <Route path="/video-to-audio" element={<VideoToAudio />} />
-                    <Route path="/receipts" element={<Receipts />} />
-                    <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
-                    <Route path="/cpf-consulta" element={<CpfConsulta />} />
-                    <Route path="/seo-generator" element={<SeoGenerator />} />
-                    <Route path="/markdown-editor" element={<MarkdownEditor />} />
-                    <Route path="/notes" element={<Notes />} />
-                    <Route path="/certificates/manage" element={<CertificateManagement />} />
-                    <Route path="/teacher-list" element={<TeacherList />} />
-                    <Route path="/prompt-generator" element={<PromptGenerator />} />
-                    <Route path="/prompt-list" element={<PromptList />} />
-                  </Route>
-                </Routes>
-              </AuthProvider>
-            </TooltipProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </BrowserRouter>
-    </React.StrictMode>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+          <TooltipProvider>
+            <AuthProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/certificates/new" element={<CertificateForm />} />
+                <Route path="/teacher-application" element={<TeacherApplication />} />
+                <Route
+                  element={
+                    <RequireAuth>
+                      <DashboardLayout />
+                    </RequireAuth>
+                  }
+                >
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/text-splitter" element={<Index />} />
+                  <Route path="/video-to-audio" element={<VideoToAudio />} />
+                  <Route path="/receipts" element={<Receipts />} />
+                  <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
+                  <Route path="/cpf-consulta" element={<CpfConsulta />} />
+                  <Route path="/seo-generator" element={<SeoGenerator />} />
+                  <Route path="/markdown-editor" element={<MarkdownEditor />} />
+                  <Route path="/notes" element={<Notes />} />
+                  <Route path="/certificates/manage" element={<CertificateManagement />} />
+                  <Route path="/teacher-list" element={<TeacherList />} />
+                  <Route path="/prompt-generator" element={<PromptGenerator />} />
+                  <Route path="/prompt-list" element={<PromptList />} />
+                </Route>
+              </Routes>
+            </AuthProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
