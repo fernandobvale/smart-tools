@@ -46,8 +46,10 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                {/* Rotas públicas */}
                 <Route path="/certificates/new" element={<CertificateForm />} />
                 <Route path="/teacher-application" element={<TeacherApplication />} />
+                {/* Rotas protegidas */}
                 <Route
                   element={
                     <RequireAuth>
