@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/certificates/SearchInput";
-import { Plus, Copy, Edit, Trash2 } from "lucide-react";
+import { Plus, Copy, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -113,13 +113,6 @@ export default function PromptList() {
                   onClick={() => copyPrompt(prompt.generated_prompt)}
                 >
                   <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/prompt-generator/${prompt.id}`)}
-                >
-                  <Edit className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
