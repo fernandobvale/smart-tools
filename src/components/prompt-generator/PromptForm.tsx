@@ -5,9 +5,11 @@ import { FormData } from "./types";
 interface PromptFormProps {
   formData: FormData;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  initialData?: Partial<FormData>;
+  promptId?: string;
 }
 
-export function PromptForm({ formData, onChange }: PromptFormProps) {
+export function PromptForm({ formData, onChange, initialData, promptId }: PromptFormProps) {
   return (
     <div className="space-y-4">
       <div>
