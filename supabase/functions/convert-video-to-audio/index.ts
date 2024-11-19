@@ -22,7 +22,13 @@ serve(async (req) => {
     console.log('Received video path:', videoPath);
 
     if (!videoPath) {
-      throw new Error('Video path is required');
+      return new Response(
+        JSON.stringify({ error: 'Video path is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Create Supabase client
@@ -37,8 +43,13 @@ serve(async (req) => {
       .from('media')
       .download(videoPath);
 
-    if (downloadError || !videoFile) {
-      throw new Error(`Error downloading video: ${downloadError?.message || 'File not found'}`);
+    if (downloadError) {
+      console.error('Error downloading video:', downloadError);
+      throw new Error(`Error downloading video: ${downloadError.message}`);
+    }
+
+    if (!videoFile) {
+      throw new Error('No video file found');
     }
 
     // Initialize FFmpeg
@@ -46,7 +57,10 @@ serve(async (req) => {
     const ffmpeg = new FFmpeg();
     
     console.log('Loading FFmpeg...');
-    await ffmpeg.load();
+    await ffmpeg.load({
+      coreURL: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.js",
+      wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.wasm",
+    });
 
     // Convert ArrayBuffer to Uint8Array
     const videoData = new Uint8Array(await videoFile.arrayBuffer());
@@ -84,6 +98,7 @@ serve(async (req) => {
       });
 
     if (uploadError) {
+      console.error('Error uploading audio:', uploadError);
       throw new Error(`Error uploading audio: ${uploadError.message}`);
     }
 
@@ -110,7 +125,7 @@ serve(async (req) => {
     console.error('Unexpected error:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Error during video conversion',
+        error: 'An unexpected error occurred',
         details: error.message
       }),
       { 
