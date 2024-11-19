@@ -13,7 +13,6 @@ serve(async (req) => {
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
       return new Response(null, { 
-        status: 200,
         headers: corsHeaders 
       });
     }
@@ -32,47 +31,37 @@ serve(async (req) => {
     }
 
     // Create Supabase client
-    const supabase = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     // Download video file
     console.log('Downloading video file...');
-    const { data: videoFile, error: downloadError } = await supabase.storage
+    const { data: videoFile, error: downloadError } = await supabaseAdmin.storage
       .from('media')
       .download(videoPath);
 
     if (downloadError) {
       console.error('Error downloading video:', downloadError);
-      return new Response(
-        JSON.stringify({ error: `Error downloading video: ${downloadError.message}` }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error(`Error downloading video: ${downloadError.message}`);
     }
 
     if (!videoFile) {
-      return new Response(
-        JSON.stringify({ error: 'No video file found' }),
-        { 
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error('No video file found');
     }
 
     // Initialize FFmpeg
+    console.log('Initializing FFmpeg...');
     const ffmpeg = new FFmpeg();
+    
     console.log('Loading FFmpeg...');
     await ffmpeg.load({
-      coreURL: await fetchFile('https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.js'),
-      wasmURL: await fetchFile('https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.wasm'),
+      coreURL: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.js",
+      wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.wasm",
     });
 
-    // Convert ArrayBuffer to Uint8Array for FFmpeg
+    // Convert ArrayBuffer to Uint8Array
     const videoData = new Uint8Array(await videoFile.arrayBuffer());
     
     // Write input file
@@ -100,7 +89,7 @@ serve(async (req) => {
 
     // Upload the converted audio
     console.log('Uploading audio file...');
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('media')
       .upload(audioPath, audioData, {
         contentType: 'audio/mpeg',
@@ -109,18 +98,12 @@ serve(async (req) => {
 
     if (uploadError) {
       console.error('Error uploading audio:', uploadError);
-      return new Response(
-        JSON.stringify({ error: `Error uploading audio: ${uploadError.message}` }),
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error(`Error uploading audio: ${uploadError.message}`);
     }
 
     // Generate public URL
     console.log('Generating public URL...');
-    const { data: publicUrl } = await supabase.storage
+    const { data: publicUrl } = await supabaseAdmin.storage
       .from('media')
       .getPublicUrl(audioPath);
 
