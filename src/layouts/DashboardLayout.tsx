@@ -28,11 +28,11 @@ export default function DashboardLayout() {
         <ThemeToggle />
       </div>
 
-      <main className="flex-1 md:ml-64">
+      <main className="flex-1">
         <div className="hidden md:flex justify-end p-4">
           <ThemeToggle />
         </div>
-        <div className="mt-16 md:mt-0">
+        <div className="px-4 md:px-8 pb-8">
           <Outlet />
         </div>
       </main>
