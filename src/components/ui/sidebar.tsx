@@ -10,7 +10,8 @@ import {
   FileEdit,
   StickyNote,
   LogOut,
-  GraduationCap
+  GraduationCap,
+  MessageSquare
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -65,6 +66,11 @@ const items = [
     title: "Lista de Professores",
     icon: <GraduationCap className="w-4 h-4" />,
     href: "/teacher-list"
+  },
+  {
+    title: "Lista de Prompts",
+    icon: <MessageSquare className="w-4 h-4" />,
+    href: "/prompt-list"
   }
 ];
 

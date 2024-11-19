@@ -59,10 +59,10 @@ export default function Dashboard() {
       href: "/teacher-list"
     },
     {
-      title: "Gerador de Prompts",
-      description: "Gere prompts personalizados para cursos",
+      title: "Lista de Prompts",
+      description: "Visualize e gerencie prompts personalizados",
       icon: <MessageSquare className="w-6 h-6" />,
-      href: "/prompt-generator"
+      href: "/prompt-list"
     }
   ];
 
