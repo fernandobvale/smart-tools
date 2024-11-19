@@ -3,7 +3,6 @@ import { ScrollArea } from "./scroll-area";
 import { 
   Scissors, 
   LayoutDashboard,
-  Music,
   Receipt,
   UserSearch,
   FileText,
@@ -27,11 +26,6 @@ const items = [
     title: "Divisor de Texto",
     icon: <Scissors className="w-4 h-4" />,
     href: "/text-splitter"
-  },
-  {
-    title: "Conversor de Vídeo para Áudio",
-    icon: <Music className="w-4 h-4" />,
-    href: "/video-to-audio"
   },
   {
     title: "Recibos",
