@@ -32,7 +32,7 @@ export default function DashboardLayout() {
         <div className="hidden md:flex justify-end p-4">
           <ThemeToggle />
         </div>
-        <div className="px-4 md:px-8 pb-8">
+        <div className="p-4">
           <Outlet />
         </div>
       </main>
