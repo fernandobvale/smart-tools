@@ -1,5 +1,18 @@
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 import { toast } from '@/hooks/use-toast';
+
+// Create a special admin client for storage operations
+const adminSupabase = createClient(
+  'https://bgznszxombwvwhufowpm.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    }
+  }
+);
 
 export const checkSupabaseConnection = async () => {
   try {
@@ -41,7 +54,7 @@ export const checkSupabaseConnection = async () => {
 export const checkBucketExists = async (bucketName: string) => {
   try {
     console.log(`Verificando bucket ${bucketName}...`);
-    const { data: buckets, error } = await supabase
+    const { data: buckets, error } = await adminSupabase
       .storage
       .listBuckets();
 
@@ -58,7 +71,7 @@ export const checkBucketExists = async (bucketName: string) => {
     const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
     if (!bucketExists) {
       console.log(`Bucket ${bucketName} não encontrado. Tentando criar...`);
-      const { error: createError } = await supabase
+      const { error: createError } = await adminSupabase
         .storage
         .createBucket(bucketName, {
           public: true,
