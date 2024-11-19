@@ -58,8 +58,8 @@ serve(async (req) => {
     
     console.log('Loading FFmpeg...');
     await ffmpeg.load({
-      coreURL: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.js",
-      wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.wasm",
+      log: true,
+      corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js",
     });
 
     // Convert ArrayBuffer to Uint8Array

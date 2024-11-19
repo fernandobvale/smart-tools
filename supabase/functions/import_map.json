@@ -1,6 +1,7 @@
 {
   "imports": {
-    "@ffmpeg/ffmpeg": "https://esm.sh/@ffmpeg/ffmpeg@0.12.7?target=deno&no-check&pin=v135",
-    "@ffmpeg/util": "https://esm.sh/@ffmpeg/util@0.12.1?target=deno&no-check&pin=v135"
+    "@ffmpeg/ffmpeg": "https://esm.sh/@ffmpeg/ffmpeg@0.11.0?target=deno&no-check",
+    "@ffmpeg/util": "https://esm.sh/@ffmpeg/util@0.11.0?target=deno&no-check",
+    "@ffmpeg/core": "https://esm.sh/@ffmpeg/core@0.11.0?target=deno&no-check"
   }
 }
