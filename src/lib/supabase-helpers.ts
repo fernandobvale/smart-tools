@@ -5,99 +5,61 @@ import { toast } from '@/hooks/use-toast';
 // Create a special admin client for storage operations
 const adminSupabase = createClient(
   'https://bgznszxombwvwhufowpm.supabase.co',
-  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '',
+  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
   {
     auth: {
-      persistSession: false,
       autoRefreshToken: false,
+      persistSession: false
     }
   }
 );
 
-export const checkSupabaseConnection = async () => {
+// Função para verificar conexão com Supabase
+const checkSupabaseConnection = async () => {
   try {
-    console.log('Tentando conectar ao Supabase...');
-    const { data, error } = await supabase.from('_test_connection').select('count').single();
-    
-    if (error) {
-      console.error('Erro na conexão com Supabase:', error);
-      
-      let errorMessage = "Erro de conexão com Supabase. ";
-      if (error.message.includes('Failed to fetch')) {
-        errorMessage += "Verifique sua conexão com a internet.";
-      } else {
-        errorMessage += error.message;
-      }
-      
-      toast({
-        title: "Erro de Conexão",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    console.log('Conexão com Supabase estabelecida com sucesso!');
+    const { error } = await supabase.from('_test_connection').select('count').single();
+    if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Erro ao tentar conectar com Supabase:', error);
-    
+    console.error('Erro ao conectar com Supabase:', error);
     toast({
       title: "Erro de Conexão",
-      description: "Não foi possível conectar ao Supabase. Verifique suas credenciais.",
+      description: "Não foi possível conectar ao Supabase.",
       variant: "destructive",
     });
     return false;
   }
 };
 
-export const checkBucketExists = async (bucketName: string) => {
+// Função para verificar/criar bucket
+const checkBucketExists = async (bucketName: string) => {
   try {
-    console.log(`Verificando bucket ${bucketName}...`);
-    const { data: buckets, error } = await adminSupabase
-      .storage
-      .listBuckets();
-
+    const { data: buckets, error } = await adminSupabase.storage.listBuckets();
+    
     if (error) {
-      console.error(`Erro ao verificar bucket ${bucketName}:`, error);
-      toast({
-        title: "Erro no Bucket",
-        description: `Não foi possível acessar o bucket ${bucketName}. Verifique suas permissões.`,
-        variant: "destructive",
-      });
-      return false;
+      console.error('Erro ao listar buckets:', error);
+      throw error;
     }
 
     const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
+    
     if (!bucketExists) {
-      console.log(`Bucket ${bucketName} não encontrado. Tentando criar...`);
-      const { error: createError } = await adminSupabase
-        .storage
-        .createBucket(bucketName, {
-          public: true,
-          fileSizeLimit: 52428800 // 50MB limit
-        });
+      const { error: createError } = await adminSupabase.storage.createBucket(bucketName, {
+        public: true,
+        fileSizeLimit: 52428800
+      });
 
-      if (createError) {
-        console.error(`Erro ao criar bucket ${bucketName}:`, createError);
-        toast({
-          title: "Erro na Criação do Bucket",
-          description: `Não foi possível criar o bucket ${bucketName}. ${createError.message}`,
-          variant: "destructive",
-        });
-        return false;
-      }
-
+      if (createError) throw createError;
+      
       toast({
         title: "Bucket Criado",
         description: `O bucket ${bucketName} foi criado com sucesso.`,
       });
     }
 
-    console.log(`Bucket ${bucketName} encontrado e acessível`);
     return true;
   } catch (error) {
-    console.error(`Erro ao verificar bucket ${bucketName}:`, error);
+    console.error('Erro ao verificar/criar bucket:', error);
     toast({
       title: "Erro no Bucket",
       description: "Erro ao verificar o bucket de armazenamento.",
@@ -106,3 +68,5 @@ export const checkBucketExists = async (bucketName: string) => {
     return false;
   }
 };
+
+export { checkSupabaseConnection, checkBucketExists };
