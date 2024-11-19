@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       _test_connection: {
@@ -87,51 +87,6 @@ export interface Database {
           status_envio?: string
           status_pagamento?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      prompts: {
-        Row: {
-          id: string
-          course_name: string
-          course_content: string
-          workload: string
-          course_area: string
-          area_link: string
-          course_1: string
-          course_1_link: string
-          course_2: string
-          course_2_link: string
-          generated_prompt: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          course_name: string
-          course_content: string
-          workload: string
-          course_area: string
-          area_link: string
-          course_1: string
-          course_1_link: string
-          course_2: string
-          course_2_link: string
-          generated_prompt: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          course_name?: string
-          course_content?: string
-          workload?: string
-          course_area?: string
-          area_link?: string
-          course_1?: string
-          course_1_link?: string
-          course_2?: string
-          course_2_link?: string
-          generated_prompt?: string
-          created_at?: string
         }
         Relationships: []
       }
@@ -231,6 +186,51 @@ export interface Database {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      prompts: {
+        Row: {
+          area_link: string
+          course_1: string
+          course_1_link: string
+          course_2: string
+          course_2_link: string
+          course_area: string
+          course_content: string
+          course_name: string
+          created_at: string
+          generated_prompt: string
+          id: string
+          workload: string
+        }
+        Insert: {
+          area_link: string
+          course_1: string
+          course_1_link: string
+          course_2: string
+          course_2_link: string
+          course_area: string
+          course_content: string
+          course_name: string
+          created_at?: string
+          generated_prompt: string
+          id?: string
+          workload: string
+        }
+        Update: {
+          area_link?: string
+          course_1?: string
+          course_1_link?: string
+          course_2?: string
+          course_2_link?: string
+          course_area?: string
+          course_content?: string
+          course_name?: string
+          created_at?: string
+          generated_prompt?: string
+          id?: string
+          workload?: string
         }
         Relationships: []
       }

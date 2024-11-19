@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { PromptForm } from "@/components/prompt-generator/PromptForm";
+import { GeneratedPrompt } from "@/components/prompt-generator/GeneratedPrompt";
+import type { FormData } from "@/components/prompt-generator/types";
 
 export default function PromptGenerator() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     courseName: "",
     courseContent: "",
     workload: "",
@@ -21,9 +22,11 @@ export default function PromptGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const generatePrompt = async () => {
@@ -57,20 +60,18 @@ Faça 01 parágrafo sobre o tema: Outros cursos na área de ${formData.courseAre
 
     try {
       setIsLoading(true);
-      const { error } = await supabase
-        .from('prompts')
-        .insert({
-          course_name: formData.courseName,
-          course_content: formData.courseContent,
-          workload: formData.workload,
-          course_area: formData.courseArea,
-          area_link: formData.areaLink,
-          course_1: formData.course1,
-          course_1_link: formData.course1Link,
-          course_2: formData.course2,
-          course_2_link: formData.course2Link,
-          generated_prompt: prompt
-        });
+      const { error } = await supabase.from("prompts").insert({
+        course_name: formData.courseName,
+        course_content: formData.courseContent,
+        workload: formData.workload,
+        course_area: formData.courseArea,
+        area_link: formData.areaLink,
+        course_1: formData.course1,
+        course_1_link: formData.course1Link,
+        course_2: formData.course2,
+        course_2_link: formData.course2Link,
+        generated_prompt: prompt,
+      });
 
       if (error) throw error;
 
@@ -79,7 +80,7 @@ Faça 01 parágrafo sobre o tema: Outros cursos na área de ${formData.courseAre
         description: "Prompt gerado e salvo com sucesso.",
       });
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       toast({
         title: "Erro",
         description: "Erro ao salvar o prompt. Tente novamente.",
@@ -99,115 +100,17 @@ Faça 01 parágrafo sobre o tema: Outros cursos na área de ${formData.courseAre
         </p>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="text-sm font-medium">Nome do Curso</label>
-          <Input
-            name="courseName"
-            value={formData.courseName}
-            onChange={handleInputChange}
-            placeholder="Digite o nome do curso"
-          />
-        </div>
+      <PromptForm formData={formData} onChange={handleInputChange} />
 
-        <div>
-          <label className="text-sm font-medium">Conteúdo Programático</label>
-          <Textarea
-            name="courseContent"
-            value={formData.courseContent}
-            onChange={handleInputChange}
-            placeholder="Digite o conteúdo programático"
-            className="min-h-[100px]"
-          />
-        </div>
+      <Button
+        onClick={generatePrompt}
+        disabled={isLoading}
+        className="w-full"
+      >
+        {isLoading ? "Gerando..." : "Gerar Prompt"}
+      </Button>
 
-        <div>
-          <label className="text-sm font-medium">Carga Horária</label>
-          <Input
-            name="workload"
-            value={formData.workload}
-            onChange={handleInputChange}
-            placeholder="Digite a carga horária"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Área do Curso</label>
-          <Input
-            name="courseArea"
-            value={formData.courseArea}
-            onChange={handleInputChange}
-            placeholder="Digite a área do curso"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Link da Área</label>
-          <Input
-            name="areaLink"
-            value={formData.areaLink}
-            onChange={handleInputChange}
-            placeholder="Digite o link da área"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Curso 1</label>
-          <Input
-            name="course1"
-            value={formData.course1}
-            onChange={handleInputChange}
-            placeholder="Digite o nome do curso 1"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Link Curso 1</label>
-          <Input
-            name="course1Link"
-            value={formData.course1Link}
-            onChange={handleInputChange}
-            placeholder="Digite o link do curso 1"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Curso 2</label>
-          <Input
-            name="course2"
-            value={formData.course2}
-            onChange={handleInputChange}
-            placeholder="Digite o nome do curso 2"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Link Curso 2</label>
-          <Input
-            name="course2Link"
-            value={formData.course2Link}
-            onChange={handleInputChange}
-            placeholder="Digite o link do curso 2"
-          />
-        </div>
-
-        <Button 
-          onClick={generatePrompt} 
-          disabled={isLoading}
-          className="w-full"
-        >
-          {isLoading ? "Gerando..." : "Gerar Prompt"}
-        </Button>
-
-        {generatedPrompt && (
-          <div className="mt-8 space-y-4">
-            <h2 className="text-lg font-semibold">Prompt Gerado:</h2>
-            <div className="p-4 bg-muted rounded-lg whitespace-pre-wrap">
-              {generatedPrompt}
-            </div>
-          </div>
-        )}
-      </div>
+      <GeneratedPrompt prompt={generatedPrompt} />
     </div>
   );
 }
