@@ -11,7 +11,8 @@ import {
   StickyNote,
   LogOut,
   GraduationCap,
-  MessageSquare
+  MessageSquare,
+  Wrench
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -76,7 +77,10 @@ export function Sidebar() {
     <div className="w-64 flex flex-col space-y-4 py-4 min-h-screen border-r bg-background">
       <div className="px-3 py-2">
         <div className="flex items-center justify-between mb-2 px-4">
-          <h2 className="text-lg font-semibold">Ferramentas</h2>
+          <div className="flex items-center gap-2">
+            <Wrench className="w-5 h-5" />
+            <h2 className="text-lg font-semibold">Ferramentas</h2>
+          </div>
         </div>
         <Separator />
       </div>
