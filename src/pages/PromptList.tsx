@@ -119,6 +119,5 @@ export default function PromptList() {
         ))}
       </div>
     </div>
-  </div>
   );
 }
