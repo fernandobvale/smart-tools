@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
       _test_connection: {
@@ -87,6 +87,51 @@ export type Database = {
           status_envio?: string
           status_pagamento?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      prompts: {
+        Row: {
+          id: string
+          course_name: string
+          course_content: string
+          workload: string
+          course_area: string
+          area_link: string
+          course_1: string
+          course_1_link: string
+          course_2: string
+          course_2_link: string
+          generated_prompt: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          course_name: string
+          course_content: string
+          workload: string
+          course_area: string
+          area_link: string
+          course_1: string
+          course_1_link: string
+          course_2: string
+          course_2_link: string
+          generated_prompt: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          course_name?: string
+          course_content?: string
+          workload?: string
+          course_area?: string
+          area_link?: string
+          course_1?: string
+          course_1_link?: string
+          course_2?: string
+          course_2_link?: string
+          generated_prompt?: string
+          created_at?: string
         }
         Relationships: []
       }

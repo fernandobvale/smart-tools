@@ -57,18 +57,20 @@ Faça 01 parágrafo sobre o tema: Outros cursos na área de ${formData.courseAre
 
     try {
       setIsLoading(true);
-      const { error } = await supabase.from('prompts').insert({
-        course_name: formData.courseName,
-        course_content: formData.courseContent,
-        workload: formData.workload,
-        course_area: formData.courseArea,
-        area_link: formData.areaLink,
-        course_1: formData.course1,
-        course_1_link: formData.course1Link,
-        course_2: formData.course2,
-        course_2_link: formData.course2Link,
-        generated_prompt: prompt
-      });
+      const { error } = await supabase
+        .from('prompts')
+        .insert({
+          course_name: formData.courseName,
+          course_content: formData.courseContent,
+          workload: formData.workload,
+          course_area: formData.courseArea,
+          area_link: formData.areaLink,
+          course_1: formData.course1,
+          course_1_link: formData.course1Link,
+          course_2: formData.course2,
+          course_2_link: formData.course2Link,
+          generated_prompt: prompt
+        });
 
       if (error) throw error;
 
