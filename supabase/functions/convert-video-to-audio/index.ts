@@ -8,16 +8,26 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
   try {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { 
+        status: 200,
+        headers: corsHeaders 
+      })
+    }
+
     const { videoPath } = await req.json()
     console.log('Received video path:', videoPath)
 
     if (!videoPath) {
-      throw new Error('Video path is required')
+      return new Response(
+        JSON.stringify({ error: 'Video path is required' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     // Criar cliente Supabase com a service role key
@@ -34,12 +44,23 @@ serve(async (req) => {
 
     if (downloadError) {
       console.error('Error downloading video:', downloadError)
-      throw new Error(`Error downloading video: ${downloadError.message}`)
+      return new Response(
+        JSON.stringify({ error: `Error downloading video: ${downloadError.message}` }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     if (!videoFile) {
-      console.error('No video file found')
-      throw new Error('No video file found')
+      return new Response(
+        JSON.stringify({ error: 'No video file found' }),
+        { 
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     // Converter o vídeo para áudio usando FFmpeg
@@ -62,77 +83,103 @@ serve(async (req) => {
     // Iniciar o processo FFmpeg
     const process = ffmpegProcess.spawn();
     
-    // Escrever o vídeo para o stdin do FFmpeg
-    const writer = process.stdin.getWriter();
-    await writer.write(await videoFile.arrayBuffer());
-    await writer.close();
+    try {
+      // Escrever o vídeo para o stdin do FFmpeg
+      const writer = process.stdin.getWriter();
+      await writer.write(await videoFile.arrayBuffer());
+      await writer.close();
 
-    // Ler o áudio convertido do stdout
-    const output = await process.output();
-    const audioBuffer = output.stdout;
+      // Ler o áudio convertido do stdout
+      const output = await process.output();
+      const audioBuffer = output.stdout;
 
-    if (!audioBuffer || audioBuffer.length === 0) {
-      const stderr = new TextDecoder().decode(output.stderr);
-      console.error('FFmpeg error:', stderr);
-      throw new Error('Failed to convert video to audio');
-    }
-
-    // Gerar nome do arquivo de áudio
-    const audioPath = `audio/${Date.now()}-${videoPath.split('/').pop()?.replace('.mp4', '.mp3')}`
-    console.log('Generated audio path:', audioPath)
-
-    // Upload do arquivo de áudio convertido
-    console.log('Uploading audio file...')
-    const { error: uploadError } = await supabase.storage
-      .from('media')
-      .upload(audioPath, audioBuffer, {
-        contentType: 'audio/mpeg',
-        upsert: true
-      })
-
-    if (uploadError) {
-      console.error('Error uploading audio:', uploadError)
-      throw new Error(`Error uploading audio: ${uploadError.message}`)
-    }
-
-    // Gerar URL pública do áudio
-    console.log('Generating public URL...')
-    const { data: publicUrl } = await supabase.storage
-      .from('media')
-      .getPublicUrl(audioPath)
-
-    if (!publicUrl) {
-      console.error('Failed to generate public URL')
-      throw new Error('Failed to generate public URL')
-    }
-
-    console.log('Conversion completed successfully')
-    return new Response(
-      JSON.stringify({
-        audioPath,
-        publicUrl: publicUrl.publicUrl,
-        message: 'Conversion completed successfully',
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+      if (!audioBuffer || audioBuffer.length === 0) {
+        const stderr = new TextDecoder().decode(output.stderr);
+        console.error('FFmpeg error:', stderr);
+        return new Response(
+          JSON.stringify({ error: 'Failed to convert video to audio', details: stderr }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
       }
-    )
+
+      // Gerar nome do arquivo de áudio
+      const audioPath = `audio/${Date.now()}-${videoPath.split('/').pop()?.replace('.mp4', '.mp3')}`
+      console.log('Generated audio path:', audioPath)
+
+      // Upload do arquivo de áudio convertido
+      console.log('Uploading audio file...')
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(audioPath, audioBuffer, {
+          contentType: 'audio/mpeg',
+          upsert: true
+        })
+
+      if (uploadError) {
+        console.error('Error uploading audio:', uploadError)
+        return new Response(
+          JSON.stringify({ error: `Error uploading audio: ${uploadError.message}` }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Gerar URL pública do áudio
+      console.log('Generating public URL...')
+      const { data: publicUrl } = await supabase.storage
+        .from('media')
+        .getPublicUrl(audioPath)
+
+      if (!publicUrl) {
+        return new Response(
+          JSON.stringify({ error: 'Failed to generate public URL' }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      console.log('Conversion completed successfully')
+      return new Response(
+        JSON.stringify({
+          audioPath,
+          publicUrl: publicUrl.publicUrl,
+          message: 'Conversion completed successfully',
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    } catch (error) {
+      console.error('Error in conversion process:', error)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Error during conversion process',
+          details: error.message
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
   } catch (error) {
-    console.error('Error in conversion process:', error)
+    console.error('Unexpected error:', error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'An unexpected error occurred',
-        details: error.stack
+        error: 'An unexpected error occurred',
+        details: error.message
       }),
-      {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }
