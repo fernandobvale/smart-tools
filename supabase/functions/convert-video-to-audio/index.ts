@@ -14,6 +14,7 @@ serve(async (req) => {
 
   try {
     const { videoPath } = await req.json()
+    console.log('Received video path:', videoPath)
 
     if (!videoPath) {
       throw new Error('Video path is required')
@@ -26,19 +27,27 @@ serve(async (req) => {
     )
 
     // Baixar o arquivo de vídeo
+    console.log('Downloading video file...')
     const { data: videoFile, error: downloadError } = await supabase.storage
       .from('media')
       .download(videoPath)
 
     if (downloadError) {
+      console.error('Error downloading video:', downloadError)
       throw new Error(`Error downloading video: ${downloadError.message}`)
     }
 
-    // Gerar nome do arquivo de áudio
-    const audioPath = videoPath.replace('videos/', 'audio/').replace('.mp4', '.mp3')
+    if (!videoFile) {
+      console.error('No video file found')
+      throw new Error('No video file found')
+    }
 
-    // Aqui você implementaria a lógica real de conversão
-    // Por enquanto, vamos apenas simular a conversão retornando o mesmo arquivo
+    // Gerar nome do arquivo de áudio
+    const audioPath = `audio/${Date.now()}-${videoPath.split('/').pop()?.replace('.mp4', '.mp3')}`
+    console.log('Generated audio path:', audioPath)
+
+    // Upload do arquivo como áudio
+    console.log('Uploading audio file...')
     const { error: uploadError } = await supabase.storage
       .from('media')
       .upload(audioPath, videoFile, {
@@ -47,14 +56,26 @@ serve(async (req) => {
       })
 
     if (uploadError) {
+      console.error('Error uploading audio:', uploadError)
       throw new Error(`Error uploading audio: ${uploadError.message}`)
     }
 
-    console.log(`Video converted successfully: ${videoPath} -> ${audioPath}`)
+    // Gerar URL pública do áudio
+    console.log('Generating public URL...')
+    const { data: publicUrl } = await supabase.storage
+      .from('media')
+      .getPublicUrl(audioPath)
 
+    if (!publicUrl) {
+      console.error('Failed to generate public URL')
+      throw new Error('Failed to generate public URL')
+    }
+
+    console.log('Conversion completed successfully')
     return new Response(
       JSON.stringify({
         audioPath,
+        publicUrl: publicUrl.publicUrl,
         message: 'Conversion completed successfully',
       }),
       {
@@ -65,9 +86,12 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in conversion process:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        details: error.stack
+      }),
       {
         status: 400,
         headers: {

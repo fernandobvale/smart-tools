@@ -72,24 +72,20 @@ export default function VideoToAudio() {
       setProgress(50);
 
       // Chamar a função de conversão
-      const { data: conversionData, error: conversionError } = await supabase.functions
+      const { data, error: conversionError } = await supabase.functions
         .invoke('convert-video-to-audio', {
           body: { videoPath: videoFileName }
         });
 
-      if (conversionError) {
-        throw new Error(`Erro na conversão: ${conversionError.message}`);
+      if (conversionError || !data) {
+        throw new Error(`Erro na conversão: ${conversionError?.message || 'Falha ao processar o áudio'}`);
       }
 
       setProgress(80);
 
-      // Gerar URL para download
-      const { data: audioData, error: audioError } = await supabase.storage
-        .from('media')
-        .createSignedUrl(`audio/${conversionData.audioPath}`, 3600);
-
-      if (audioError) {
-        throw new Error(`Erro ao gerar URL do áudio: ${audioError.message}`);
+      // Verificar se temos a URL pública
+      if (!data.publicUrl) {
+        throw new Error('URL do áudio não gerada');
       }
 
       setProgress(100);
@@ -98,8 +94,8 @@ export default function VideoToAudio() {
         description: "Seu arquivo está pronto para download.",
       });
 
-      // Iniciar o download
-      window.location.href = audioData.signedUrl;
+      // Iniciar o download usando a URL pública
+      window.location.href = data.publicUrl;
 
     } catch (error) {
       console.error('Erro detalhado:', error);
