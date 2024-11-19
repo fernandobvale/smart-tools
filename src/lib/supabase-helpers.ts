@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 // Create a special admin client for storage operations
 const adminSupabase = createClient(
   'https://bgznszxombwvwhufowpm.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '',
   {
     auth: {
       persistSession: false,
