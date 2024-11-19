@@ -57,13 +57,28 @@ export const checkBucketExists = async (bucketName: string) => {
 
     const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
     if (!bucketExists) {
-      console.log(`Bucket ${bucketName} não encontrado`);
+      console.log(`Bucket ${bucketName} não encontrado. Tentando criar...`);
+      const { error: createError } = await supabase
+        .storage
+        .createBucket(bucketName, {
+          public: true,
+          fileSizeLimit: 52428800 // 50MB limit
+        });
+
+      if (createError) {
+        console.error(`Erro ao criar bucket ${bucketName}:`, createError);
+        toast({
+          title: "Erro na Criação do Bucket",
+          description: `Não foi possível criar o bucket ${bucketName}. ${createError.message}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
       toast({
-        title: "Bucket não encontrado",
-        description: `O bucket ${bucketName} não existe no projeto.`,
-        variant: "destructive",
+        title: "Bucket Criado",
+        description: `O bucket ${bucketName} foi criado com sucesso.`,
       });
-      return false;
     }
 
     console.log(`Bucket ${bucketName} encontrado e acessível`);
