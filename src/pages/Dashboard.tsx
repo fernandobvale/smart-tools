@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote, GraduationCap } from "lucide-react";
+import { Scissors, Music, Receipt, UserSearch, FileText, FileEdit, StickyNote, GraduationCap, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -57,6 +57,12 @@ export default function Dashboard() {
       description: "Gerencie e visualize inscrições de professores",
       icon: <GraduationCap className="w-6 h-6" />,
       href: "/teacher-list"
+    },
+    {
+      title: "Gerador de Prompts",
+      description: "Gere prompts personalizados para cursos",
+      icon: <MessageSquare className="w-6 h-6" />,
+      href: "/prompt-generator"
     }
   ];
 
