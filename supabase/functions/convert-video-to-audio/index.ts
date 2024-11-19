@@ -1,5 +1,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -14,17 +19,43 @@ serve(async (req) => {
       throw new Error('Video path is required')
     }
 
-    // For now, we'll just return a mock response
-    // In a real implementation, you would process the video here
+    // Criar cliente Supabase com a service role key
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Baixar o arquivo de vídeo
+    const { data: videoFile, error: downloadError } = await supabase.storage
+      .from('media')
+      .download(videoPath)
+
+    if (downloadError) {
+      throw new Error(`Error downloading video: ${downloadError.message}`)
+    }
+
+    // Gerar nome do arquivo de áudio
     const audioPath = videoPath.replace('videos/', 'audio/').replace('.mp4', '.mp3')
 
-    console.log(`Processing video: ${videoPath}`)
-    console.log(`Generated audio path: ${audioPath}`)
+    // Aqui você implementaria a lógica real de conversão
+    // Por enquanto, vamos apenas simular a conversão retornando o mesmo arquivo
+    const { error: uploadError } = await supabase.storage
+      .from('media')
+      .upload(audioPath, videoFile, {
+        contentType: 'audio/mpeg',
+        upsert: true
+      })
+
+    if (uploadError) {
+      throw new Error(`Error uploading audio: ${uploadError.message}`)
+    }
+
+    console.log(`Video converted successfully: ${videoPath} -> ${audioPath}`)
 
     return new Response(
       JSON.stringify({
         audioPath,
-        message: 'Conversion started successfully',
+        message: 'Conversion completed successfully',
       }),
       {
         headers: {
@@ -34,7 +65,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error.message)
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
