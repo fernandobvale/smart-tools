@@ -11,6 +11,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { VideoUploader } from "@/components/video-to-audio/VideoUploader";
 import { ConversionProgress } from "@/components/video-to-audio/ConversionProgress";
+import { checkBucketExists } from "@/lib/supabase-helpers";
 
 export default function VideoToAudio() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -21,20 +22,16 @@ export default function VideoToAudio() {
   useEffect(() => {
     const checkSetup = async () => {
       try {
-        // Verificar se o bucket existe
-        const { data: bucketData, error: bucketError } = await supabase
-          .storage
-          .getBucket('media');
-
-        if (bucketError) {
-          console.error('Erro ao verificar bucket:', bucketError);
-          return;
-        }
-
-        setIsSupabaseReady(true);
+        const bucketExists = await checkBucketExists('media');
+        setIsSupabaseReady(bucketExists);
       } catch (error) {
-        console.error('Erro ao verificar configuração:', error);
+        console.error('Error checking Supabase setup:', error);
         setIsSupabaseReady(false);
+        toast({
+          title: "Erro na configuração",
+          description: "Não foi possível verificar a configuração do sistema.",
+          variant: "destructive",
+        });
       }
     };
 
