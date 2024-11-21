@@ -23,6 +23,7 @@ import TeacherApplication from "./pages/TeacherApplication";
 import TeacherList from "./pages/TeacherList";
 import PromptGenerator from "./pages/PromptGenerator";
 import PromptList from "./pages/PromptList";
+import CourseManagement from "./pages/CourseManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -69,6 +70,7 @@ const App = () => {
                   <Route path="/teacher-list" element={<TeacherList />} />
                   <Route path="/prompt-generator" element={<PromptGenerator />} />
                   <Route path="/prompt-list" element={<PromptList />} />
+                  <Route path="/courses" element={<CourseManagement />} />
                 </Route>
                 {/* Rota 404 - deve ser a última */}
                 <Route path="*" element={<NotFound />} />

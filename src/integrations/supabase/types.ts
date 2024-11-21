@@ -114,6 +114,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cursos: {
+        Row: {
+          created_at: string
+          data_entrega: string
+          data_pagamento: string | null
+          id: string
+          nome_curso: string
+          nome_editor: string
+          numero_aulas: number
+          status_pagamento: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data_entrega: string
+          data_pagamento?: string | null
+          id?: string
+          nome_curso: string
+          nome_editor: string
+          numero_aulas: number
+          status_pagamento: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          created_at?: string
+          data_entrega?: string
+          data_pagamento?: string | null
+          id?: string
+          nome_curso?: string
+          nome_editor?: string
+          numero_aulas?: number
+          status_pagamento?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string

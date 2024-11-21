@@ -57,6 +57,11 @@ const tools = [
     href: "/teacher-list",
     description: "Gerencie e visualize inscrições de professores",
   },
+  {
+    title: "Gestão de Cursos",
+    href: "/courses",
+    description: "Gerencie cursos e pagamentos de editores",
+  },
 ];
 
 export function CommandMenu() {
