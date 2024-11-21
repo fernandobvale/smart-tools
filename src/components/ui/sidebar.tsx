@@ -11,8 +11,7 @@ import {
   LogOut,
   GraduationCap,
   MessageSquare,
-  Wrench,
-  FileCheck
+  Wrench
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -57,11 +56,6 @@ const items = [
     title: "Gestão de Certificados",
     icon: <FileText className="w-4 h-4" />,
     href: "/certificates/manage"
-  },
-  {
-    title: "Novo Certificado",
-    icon: <FileCheck className="w-4 h-4" />,
-    href: "/certificates/new"
   },
   {
     title: "Lista de Professores",

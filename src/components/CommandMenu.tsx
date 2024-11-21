@@ -53,9 +53,9 @@ const tools = [
     description: "Gerencie e acompanhe o envio de certificados",
   },
   {
-    title: "Novo Certificado",
-    href: "/certificates/new",
-    description: "Criar novo certificado",
+    title: "Lista de Professores",
+    href: "/teacher-list",
+    description: "Gerencie e visualize inscrições de professores",
   },
 ];
 
