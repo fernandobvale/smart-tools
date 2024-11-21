@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button } from "@/components/ui/button";
-import { NotesList } from "@/components/notes/NotesList";
-import { EditorToolbar } from "@/components/markdown-editor/EditorToolbar";
 import Link from "@tiptap/extension-link";
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
@@ -14,7 +11,9 @@ import Superscript from '@tiptap/extension-superscript';
 import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Image from '@tiptap/extension-image';
+import { NotesList } from "@/components/notes/NotesList";
 import { NoteHeader } from "@/components/notes/NoteHeader";
+import { NoteEditor } from "@/components/notes/NoteEditor";
 import { useNoteMutations } from "@/components/notes/NoteMutations";
 import { toast } from "sonner";
 
@@ -24,12 +23,8 @@ const Notes = () => {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Link.configure({
-        openOnClick: false,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
+      Link.configure({ openOnClick: false }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Underline,
       Subscript,
       Superscript,
@@ -74,19 +69,44 @@ const Notes = () => {
     }
   };
 
-  const handleRename = (newTitle: string) => {
+  const handleExport = () => {
     if (selectedNoteId && editor) {
-      updateNoteMutation.mutate({
-        id: selectedNoteId,
-        title: newTitle,
-        content: editor.getHTML(),
-      });
+      const content = editor.getHTML();
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+            img { max-width: 100%; height: auto; }
+            p { margin-bottom: 1em; }
+            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; }
+          </style>
+        </head>
+        <body>${content}</body>
+        </html>
+      `;
+
+      const blob = new Blob([htmlContent], { type: 'application/vnd.ms-word;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
+      const fileName = `${selectedNote?.title || 'nota'}.doc`;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   };
 
-  const handleDelete = () => {
-    if (selectedNoteId) {
-      deleteNoteMutation.mutate(selectedNoteId);
+  const addImage = () => {
+    const url = window.prompt('URL da imagem:');
+    if (url && editor) {
+      editor.chain().focus().setImage({ src: url }).run();
     }
   };
 
@@ -98,12 +118,10 @@ const Notes = () => {
       
       const { data, error } = await supabase
         .from('notes')
-        .insert([
-          { 
-            title: 'Nova nota', 
-            content: '<p>Digite o conteúdo da sua nota aqui...</p>' 
-          }
-        ])
+        .insert([{ 
+          title: 'Nova nota', 
+          content: '<p>Digite o conteúdo da sua nota aqui...</p>' 
+        }])
         .select()
         .single();
 
@@ -111,71 +129,11 @@ const Notes = () => {
       
       if (data) {
         setSelectedNoteId(data.id);
-        refetch(); // Refresh the notes list
+        refetch();
         toast.success('Nova nota criada');
       }
     } catch (error) {
       toast.error('Erro ao criar nova nota');
-    }
-  };
-
-  const addImage = () => {
-    const url = window.prompt('URL da imagem:');
-    if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
-  const handleExport = () => {
-    if (selectedNoteId && editor) {
-      const content = editor.getHTML();
-      
-      // Add HTML wrapper with proper encoding and styling
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-          <meta charset="UTF-8">
-          <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              margin: 40px;
-            }
-            img {
-              max-width: 100%;
-              height: auto;
-            }
-            p {
-              margin-bottom: 1em;
-            }
-            h1, h2, h3, h4, h5, h6 {
-              margin-top: 1.5em;
-              margin-bottom: 0.5em;
-            }
-          </style>
-        </head>
-        <body>
-          ${content}
-        </body>
-        </html>
-      `;
-
-      const blob = new Blob([htmlContent], { 
-        type: 'application/vnd.ms-word;charset=utf-8' 
-      });
-      
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
-      const fileName = `${selectedNote?.title || 'nota'}.doc`;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
   };
 
@@ -203,24 +161,26 @@ const Notes = () => {
   return (
     <div className="container py-8 animate-fade-in flex flex-col gap-4">
       {selectedNoteId && selectedNote && (
-        <div className="flex-1 border rounded-lg overflow-hidden flex flex-col bg-background">
+        <>
           <NoteHeader
             title={selectedNote.title}
-            onRename={handleRename}
-            onDelete={handleDelete}
+            onRename={(newTitle) => {
+              updateNoteMutation.mutate({
+                id: selectedNoteId,
+                title: newTitle,
+                content: editor?.getHTML() || '',
+              });
+            }}
+            onDelete={() => deleteNoteMutation.mutate(selectedNoteId)}
             onNewNote={handleNewNote}
           />
-          <EditorToolbar editor={editor} addImage={addImage} />
-          <div className="flex-1 overflow-auto">
-            <EditorContent editor={editor} />
-          </div>
-          <div className="p-4 border-t flex justify-end gap-2">
-            <Button variant="outline" onClick={handleExport}>
-              Exportar como DOC
-            </Button>
-            <Button onClick={handleSave}>Salvar</Button>
-          </div>
-        </div>
+          <NoteEditor
+            editor={editor}
+            onSave={handleSave}
+            onExport={handleExport}
+            addImage={addImage}
+          />
+        </>
       )}
       
       <NotesList
