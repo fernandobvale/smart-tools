@@ -30,13 +30,15 @@ const formSchema = z.object({
   data_pagamento: z.string().optional(),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 interface CourseFormProps {
   onSuccess: () => void;
-  initialData?: z.infer<typeof formSchema>;
+  initialData?: FormValues;
 }
 
 export function CourseForm({ onSuccess, initialData }: CourseFormProps) {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       nome_curso: "",
@@ -55,17 +57,19 @@ export function CourseForm({ onSuccess, initialData }: CourseFormProps) {
     return numberOfLessons * 8;
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     try {
       const valor = calculateValue(values.numero_aulas);
-
-      const { error } = await supabase.from("cursos").insert([
-        {
-          ...values,
-          valor,
-          data_pagamento: values.data_pagamento || null,
-        },
-      ]);
+      
+      const { error } = await supabase.from("cursos").insert({
+        nome_curso: values.nome_curso,
+        numero_aulas: values.numero_aulas,
+        data_entrega: values.data_entrega,
+        nome_editor: values.nome_editor,
+        status_pagamento: values.status_pagamento,
+        data_pagamento: values.data_pagamento || null,
+        valor,
+      });
 
       if (error) throw error;
 
