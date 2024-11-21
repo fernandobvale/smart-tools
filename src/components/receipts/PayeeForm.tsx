@@ -33,9 +33,10 @@ interface PayeeFormProps {
   };
   mode?: "create" | "edit";
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-const PayeeForm = ({ payee, mode = "create", onClose }: PayeeFormProps) => {
+const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProps) => {
   const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -83,6 +84,9 @@ const PayeeForm = ({ payee, mode = "create", onClose }: PayeeFormProps) => {
         });
 
         form.reset();
+        if (onSuccess) {
+          onSuccess();
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ["payees"] });

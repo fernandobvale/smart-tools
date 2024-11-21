@@ -2,8 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PayeeList from "@/components/receipts/PayeeList";
 import PayeeForm from "@/components/receipts/PayeeForm";
+import { useState } from "react";
 
 const Receipts = () => {
+  const [activeTab, setActiveTab] = useState("lista");
+
   return (
     <div className="container mx-auto p-2 sm:p-4">
       <Card className="w-full">
@@ -11,7 +14,7 @@ const Receipts = () => {
           <CardTitle className="text-xl sm:text-2xl">Sistema de Geração de Recibos</CardTitle>
         </CardHeader>
         <CardContent className="p-2 sm:p-6">
-          <Tabs defaultValue="lista" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="lista">Lista de Beneficiários</TabsTrigger>
               <TabsTrigger value="cadastro">Cadastrar Novo</TabsTrigger>
@@ -20,7 +23,7 @@ const Receipts = () => {
               <PayeeList />
             </TabsContent>
             <TabsContent value="cadastro">
-              <PayeeForm />
+              <PayeeForm onSuccess={() => setActiveTab("lista")} />
             </TabsContent>
           </Tabs>
         </CardContent>
