@@ -29,7 +29,7 @@ const ReceiptForm = () => {
   const { payeeId } = useParams();
   const navigate = useNavigate();
 
-  const { data: payee, isLoading } = useQuery({
+  const { data: payee, isLoading, error } = useQuery({
     queryKey: ["payee", payeeId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -38,10 +38,7 @@ const ReceiptForm = () => {
         .eq("id", payeeId)
         .single();
 
-      if (error) {
-        toast.error("Erro ao carregar dados do beneficiário");
-        throw error;
-      }
+      if (error) throw error;
       return data;
     },
   });
@@ -74,20 +71,28 @@ const ReceiptForm = () => {
         },
       };
 
-      const success = await generateReceiptPDF(pdfData);
-
-      if (!success) {
-        toast.error("Erro ao gerar o PDF do recibo. Tente novamente.");
-        return;
-      }
-
-      toast.success("Recibo gerado com sucesso!");
-      navigate("/receipts");
+      toast.promise(generateReceiptPDF(pdfData), {
+        loading: 'Gerando recibo...',
+        success: () => {
+          navigate("/receipts");
+          return 'Recibo gerado com sucesso!';
+        },
+        error: (err) => {
+          console.error('Erro detalhado:', err);
+          return 'Erro ao gerar o recibo. Por favor, tente novamente.';
+        },
+      });
     } catch (error) {
       console.error("Erro ao gerar recibo:", error);
       toast.error("Ocorreu um erro ao gerar o recibo. Tente novamente.");
     }
   };
+
+  if (error) {
+    toast.error("Erro ao carregar dados do beneficiário");
+    navigate("/receipts");
+    return null;
+  }
 
   if (isLoading) {
     return (
