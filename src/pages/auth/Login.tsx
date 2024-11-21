@@ -19,7 +19,6 @@ const Login = () => {
     }
   }, [session, navigate, from]);
 
-  // Handle auth state changes to show custom error messages
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
@@ -62,6 +61,8 @@ const Login = () => {
               },
             }}
             providers={[]}
+            view="sign_in"
+            showLinks={false}
             localization={{
               variables: {
                 sign_in: {
@@ -72,26 +73,6 @@ const Login = () => {
                   button_label: "Entrar",
                   loading_button_label: "Entrando...",
                   social_provider_text: "Entre com {{provider}}",
-                  link_text: "Já tem uma conta? Entre"
-                },
-                sign_up: {
-                  email_label: "Email",
-                  password_label: "Senha",
-                  email_input_placeholder: "seu@email.com",
-                  password_input_placeholder: "Escolha uma senha",
-                  button_label: "Cadastrar",
-                  loading_button_label: "Cadastrando...",
-                  social_provider_text: "Cadastre-se com {{provider}}",
-                  link_text: "Não tem uma conta? Cadastre-se",
-                },
-                forgotten_password: {
-                  email_label: "Email",
-                  password_label: "Senha",
-                  email_input_placeholder: "seu@email.com",
-                  button_label: "Enviar instruções",
-                  loading_button_label: "Enviando instruções...",
-                  link_text: "Esqueceu sua senha?",
-                  confirmation_text: "Verifique seu email para o link de redefinição de senha"
                 },
               },
             }}
