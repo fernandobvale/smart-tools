@@ -9,7 +9,14 @@ interface NoteCopyButtonProps {
 export const NoteCopyButton = ({ content }: NoteCopyButtonProps) => {
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      // Create a temporary div to hold the HTML content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+      
+      // Get the text content without HTML tags
+      const textContent = tempDiv.textContent || tempDiv.innerText || "";
+      
+      await navigator.clipboard.writeText(textContent);
       toast.success("Nota copiada para a área de transferência");
     } catch (error) {
       toast.error("Erro ao copiar a nota");
