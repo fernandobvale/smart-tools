@@ -2,9 +2,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -13,7 +26,8 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { calculateValue } from "@/utils/courseCalculations";
+import { EditorSelect } from "./EditorSelect";
 
 const formSchema = z.object({
   nome_curso: z.string().min(1, "Nome do curso é obrigatório"),
@@ -25,22 +39,15 @@ const formSchema = z.object({
   nome_editor: z.string().min(1, "Nome do editor é obrigatório"),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
-interface Editor {
-  id: string;
-  nome: string;
-}
-
 interface CourseFormProps {
   initialData?: FormValues & { id: string };
   onSuccess: () => void;
 }
 
+type FormValues = z.infer<typeof formSchema>;
+
 export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
-  const [editors, setEditors] = useState<Editor[]>([]);
-  const [isNewEditorDialogOpen, setIsNewEditorDialogOpen] = useState(false);
-  const [newEditorName, setNewEditorName] = useState("");
+  const [editors, setEditors] = useState<{ id: string; nome: string; }[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -54,10 +61,6 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
       nome_editor: "",
     },
   });
-
-  useEffect(() => {
-    fetchEditors();
-  }, []);
 
   const fetchEditors = async () => {
     const { data, error } = await supabase
@@ -73,35 +76,13 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
     setEditors(data);
   };
 
-  const calculateValue = (numberOfLessons: number) => {
-    const valuePerLesson = numberOfLessons <= 15 ? 10 : 8;
-    return numberOfLessons * valuePerLesson;
-  };
+  useEffect(() => {
+    fetchEditors();
+  }, []);
 
   const handleNumberOfLessonsChange = (value: number) => {
     form.setValue("numero_aulas", value);
     form.setValue("valor", calculateValue(value));
-  };
-
-  const addNewEditor = async () => {
-    if (!newEditorName.trim()) {
-      toast.error("Nome do editor é obrigatório");
-      return;
-    }
-
-    const { error } = await supabase
-      .from("editores")
-      .insert({ nome: newEditorName.trim() });
-
-    if (error) {
-      toast.error("Erro ao adicionar editor");
-      return;
-    }
-
-    toast.success("Editor adicionado com sucesso!");
-    setNewEditorName("");
-    setIsNewEditorDialogOpen(false);
-    fetchEditors();
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -127,7 +108,7 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
       } else {
         const { error } = await supabase
           .from("cursos")
-          .insert(courseData);
+          .insert([courseData]);
 
         if (error) throw error;
         toast.success("Lançamento criado com sucesso!");
@@ -167,6 +148,7 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
               <FormControl>
                 <Input 
                   type="number" 
+                  min="1"
                   {...field} 
                   onChange={(e) => handleNumberOfLessonsChange(parseInt(e.target.value))}
                 />
@@ -279,7 +261,7 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status do Pagamento</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o status" />
@@ -296,60 +278,10 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="nome_editor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Editor</FormLabel>
-              <div className="flex gap-2">
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Selecione o editor" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {editors.map((editor) => (
-                      <SelectItem key={editor.id} value={editor.nome}>
-                        {editor.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Dialog open={isNewEditorDialogOpen} onOpenChange={setIsNewEditorDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button type="button" variant="outline">
-                      Novo Editor
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Adicionar Novo Editor</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder="Nome do editor"
-                        value={newEditorName}
-                        onChange={(e) => setNewEditorName(e.target.value)}
-                      />
-                      <div className="flex justify-end gap-2">
-                        <DialogClose asChild>
-                          <Button type="button" variant="outline">
-                            Cancelar
-                          </Button>
-                        </DialogClose>
-                        <Button type="button" onClick={addNewEditor}>
-                          Adicionar
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+        <EditorSelect 
+          form={form} 
+          editors={editors} 
+          onEditorAdded={fetchEditors} 
         />
 
         <Button type="submit">
