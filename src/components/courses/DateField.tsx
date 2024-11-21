@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
 import { CourseFormValues } from "./types";
@@ -34,7 +34,7 @@ export function DateField({ form, name, label, required }: DateFieldProps) {
                   )}
                 >
                   {field.value ? (
-                    format(new Date(field.value), "dd/MM/yyyy")
+                    format(parseISO(field.value), "dd/MM/yyyy")
                   ) : (
                     <span>Selecione uma data</span>
                   )}
@@ -45,8 +45,16 @@ export function DateField({ form, name, label, required }: DateFieldProps) {
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={field.value ? new Date(field.value) : required ? new Date() : undefined}
-                onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                selected={field.value ? parseISO(field.value) : required ? new Date() : undefined}
+                onSelect={(date) => {
+                  if (date) {
+                    // Ensure we're using local timezone for the date
+                    const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                    field.onChange(localDate.toISOString().split('T')[0]);
+                  } else {
+                    field.onChange("");
+                  }
+                }}
                 initialFocus
               />
             </PopoverContent>
