@@ -29,7 +29,10 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
         .select("*")
         .order("nome");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching editors:", error);
+        throw error;
+      }
       return data;
     },
   });
@@ -54,6 +57,8 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
 
   const onSubmit = async (values: CourseFormValues) => {
     try {
+      console.log("Submitting form with values:", values);
+
       const courseData = {
         nome_curso: values.nome_curso,
         numero_aulas: values.numero_aulas,
@@ -64,20 +69,28 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
         nome_editor: values.nome_editor,
       };
 
+      console.log("Prepared course data:", courseData);
+
       if (initialData?.id) {
         const { error } = await supabase
           .from("cursos")
           .update(courseData)
           .eq("id", initialData.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating course:", error);
+          throw error;
+        }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
         const { error } = await supabase
           .from("cursos")
           .insert([courseData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error creating course:", error);
+          throw error;
+        }
         toast.success("Lançamento criado com sucesso!");
       }
 
@@ -85,7 +98,11 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
       form.reset();
     } catch (error) {
       console.error("Error saving course:", error);
-      toast.error("Erro ao salvar o lançamento. Tente novamente.");
+      if (error instanceof Error) {
+        toast.error(`Erro ao salvar o lançamento: ${error.message}`);
+      } else {
+        toast.error("Erro ao salvar o lançamento. Tente novamente.");
+      }
     }
   };
 
