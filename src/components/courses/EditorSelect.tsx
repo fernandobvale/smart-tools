@@ -36,6 +36,7 @@ interface EditorSelectProps {
 export function EditorSelect({ form, editors, onEditorAdded }: EditorSelectProps) {
   const [isNewEditorDialogOpen, setIsNewEditorDialogOpen] = useState(false);
   const [newEditorName, setNewEditorName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addNewEditor = async () => {
     if (!newEditorName.trim()) {
@@ -43,20 +44,36 @@ export function EditorSelect({ form, editors, onEditorAdded }: EditorSelectProps
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("editores")
-        .insert({ nome: newEditorName.trim() });
+        .insert([{ nome: newEditorName.trim() }])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') {
+          toast.error("Este editor já está cadastrado");
+          return;
+        }
+        throw error;
+      }
 
       toast.success("Editor adicionado com sucesso!");
       setNewEditorName("");
       setIsNewEditorDialogOpen(false);
       onEditorAdded();
+      
+      // Seleciona automaticamente o novo editor
+      if (data) {
+        form.setValue("nome_editor", data.nome);
+      }
     } catch (error) {
       console.error("Error adding editor:", error);
-      toast.error("Erro ao adicionar editor");
+      toast.error("Erro ao adicionar editor. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -104,7 +121,11 @@ export function EditorSelect({ form, editors, onEditorAdded }: EditorSelectProps
                         Cancelar
                       </Button>
                     </DialogClose>
-                    <Button type="button" onClick={addNewEditor}>
+                    <Button 
+                      type="button" 
+                      onClick={addNewEditor}
+                      disabled={isSubmitting}
+                    >
                       Adicionar
                     </Button>
                   </div>

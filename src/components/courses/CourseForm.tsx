@@ -11,6 +11,8 @@ import { calculateValue } from "@/utils/courseCalculations";
 import { EditorSelect } from "./EditorSelect";
 import { DateField } from "./DateField";
 import { CourseFormValues, courseFormSchema } from "./types";
+import { useQuery } from "@tanstack/react-query";
+import { NumericFormat } from "react-number-format";
 
 interface CourseFormProps {
   initialData?: CourseFormValues & { id: string };
@@ -18,6 +20,19 @@ interface CourseFormProps {
 }
 
 export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
+  const { data: editors = [], refetch: refetchEditors } = useQuery({
+    queryKey: ["editors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("editores")
+        .select("*")
+        .order("nome");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
     defaultValues: initialData || {
@@ -123,11 +138,19 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
             <FormItem>
               <FormLabel>Valor</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
-                  readOnly 
+                <NumericFormat
+                  customInput={Input}
+                  value={field.value}
+                  onValueChange={(values) => {
+                    field.onChange(values.floatValue);
+                  }}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                  prefix="R$ "
+                  decimalScale={2}
+                  fixedDecimalScale
                   className="bg-muted"
+                  readOnly
                 />
               </FormControl>
               <FormMessage />
@@ -166,8 +189,8 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
 
         <EditorSelect 
           form={form} 
-          editors={[]} 
-          onEditorAdded={() => {}} 
+          editors={editors} 
+          onEditorAdded={() => refetchEditors()} 
         />
 
         <Button type="submit">
