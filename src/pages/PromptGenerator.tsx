@@ -51,18 +51,31 @@ export default function PromptGenerator() {
   };
 
   const generatePrompt = () => {
-    const prompt = `Crie um texto para divulgação do curso ${formData.courseName} no formato de um post para o LinkedIn.
+    const prompt = `Informe que trata-se de um curso com conteúdo apenas teórico e não pratico. A partir de agora você irá se tornar meu redator de artigos especialista em SEO. Crie o artigo em Markdown, utilize as TAGS H2 nos títulos e destaque algumas palavras-chave que achar que seja interessante em negrito. Irei passar algumas informações para que possa escrever um artigo conforme minhas orientações. Para ficar por dentro do assunto que quero que escreva, o tema do artigo será sobre:
 
-O texto deve ter no máximo 3 parágrafos, sendo:
-1. Primeiro parágrafo: Chamar atenção para a importância da área ${formData.courseArea} (${formData.areaLink})
-2. Segundo parágrafo: Apresentar o curso ${formData.courseName} com carga horária de ${formData.workload}, destacando os principais tópicos do conteúdo programático: ${formData.courseContent}
-3. Terceiro parágrafo: Call to action convidando para conhecer outros cursos da área como ${formData.course1} (${formData.course1Link}) e ${formData.course2} (${formData.course2Link})
+Curso de ${formData.courseName} Gratuito e Online da Unova.
 
-Importante:
-- Mantenha um tom profissional e objetivo
-- Use hashtags relevantes
-- Inclua emojis de forma moderada
-- Mantenha os links como estão, sem encurtar`;
+E o Conteúdo Programático do curso é:
+
+${formData.courseContent}
+
+Pronto, essas são as informações necessárias. Agora, preciso apenas que me informe se entendeu o que tem que fazer, pois passarei as informações a seguir.
+
+Faça 02 parágrafos sobre o tema: Por que fazer o Curso de ${formData.courseName}? - Utilize as seguintes palavras-chaves: Curso Online, Curso Gratuito, Unova Cursos.
+
+Faça 02 parágrafos sobre o tema: O que é ou são ${formData.courseName}?
+
+Faça 02 parágrafos sobre o tema: Qual o objeto do curso?
+
+Faça 01 lista sobre o conteúdo programático e depois faça um resumo do que será ensinado no curso.
+
+Faça 02 parágrafos sobre o tema: Qual é a carga horária do curso? - Utilize as seguintes palavras-chaves: Carga Horária de ${formData.workload} horas, aulas em vídeo, apostila (no singular) em PDF.
+
+Faça 02 parágrafos sobre o tema: Qual a área de trabalho para que faz o curso? Deixe claro que trata-se de um curso livre e não de um curso profissionalizante.
+
+Faça 02 parágrafos sobre o tema: Por que devo me matricular no curso? Utilize as seguintes palavras-chaves: Curso Online, Curso Gratuito, Unova Cursos, Adquirir o Certificado.
+
+Faça 01 parágrafo sobre o tema: Outros cursos na área de ${formData.courseArea}(Obs: Linkar o nome da área no link a seguir: ${formData.areaLink}) que pode ser do seu interesse. - Utilize as seguintes palavras-chaves: Curso de ${formData.course1} (Obs: Linkar o nome do curso no link a seguir: ${formData.course1Link}), Curso de ${formData.course2} (Obs: Linkar o nome do curso no link a seguir: ${formData.course2Link}).`;
 
     setGeneratedPrompt(prompt);
     toast.success("Prompt gerado com sucesso!");
