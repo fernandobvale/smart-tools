@@ -33,14 +33,13 @@ export function CourseFilters({
       </div>
       <div className="w-[200px]">
         <Select
-          value={paymentStatus || ""}
-          onValueChange={(value) => onPaymentStatusChange(value as PaymentStatus || null)}
+          value={paymentStatus ?? undefined}
+          onValueChange={(value: PaymentStatus) => onPaymentStatusChange(value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Status de pagamento" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
             <SelectItem value="Pendente">Pendente</SelectItem>
             <SelectItem value="Pago">Pago</SelectItem>
             <SelectItem value="Cancelado">Cancelado</SelectItem>

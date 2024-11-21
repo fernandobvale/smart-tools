@@ -28,7 +28,7 @@ export default function CourseManagement() {
   const [editorFilter, setEditorFilter] = useState("");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | null>(null);
 
-  const { data: courses, refetch } = useQuery({
+  const { data: courses = [], refetch } = useQuery({
     queryKey: ["courses"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -38,14 +38,11 @@ export default function CourseManagement() {
 
       if (error) throw error;
       
-      return (data as Course[]).map(course => ({
-        ...course,
-        status_pagamento: course.status_pagamento as PaymentStatus
-      }));
+      return (data as Course[]);
     },
   });
 
-  const filteredCourses = courses?.filter(course => {
+  const filteredCourses = courses.filter(course => {
     const matchesEditor = editorFilter
       ? course.nome_editor.toLowerCase().includes(editorFilter.toLowerCase())
       : true;
@@ -55,7 +52,7 @@ export default function CourseManagement() {
       : true;
 
     return matchesEditor && matchesStatus;
-  }) || [];
+  });
 
   return (
     <div className="container mx-auto py-8">
