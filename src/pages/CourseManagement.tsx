@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
 import { CourseFilters } from "@/components/courses/CourseFilters";
+import { format } from "date-fns";
 
 type PaymentStatus = "Pendente" | "Pago" | "Cancelado";
 
@@ -27,6 +28,8 @@ export default function CourseManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editorFilter, setEditorFilter] = useState("");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const { data: courses = [], refetch } = useQuery({
     queryKey: ["courses"],
@@ -51,7 +54,19 @@ export default function CourseManagement() {
       ? course.status_pagamento === paymentStatusFilter
       : true;
 
-    return matchesEditor && matchesStatus;
+    const matchesDateRange = (() => {
+      if (!startDate && !endDate) return true;
+      const courseDate = new Date(course.data_entrega);
+      if (startDate && !endDate) {
+        return courseDate >= new Date(startDate);
+      }
+      if (!startDate && endDate) {
+        return courseDate <= new Date(endDate);
+      }
+      return courseDate >= new Date(startDate) && courseDate <= new Date(endDate);
+    })();
+
+    return matchesEditor && matchesStatus && matchesDateRange;
   });
 
   return (
@@ -82,6 +97,10 @@ export default function CourseManagement() {
         onEditorChange={setEditorFilter}
         paymentStatus={paymentStatusFilter}
         onPaymentStatusChange={setPaymentStatusFilter}
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
       />
 
       <CourseTable courses={filteredCourses} onUpdate={refetch} />

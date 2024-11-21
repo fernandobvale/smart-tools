@@ -1,11 +1,14 @@
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CourseForm } from "./CourseForm";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { BulkActions } from "./BulkActions";
+import { generatePDFReport } from "@/utils/pdfReport";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +40,7 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleDelete = async () => {
     if (!deletingCourse) return;
@@ -59,14 +63,62 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
     }
   };
 
+  const handleMarkAsPaid = async (date: string) => {
+    try {
+      const { error } = await supabase
+        .from("cursos")
+        .update({
+          status_pagamento: "Pago",
+          data_pagamento: date,
+        })
+        .in("id", selectedIds);
+
+      if (error) throw error;
+
+      toast.success("Cursos atualizados com sucesso!");
+      setSelectedIds([]);
+      onUpdate();
+    } catch (error) {
+      console.error("Error updating courses:", error);
+      toast.error("Erro ao atualizar os cursos. Tente novamente.");
+    }
+  };
+
   const totalValue = courses.reduce((sum, course) => sum + Number(course.valor), 0);
 
   return (
     <>
+      <div className="flex justify-between items-center mb-4">
+        <BulkActions
+          selectedIds={selectedIds}
+          onMarkAsPaid={handleMarkAsPaid}
+        />
+        <Button
+          variant="outline"
+          onClick={() => generatePDFReport(courses)}
+          disabled={courses.length === 0}
+        >
+          <FileDown className="h-4 w-4 mr-2" />
+          Baixar Relatório
+        </Button>
+      </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={selectedIds.length === courses.length && courses.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedIds(courses.map(course => course.id));
+                    } else {
+                      setSelectedIds([]);
+                    }
+                  }}
+                />
+              </TableHead>
               <TableHead>Nome do Curso</TableHead>
               <TableHead>Número de Aulas</TableHead>
               <TableHead>Data de Entrega</TableHead>
@@ -80,6 +132,18 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
           <TableBody>
             {courses.map((course) => (
               <TableRow key={course.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedIds.includes(course.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedIds([...selectedIds, course.id]);
+                      } else {
+                        setSelectedIds(selectedIds.filter(id => id !== course.id));
+                      }
+                    }}
+                  />
+                </TableCell>
                 <TableCell>{course.nome_curso}</TableCell>
                 <TableCell>{course.numero_aulas}</TableCell>
                 <TableCell>{new Date(course.data_entrega).toLocaleDateString()}</TableCell>
@@ -132,7 +196,7 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={3}>Total</TableCell>
+              <TableCell colSpan={4}>Total</TableCell>
               <TableCell>R$ {totalValue.toFixed(2)}</TableCell>
               <TableCell colSpan={4} />
             </TableRow>
