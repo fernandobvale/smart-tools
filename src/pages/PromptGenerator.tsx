@@ -4,6 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PromptForm } from "@/components/prompt-generator/PromptForm";
 import { FormData } from "@/components/prompt-generator/types";
+import { Button } from "@/components/ui/button";
+import { GeneratedPrompt } from "@/components/prompt-generator/GeneratedPrompt";
+import { toast } from "sonner";
 
 export default function PromptGenerator() {
   const { id } = useParams();
@@ -19,6 +22,7 @@ export default function PromptGenerator() {
     course2: "",
     course2Link: "",
   });
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
 
   const { data: prompt, isLoading } = useQuery({
     queryKey: ["prompt", id],
@@ -44,6 +48,24 @@ export default function PromptGenerator() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const generatePrompt = () => {
+    const prompt = `Crie um texto para divulgação do curso ${formData.courseName} no formato de um post para o LinkedIn.
+
+O texto deve ter no máximo 3 parágrafos, sendo:
+1. Primeiro parágrafo: Chamar atenção para a importância da área ${formData.courseArea} (${formData.areaLink})
+2. Segundo parágrafo: Apresentar o curso ${formData.courseName} com carga horária de ${formData.workload}, destacando os principais tópicos do conteúdo programático: ${formData.courseContent}
+3. Terceiro parágrafo: Call to action convidando para conhecer outros cursos da área como ${formData.course1} (${formData.course1Link}) e ${formData.course2} (${formData.course2Link})
+
+Importante:
+- Mantenha um tom profissional e objetivo
+- Use hashtags relevantes
+- Inclua emojis de forma moderada
+- Mantenha os links como estão, sem encurtar`;
+
+    setGeneratedPrompt(prompt);
+    toast.success("Prompt gerado com sucesso!");
   };
 
   useEffect(() => {
@@ -75,6 +97,12 @@ export default function PromptGenerator() {
         formData={formData}
         onChange={handleChange}
       />
+      <div className="mt-6">
+        <Button onClick={generatePrompt} className="w-full">
+          Gerar Prompt
+        </Button>
+      </div>
+      <GeneratedPrompt prompt={generatedPrompt} />
     </div>
   );
 }
