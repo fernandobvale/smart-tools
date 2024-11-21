@@ -41,22 +41,28 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      const courseData = {
+        nome_curso: values.nome_curso,
+        numero_aulas: values.numero_aulas,
+        data_entrega: values.data_entrega,
+        valor: values.valor,
+        data_pagamento: values.data_pagamento || null,
+        status_pagamento: values.status_pagamento,
+        nome_editor: values.nome_editor,
+      };
+
       if (initialData?.id) {
         const { error } = await supabase
           .from("cursos")
-          .update({
-            ...values,
-            data_pagamento: values.data_pagamento || null,
-          })
+          .update(courseData)
           .eq("id", initialData.id);
 
         if (error) throw error;
         toast.success("Curso atualizado com sucesso!");
       } else {
-        const { error } = await supabase.from("cursos").insert({
-          ...values,
-          data_pagamento: values.data_pagamento || null,
-        });
+        const { error } = await supabase
+          .from("cursos")
+          .insert(courseData);
 
         if (error) throw error;
         toast.success("Curso criado com sucesso!");
