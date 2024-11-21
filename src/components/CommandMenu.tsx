@@ -47,6 +47,11 @@ const tools = [
     href: "/notes",
     description: "Crie e gerencie suas notas",
   },
+  {
+    title: "Gestão de Certificados",
+    href: "/certificates/manage",
+    description: "Gerencie e acompanhe o envio de certificados",
+  },
 ];
 
 export function CommandMenu() {
