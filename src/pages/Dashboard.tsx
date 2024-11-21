@@ -8,7 +8,8 @@ import {
   StickyNote, 
   GraduationCap, 
   MessageSquare,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -67,6 +68,12 @@ export default function Dashboard() {
       description: "Visualize e gerencie prompts personalizados",
       icon: <MessageSquare className="w-6 h-6 text-[#9b87f5]" />,
       href: "/prompt-list"
+    },
+    {
+      title: "Gestão de Cursos",
+      description: "Gerencie cursos e pagamentos de editores",
+      icon: <BookOpen className="w-6 h-6 text-[#7E69AB]" />,
+      href: "/courses"
     }
   ];
 

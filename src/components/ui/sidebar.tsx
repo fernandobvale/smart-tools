@@ -1,115 +1,101 @@
-import { Separator } from "./separator";
-import { ScrollArea } from "./scroll-area";
-import { 
-  Scissors, 
-  LayoutDashboard,
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  Scissors,
   Receipt,
   UserSearch,
   FileText,
   FileEdit,
   StickyNote,
-  LogOut,
   GraduationCap,
   MessageSquare,
-  Wrench
+  Sparkles,
+  BookOpen,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { useAuth } from "@/components/auth/AuthProvider";
 
-const items = [
+const menuItems = [
   {
     title: "Dashboard",
-    icon: <LayoutDashboard className="w-4 h-4" />,
-    href: "/dashboard"
+    href: "/dashboard",
+    icon: <Sparkles className="w-4 h-4" />,
   },
   {
     title: "Divisor de Texto",
+    href: "/text-splitter",
     icon: <Scissors className="w-4 h-4" />,
-    href: "/text-splitter"
   },
   {
     title: "Recibos",
+    href: "/receipts",
     icon: <Receipt className="w-4 h-4" />,
-    href: "/receipts"
   },
   {
     title: "Consulta CPF",
+    href: "/cpf-consulta",
     icon: <UserSearch className="w-4 h-4" />,
-    href: "/cpf-consulta"
   },
   {
     title: "Gerador de SEO",
+    href: "/seo-generator",
     icon: <FileText className="w-4 h-4" />,
-    href: "/seo-generator"
   },
   {
     title: "Editor Markdown",
+    href: "/markdown-editor",
     icon: <FileEdit className="w-4 h-4" />,
-    href: "/markdown-editor"
   },
   {
     title: "Notas",
+    href: "/notes",
     icon: <StickyNote className="w-4 h-4" />,
-    href: "/notes"
   },
   {
     title: "Gestão de Certificados",
-    icon: <FileText className="w-4 h-4" />,
-    href: "/certificates/manage"
+    href: "/certificates/manage",
+    icon: <GraduationCap className="w-4 h-4" />,
   },
   {
     title: "Lista de Professores",
+    href: "/teacher-list",
     icon: <GraduationCap className="w-4 h-4" />,
-    href: "/teacher-list"
   },
   {
     title: "Lista de Prompts",
+    href: "/prompt-list",
     icon: <MessageSquare className="w-4 h-4" />,
-    href: "/prompt-list"
-  }
+  },
+  {
+    title: "Gestão de Cursos",
+    href: "/courses",
+    icon: <BookOpen className="w-4 h-4" />,
+  },
 ];
 
 export function Sidebar() {
-  const { signOut } = useAuth();
+  const location = useLocation();
 
   return (
-    <div className="w-64 flex flex-col space-y-4 py-4 min-h-screen border-r bg-background">
-      <div className="px-3 py-2">
-        <div className="flex items-center justify-between mb-2 px-4">
-          <div className="flex items-center gap-2">
-            <Wrench className="w-5 h-5" />
-            <h2 className="text-lg font-semibold">Ferramentas</h2>
+    <div className="pb-12 min-h-screen">
+      <div className="space-y-4 py-4">
+        <div className="px-3 py-2">
+          <div className="mt-3 space-y-1">
+            {menuItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition",
+                  location.pathname === item.href
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground"
+                )}
+              >
+                {item.icon}
+                <span className="ml-3">{item.title}</span>
+              </Link>
+            ))}
           </div>
         </div>
-        <Separator />
-      </div>
-      <ScrollArea className="flex-1 px-2">
-        <div className="space-y-1 p-2">
-          {items.map((item, index) => (
-            <NavLink
-              key={index}
-              to={item.href}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent ${
-                  isActive ? "bg-accent" : ""
-                }`
-              }
-            >
-              {item.icon}
-              <span className="flex-1">{item.title}</span>
-            </NavLink>
-          ))}
-        </div>
-      </ScrollArea>
-      
-      <div className="mt-auto px-4 py-2 border-t">
-        <button
-          onClick={signOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent text-red-500 hover:text-red-600"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="flex-1">Sair</span>
-        </button>
       </div>
     </div>
   );
