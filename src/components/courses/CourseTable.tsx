@@ -24,7 +24,7 @@ interface Course {
   data_entrega: string;
   valor: number;
   data_pagamento: string | null;
-  status_pagamento: string;
+  status_pagamento: "Pendente" | "Pago" | "Cancelado";
   nome_editor: string;
 }
 

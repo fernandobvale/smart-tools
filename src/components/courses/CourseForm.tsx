@@ -45,7 +45,7 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
       data_entrega: format(new Date(), "yyyy-MM-dd"),
       valor: 0,
       data_pagamento: "",
-      status_pagamento: "",
+      status_pagamento: "Pendente",
       nome_editor: "",
     },
   });
