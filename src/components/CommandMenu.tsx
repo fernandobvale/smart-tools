@@ -52,6 +52,11 @@ const tools = [
     href: "/certificates/manage",
     description: "Gerencie e acompanhe o envio de certificados",
   },
+  {
+    title: "Novo Certificado",
+    href: "/certificates/new",
+    description: "Criar novo certificado",
+  },
 ];
 
 export function CommandMenu() {
