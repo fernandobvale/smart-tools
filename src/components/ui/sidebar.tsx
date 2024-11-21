@@ -65,7 +65,7 @@ const menuItems = [
     icon: <MessageSquare className="w-4 h-4" />,
   },
   {
-    title: "Gestão de Cursos",
+    title: "Pagamento Editores",
     href: "/courses",
     icon: <BookOpen className="w-4 h-4" />,
   },

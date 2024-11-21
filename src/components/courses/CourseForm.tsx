@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 
 const formSchema = z.object({
   nome_curso: z.string().min(1, "Nome do curso é obrigatório"),
@@ -20,24 +27,82 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface Editor {
+  id: string;
+  nome: string;
+}
+
 interface CourseFormProps {
   initialData?: FormValues & { id: string };
   onSuccess: () => void;
 }
 
 export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
+  const [editors, setEditors] = useState<Editor[]>([]);
+  const [isNewEditorDialogOpen, setIsNewEditorDialogOpen] = useState(false);
+  const [newEditorName, setNewEditorName] = useState("");
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       nome_curso: "",
       numero_aulas: 0,
-      data_entrega: "",
+      data_entrega: format(new Date(), "yyyy-MM-dd"),
       valor: 0,
       data_pagamento: "",
       status_pagamento: "",
       nome_editor: "",
     },
   });
+
+  useEffect(() => {
+    fetchEditors();
+  }, []);
+
+  const fetchEditors = async () => {
+    const { data, error } = await supabase
+      .from("editores")
+      .select("*")
+      .order("nome");
+
+    if (error) {
+      toast.error("Erro ao carregar editores");
+      return;
+    }
+
+    setEditors(data);
+  };
+
+  const calculateValue = (numberOfLessons: number) => {
+    const valuePerLesson = numberOfLessons <= 15 ? 10 : 8;
+    return numberOfLessons * valuePerLesson;
+  };
+
+  const handleNumberOfLessonsChange = (value: number) => {
+    form.setValue("numero_aulas", value);
+    form.setValue("valor", calculateValue(value));
+  };
+
+  const addNewEditor = async () => {
+    if (!newEditorName.trim()) {
+      toast.error("Nome do editor é obrigatório");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("editores")
+      .insert({ nome: newEditorName.trim() });
+
+    if (error) {
+      toast.error("Erro ao adicionar editor");
+      return;
+    }
+
+    toast.success("Editor adicionado com sucesso!");
+    setNewEditorName("");
+    setIsNewEditorDialogOpen(false);
+    fetchEditors();
+  };
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -58,21 +123,21 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           .eq("id", initialData.id);
 
         if (error) throw error;
-        toast.success("Curso atualizado com sucesso!");
+        toast.success("Lançamento atualizado com sucesso!");
       } else {
         const { error } = await supabase
           .from("cursos")
           .insert(courseData);
 
         if (error) throw error;
-        toast.success("Curso criado com sucesso!");
+        toast.success("Lançamento criado com sucesso!");
       }
 
       onSuccess();
       form.reset();
     } catch (error) {
       console.error("Error saving course:", error);
-      toast.error("Erro ao salvar o curso. Tente novamente.");
+      toast.error("Erro ao salvar o lançamento. Tente novamente.");
     }
   };
 
@@ -100,7 +165,11 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
             <FormItem>
               <FormLabel>Número de Aulas</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input 
+                  type="number" 
+                  {...field} 
+                  onChange={(e) => handleNumberOfLessonsChange(parseInt(e.target.value))}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,11 +180,36 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           control={form.control}
           name="data_entrega"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Data de Entrega</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(new Date(field.value), "dd/MM/yyyy")
+                      ) : (
+                        <span>Selecione uma data</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : new Date()}
+                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
@@ -128,7 +222,12 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
             <FormItem>
               <FormLabel>Valor</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" {...field} />
+                <Input 
+                  type="number" 
+                  {...field} 
+                  readOnly 
+                  className="bg-muted"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -139,11 +238,36 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           control={form.control}
           name="data_pagamento"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Data do Pagamento</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(new Date(field.value), "dd/MM/yyyy")
+                      ) : (
+                        <span>Selecione uma data</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
@@ -177,17 +301,59 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           name="nome_editor"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome do Editor</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <FormLabel>Editor</FormLabel>
+              <div className="flex gap-2">
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Selecione o editor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {editors.map((editor) => (
+                      <SelectItem key={editor.id} value={editor.nome}>
+                        {editor.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Dialog open={isNewEditorDialogOpen} onOpenChange={setIsNewEditorDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline">
+                      Novo Editor
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Adicionar Novo Editor</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Nome do editor"
+                        value={newEditorName}
+                        onChange={(e) => setNewEditorName(e.target.value)}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline">
+                            Cancelar
+                          </Button>
+                        </DialogClose>
+                        <Button type="button" onClick={addNewEditor}>
+                          Adicionar
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
 
         <Button type="submit">
-          {initialData ? "Atualizar Curso" : "Criar Curso"}
+          {initialData ? "Atualizar Lançamento" : "Criar Lançamento"}
         </Button>
       </form>
     </Form>

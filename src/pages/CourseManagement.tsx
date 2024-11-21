@@ -26,17 +26,17 @@ export default function CourseManagement() {
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gestão de Cursos</h1>
+        <h1 className="text-2xl font-bold">Pagamento Editores</h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="w-4 h-4 mr-2" />
-              Novo Curso
+              Novo Lançamento
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Adicionar Novo Curso</DialogTitle>
+              <DialogTitle>Adicionar Novo Lançamento</DialogTitle>
             </DialogHeader>
             <CourseForm onSuccess={() => {
               setIsFormOpen(false);

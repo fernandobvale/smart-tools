@@ -153,6 +153,24 @@ export type Database = {
         }
         Relationships: []
       }
+      editores: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string

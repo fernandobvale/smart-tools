@@ -70,8 +70,8 @@ export default function Dashboard() {
       href: "/prompt-list"
     },
     {
-      title: "Gestão de Cursos",
-      description: "Gerencie cursos e pagamentos de editores",
+      title: "Pagamento Editores",
+      description: "Gerencie pagamentos de aulas editadas",
       icon: <BookOpen className="w-6 h-6 text-[#7E69AB]" />,
       href: "/courses"
     }
