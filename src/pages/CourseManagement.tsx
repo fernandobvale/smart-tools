@@ -3,30 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseForm } from "@/components/courses/CourseForm";
 import { CourseTable } from "@/components/courses/CourseTable";
-import { CourseFilters } from "@/components/courses/CourseFilters";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
 
 export default function CourseManagement() {
-  const [editor, setEditor] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const { data: courses, refetch } = useQuery({
-    queryKey: ["courses", editor, paymentStatus],
+    queryKey: ["courses"],
     queryFn: async () => {
-      let query = supabase.from("cursos").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("cursos")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if (editor) {
-        query = query.ilike("nome_editor", `%${editor}%`);
-      }
-
-      if (paymentStatus) {
-        query = query.eq("status_pagamento", paymentStatus);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -54,13 +45,6 @@ export default function CourseManagement() {
           </DialogContent>
         </Dialog>
       </div>
-
-      <CourseFilters
-        editor={editor}
-        onEditorChange={setEditor}
-        paymentStatus={paymentStatus}
-        onPaymentStatusChange={setPaymentStatus}
-      />
 
       <CourseTable courses={courses || []} onUpdate={refetch} />
     </div>
