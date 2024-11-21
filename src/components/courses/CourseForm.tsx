@@ -1,56 +1,25 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
 import { calculateValue } from "@/utils/courseCalculations";
 import { EditorSelect } from "./EditorSelect";
-
-const formSchema = z.object({
-  nome_curso: z.string().min(1, "Nome do curso é obrigatório"),
-  numero_aulas: z.coerce.number().min(1, "Número de aulas é obrigatório"),
-  data_entrega: z.string().min(1, "Data de entrega é obrigatória"),
-  valor: z.coerce.number().min(0, "Valor é obrigatório"),
-  data_pagamento: z.string().optional(),
-  status_pagamento: z.string().min(1, "Status de pagamento é obrigatório"),
-  nome_editor: z.string().min(1, "Nome do editor é obrigatório"),
-});
+import { DateField } from "./DateField";
+import { CourseFormValues, courseFormSchema } from "./types";
 
 interface CourseFormProps {
-  initialData?: FormValues & { id: string };
+  initialData?: CourseFormValues & { id: string };
   onSuccess: () => void;
 }
 
-type FormValues = z.infer<typeof formSchema>;
-
 export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
-  const [editors, setEditors] = useState<{ id: string; nome: string; }[]>([]);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<CourseFormValues>({
+    resolver: zodResolver(courseFormSchema),
     defaultValues: initialData || {
       nome_curso: "",
       numero_aulas: 0,
@@ -62,30 +31,12 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
     },
   });
 
-  const fetchEditors = async () => {
-    const { data, error } = await supabase
-      .from("editores")
-      .select("*")
-      .order("nome");
-
-    if (error) {
-      toast.error("Erro ao carregar editores");
-      return;
-    }
-
-    setEditors(data);
-  };
-
-  useEffect(() => {
-    fetchEditors();
-  }, []);
-
   const handleNumberOfLessonsChange = (value: number) => {
     form.setValue("numero_aulas", value);
     form.setValue("valor", calculateValue(value));
   };
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: CourseFormValues) => {
     try {
       const courseData = {
         nome_curso: values.nome_curso,
@@ -158,43 +109,11 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="data_entrega"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Data de Entrega</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(new Date(field.value), "dd/MM/yyyy")
-                      ) : (
-                        <span>Selecione uma data</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : new Date()}
-                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
+        <DateField 
+          form={form} 
+          name="data_entrega" 
+          label="Data de Entrega"
+          required
         />
 
         <FormField
@@ -216,43 +135,10 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="data_pagamento"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Data do Pagamento</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(new Date(field.value), "dd/MM/yyyy")
-                      ) : (
-                        <span>Selecione uma data</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
+        <DateField 
+          form={form} 
+          name="data_pagamento" 
+          label="Data do Pagamento"
         />
 
         <FormField
@@ -280,8 +166,8 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
 
         <EditorSelect 
           form={form} 
-          editors={editors} 
-          onEditorAdded={fetchEditors} 
+          editors={[]} 
+          onEditorAdded={() => {}} 
         />
 
         <Button type="submit">
