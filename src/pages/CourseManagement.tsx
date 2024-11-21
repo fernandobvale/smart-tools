@@ -26,7 +26,7 @@ interface Course {
 export default function CourseManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editorFilter, setEditorFilter] = useState("");
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string | null>(null);
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatus | null>(null);
 
   const { data: courses, refetch } = useQuery({
     queryKey: ["courses"],
@@ -38,7 +38,6 @@ export default function CourseManagement() {
 
       if (error) throw error;
       
-      // Ensure the data matches our Course type
       return (data as Course[]).map(course => ({
         ...course,
         status_pagamento: course.status_pagamento as PaymentStatus

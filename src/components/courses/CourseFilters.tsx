@@ -7,11 +7,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type PaymentStatus = "Pendente" | "Pago" | "Cancelado";
+
 interface CourseFiltersProps {
   editor: string;
   onEditorChange: (value: string) => void;
-  paymentStatus: string | null;
-  onPaymentStatusChange: (value: string | null) => void;
+  paymentStatus: PaymentStatus | null;
+  onPaymentStatusChange: (value: PaymentStatus | null) => void;
 }
 
 export function CourseFilters({
@@ -32,15 +34,16 @@ export function CourseFilters({
       <div className="w-[200px]">
         <Select
           value={paymentStatus || ""}
-          onValueChange={(value) => onPaymentStatusChange(value || null)}
+          onValueChange={(value) => onPaymentStatusChange(value as PaymentStatus || null)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Status de pagamento" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Todos</SelectItem>
-            <SelectItem value="Sim">Pago</SelectItem>
-            <SelectItem value="Não">Não Pago</SelectItem>
+            <SelectItem value="Pendente">Pendente</SelectItem>
+            <SelectItem value="Pago">Pago</SelectItem>
+            <SelectItem value="Cancelado">Cancelado</SelectItem>
           </SelectContent>
         </Select>
       </div>
