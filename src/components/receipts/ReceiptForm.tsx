@@ -11,12 +11,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { NumericFormat } from "react-number-format";
 import { generateReceiptPDF } from "@/utils/pdfGenerator";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   amount: z.string().min(1, "Valor é obrigatório"),
@@ -37,7 +38,10 @@ const ReceiptForm = () => {
         .eq("id", payeeId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Erro ao carregar dados do beneficiário");
+        throw error;
+      }
       return data;
     },
   });
@@ -54,10 +58,10 @@ const ReceiptForm = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       if (!payee) {
-        throw new Error("Dados do beneficiário não encontrados");
+        toast.error("Dados do beneficiário não encontrados");
+        return;
       }
 
-      // Ensure all required fields are present and properly typed
       const pdfData = {
         amount: values.amount,
         reference: values.reference,
@@ -73,27 +77,24 @@ const ReceiptForm = () => {
       const success = await generateReceiptPDF(pdfData);
 
       if (!success) {
-        throw new Error("Erro ao gerar o PDF do recibo");
+        toast.error("Erro ao gerar o PDF do recibo. Tente novamente.");
+        return;
       }
 
-      toast({
-        title: "Recibo gerado com sucesso!",
-        description: "O recibo foi gerado e baixado automaticamente.",
-      });
-      
+      toast.success("Recibo gerado com sucesso!");
       navigate("/receipts");
     } catch (error) {
       console.error("Erro ao gerar recibo:", error);
-      toast({
-        title: "Erro ao gerar recibo",
-        description: "Ocorreu um erro ao gerar o recibo. Tente novamente.",
-        variant: "destructive",
-      });
+      toast.error("Ocorreu um erro ao gerar o recibo. Tente novamente.");
     }
   };
 
   if (isLoading) {
-    return <div>Carregando dados do beneficiário...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
