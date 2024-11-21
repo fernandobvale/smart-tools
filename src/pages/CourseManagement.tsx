@@ -6,6 +6,7 @@ import { CourseTable } from "@/components/courses/CourseTable";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
+import { CourseFilters } from "@/components/courses/CourseFilters";
 
 type PaymentStatus = "Pendente" | "Pago" | "Cancelado";
 
@@ -24,6 +25,8 @@ interface Course {
 
 export default function CourseManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editorFilter, setEditorFilter] = useState("");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string | null>(null);
 
   const { data: courses, refetch } = useQuery({
     queryKey: ["courses"],
@@ -42,6 +45,18 @@ export default function CourseManagement() {
       }));
     },
   });
+
+  const filteredCourses = courses?.filter(course => {
+    const matchesEditor = editorFilter
+      ? course.nome_editor.toLowerCase().includes(editorFilter.toLowerCase())
+      : true;
+    
+    const matchesStatus = paymentStatusFilter
+      ? course.status_pagamento === paymentStatusFilter
+      : true;
+
+    return matchesEditor && matchesStatus;
+  }) || [];
 
   return (
     <div className="container mx-auto py-8">
@@ -66,7 +81,14 @@ export default function CourseManagement() {
         </Dialog>
       </div>
 
-      <CourseTable courses={courses || []} onUpdate={refetch} />
+      <CourseFilters
+        editor={editorFilter}
+        onEditorChange={setEditorFilter}
+        paymentStatus={paymentStatusFilter}
+        onPaymentStatusChange={setPaymentStatusFilter}
+      />
+
+      <CourseTable courses={filteredCourses} onUpdate={refetch} />
     </div>
   );
 }
