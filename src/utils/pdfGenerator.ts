@@ -1,5 +1,7 @@
 import { jsPDF } from "jspdf";
 import extenso from "extenso";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface PDFData {
   amount: string;
@@ -95,12 +97,15 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     doc.text(splitBankInfo, leftMargin, yPos);
     yPos += (splitBankInfo.length * 7) + 15;
 
+    // Format the date correctly using date-fns
+    const formattedDate = format(parseISO(data.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+
     // Date with bold city name
     doc.setFont("helvetica", "bold");
     doc.text("Goiânia", leftMargin, yPos);
     const cityWidth = doc.getTextWidth("Goiânia");
     doc.setFont("helvetica", "normal");
-    doc.text(`, ${formatDate(data.date)}`, leftMargin + cityWidth, yPos);
+    doc.text(`, ${formattedDate}`, leftMargin + cityWidth, yPos);
     yPos += 25;
 
     // Signature line and final information
@@ -116,15 +121,6 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     console.error("Erro ao gerar PDF:", error);
     return false;
   }
-};
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const months = [
-    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
-  ];
-  return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
 };
 
 const formatCPF = (cpf: string) => {
