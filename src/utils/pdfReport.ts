@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from 'jspdf-autotable';
 import { format, parseISO } from "date-fns";
 
 interface Course {
@@ -27,7 +27,7 @@ export const generatePDFReport = (courses: Course[]) => {
   const total = courses.reduce((sum, course) => sum + Number(course.valor), 0);
 
   // Add table
-  (doc as any).autoTable({
+  autoTable(doc, {
     startY: 30,
     head: [["Curso", "Editor", "Aulas", "Entrega", "Valor", "Status"]],
     body: courses.map((course) => [
