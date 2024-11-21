@@ -1,15 +1,13 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PromptForm } from "@/components/prompt-generator/PromptForm";
 import { FormData } from "@/components/prompt-generator/types";
 import { Button } from "@/components/ui/button";
 import { GeneratedPrompt } from "@/components/prompt-generator/GeneratedPrompt";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function PromptGenerator() {
-  const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     courseName: "",
@@ -24,33 +22,12 @@ export default function PromptGenerator() {
   });
   const [generatedPrompt, setGeneratedPrompt] = useState("");
 
-  const { data: prompt, isLoading } = useQuery({
-    queryKey: ["prompt", id],
-    queryFn: async () => {
-      if (!id) return null;
-      
-      const { data, error } = await supabase
-        .from("prompts")
-        .select("*")
-        .eq("id", id)
-        .single();
-      
-      if (error) {
-        navigate("/prompt-list");
-        return null;
-      }
-      
-      return data;
-    },
-    enabled: !!id,
-  });
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const generatePrompt = () => {
+  const generatePrompt = async () => {
     const prompt = `Informe que trata-se de um curso com conteúdo apenas teórico e não pratico. A partir de agora você irá se tornar meu redator de artigos especialista em SEO. Crie o artigo em Markdown, utilize as TAGS H2 nos títulos e destaque algumas palavras-chave que achar que seja interessante em negrito. Irei passar algumas informações para que possa escrever um artigo conforme minhas orientações. Para ficar por dentro do assunto que quero que escreva, o tema do artigo será sobre:
 
 Curso de ${formData.courseName} Gratuito e Online da Unova.
@@ -78,34 +55,34 @@ Faça 02 parágrafos sobre o tema: Por que devo me matricular no curso? Utilize 
 Faça 01 parágrafo sobre o tema: Outros cursos na área de ${formData.courseArea}(Obs: Linkar o nome da área no link a seguir: ${formData.areaLink}) que pode ser do seu interesse. - Utilize as seguintes palavras-chaves: Curso de ${formData.course1} (Obs: Linkar o nome do curso no link a seguir: ${formData.course1Link}), Curso de ${formData.course2} (Obs: Linkar o nome do curso no link a seguir: ${formData.course2Link}).`;
 
     setGeneratedPrompt(prompt);
-    toast.success("Prompt gerado com sucesso!");
-  };
 
-  useEffect(() => {
-    if (prompt) {
-      setFormData({
-        courseName: prompt.course_name || "",
-        courseContent: prompt.course_content || "",
-        workload: prompt.workload || "",
-        courseArea: prompt.course_area || "",
-        areaLink: prompt.area_link || "",
-        course1: prompt.course_1 || "",
-        course1Link: prompt.course_1_link || "",
-        course2: prompt.course_2 || "",
-        course2Link: prompt.course_2_link || "",
+    try {
+      const { error } = await supabase.from("prompts").insert({
+        course_name: formData.courseName,
+        course_content: formData.courseContent,
+        workload: formData.workload,
+        course_area: formData.courseArea,
+        area_link: formData.areaLink,
+        course_1: formData.course1,
+        course_1_link: formData.course1Link,
+        course_2: formData.course2,
+        course_2_link: formData.course2Link,
+        generated_prompt: prompt,
       });
-    }
-  }, [prompt]);
 
-  if (isLoading) {
-    return <div className="container py-8">Carregando...</div>;
-  }
+      if (error) throw error;
+
+      toast.success("Prompt gerado e salvo com sucesso!");
+      navigate("/prompt-list");
+    } catch (error) {
+      console.error("Erro ao salvar o prompt:", error);
+      toast.error("Erro ao salvar o prompt. Tente novamente.");
+    }
+  };
 
   return (
     <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-8">
-        {id ? "Editar Prompt" : "Gerar Novo Prompt"}
-      </h1>
+      <h1 className="text-2xl font-bold mb-8">Gerar Novo Prompt</h1>
       <PromptForm 
         formData={formData}
         onChange={handleChange}
