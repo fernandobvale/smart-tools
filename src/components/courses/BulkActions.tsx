@@ -21,8 +21,25 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
 
   if (selectedIds.length === 0) return null;
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      onMarkAsPaid(localDate.toISOString().split('T')[0]);
+      setIsDatePickerOpen(false);
+      setIsDropdownOpen(false);
+    }
+  };
+
   return (
-    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+    <DropdownMenu 
+      open={isDropdownOpen} 
+      onOpenChange={(open) => {
+        setIsDropdownOpen(open);
+        if (!open) {
+          setIsDatePickerOpen(false);
+        }
+      }}
+    >
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <MoreHorizontal className="h-4 w-4" />
@@ -30,10 +47,22 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+        <Popover 
+          open={isDatePickerOpen} 
+          onOpenChange={(open) => {
+            setIsDatePickerOpen(open);
+            if (!open) {
+              setIsDropdownOpen(false);
+            }
+          }}
+        >
           <PopoverTrigger asChild>
             <DropdownMenuItem
               onSelect={(e) => {
+                e.preventDefault();
+                setIsDatePickerOpen(true);
+              }}
+              onClick={(e) => {
                 e.preventDefault();
                 setIsDatePickerOpen(true);
               }}
@@ -42,18 +71,17 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
               Marcar como pago
             </DropdownMenuItem>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent 
+            className="w-auto p-0" 
+            align="start"
+            onInteractOutside={(e) => {
+              e.preventDefault();
+            }}
+          >
             <Calendar
               mode="single"
               selected={new Date()}
-              onSelect={(date) => {
-                if (date) {
-                  const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-                  onMarkAsPaid(localDate.toISOString().split('T')[0]);
-                  setIsDatePickerOpen(false);
-                  setIsDropdownOpen(false);
-                }
-              }}
+              onSelect={handleDateSelect}
               initialFocus
             />
           </PopoverContent>
