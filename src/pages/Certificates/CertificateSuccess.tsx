@@ -13,7 +13,7 @@ export default function CertificateSuccess() {
           </div>
           <h1 className="text-3xl font-bold">Uhuuul! Formulário enviado com sucesso!</h1>
           <p className="text-xl text-muted-foreground">
-            Agora é só aguardar que o Fernando Vale vai entrar em contato com você!
+            Entre em contato com o Fernando Vale para dar continuidade ao processo!
           </p>
           <p className="text-lg">
             Para agilizar o processo, que tal mandar uma mensagem pra ele?
@@ -22,7 +22,7 @@ export default function CertificateSuccess() {
 
         <div className="flex flex-col items-center gap-4">
           <a
-            href="https://wa.me/5511999999999"
+            href="https://wa.me/5562984541954"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full"
@@ -32,12 +32,6 @@ export default function CertificateSuccess() {
               Falar com Fernando Vale
             </Button>
           </a>
-
-          <Link to="/certificates/manage" className="w-full">
-            <Button variant="outline" className="w-full">
-              Ir para Gestão de Certificados
-            </Button>
-          </Link>
         </div>
       </Card>
     </div>
