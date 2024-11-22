@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { BulkActions } from "./BulkActions";
 import { generatePDFReport } from "@/utils/pdfReport";
+import { format, parseISO } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,6 +85,12 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
     }
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+    // Parse the ISO date string and format it directly without timezone adjustments
+    return format(parseISO(dateString), 'dd/MM/yyyy');
+  };
+
   const totalValue = courses.reduce((sum, course) => sum + Number(course.valor), 0);
 
   return (
@@ -146,13 +153,9 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
                 </TableCell>
                 <TableCell>{course.nome_curso}</TableCell>
                 <TableCell>{course.numero_aulas}</TableCell>
-                <TableCell>{new Date(course.data_entrega).toLocaleDateString()}</TableCell>
+                <TableCell>{formatDate(course.data_entrega)}</TableCell>
                 <TableCell>R$ {Number(course.valor).toFixed(2)}</TableCell>
-                <TableCell>
-                  {course.data_pagamento
-                    ? new Date(course.data_pagamento).toLocaleDateString()
-                    : "-"}
-                </TableCell>
+                <TableCell>{formatDate(course.data_pagamento)}</TableCell>
                 <TableCell>{course.status_pagamento}</TableCell>
                 <TableCell>{course.nome_editor}</TableCell>
                 <TableCell>
