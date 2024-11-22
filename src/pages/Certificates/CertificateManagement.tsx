@@ -106,7 +106,7 @@ export default function CertificateManagement() {
     const selectedIds = selectedCertificates
       .map((id) => {
         const cert = certificates?.find((c) => c.id === id);
-        return cert?.numero_pedido;
+        return cert?.numero_pedido ? `${cert.numero_pedido},${cert.numero_pedido}` : null;
       })
       .filter(Boolean)
       .join(",");
@@ -121,7 +121,7 @@ export default function CertificateManagement() {
     const selectedIds = selectedCertificates
       .map((id) => {
         const cert = certificates?.find((c) => c.id === id);
-        return cert?.numero_pedido;
+        return cert?.numero_pedido ? `${cert.numero_pedido},${cert.numero_pedido}` : null;
       })
       .filter(Boolean)
       .join(",");
