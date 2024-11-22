@@ -18,6 +18,7 @@ import SeoGenerator from "./pages/SeoGenerator";
 import MarkdownEditor from "./pages/MarkdownEditor";
 import Notes from "./pages/Notes";
 import CertificateForm from "./pages/Certificates/CertificateForm";
+import CertificateSuccess from "./pages/Certificates/CertificateSuccess";
 import CertificateManagement from "./pages/Certificates/CertificateManagement";
 import TeacherApplication from "./pages/TeacherApplication";
 import TeacherList from "./pages/TeacherList";
@@ -49,6 +50,7 @@ const App = () => {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 {/* Rotas públicas */}
                 <Route path="/certificates/new" element={<CertificateForm />} />
+                <Route path="/certificates/success" element={<CertificateSuccess />} />
                 <Route path="/teacher-application" element={<TeacherApplication />} />
                 {/* Rotas protegidas */}
                 <Route

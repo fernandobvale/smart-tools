@@ -61,7 +61,7 @@ export default function CertificateForm() {
       if (error) throw error;
 
       toast.success("Certificado registrado com sucesso!");
-      navigate("/certificates/manage");
+      navigate("/certificates/success");
     } catch (error) {
       console.error("Error submitting certificate:", error);
       toast.error("Erro ao registrar certificado. Tente novamente.");
