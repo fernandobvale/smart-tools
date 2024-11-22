@@ -19,7 +19,7 @@ export function ShippingFields({ form }: ShippingFieldsProps) {
           <FormItem>
             <FormLabel>Status do Envio</FormLabel>
             <Select 
-              defaultValue={field.value} 
+              value={field.value} 
               onValueChange={field.onChange}
             >
               <FormControl>
@@ -47,7 +47,7 @@ export function ShippingFields({ form }: ShippingFieldsProps) {
           <FormItem>
             <FormLabel>Site de Referência</FormLabel>
             <Select 
-              defaultValue={field.value} 
+              value={field.value} 
               onValueChange={field.onChange}
             >
               <FormControl>

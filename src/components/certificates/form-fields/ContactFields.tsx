@@ -32,7 +32,7 @@ export function ContactFields({ form }: ContactFieldsProps) {
           <FormItem>
             <FormLabel>Canal de Contato</FormLabel>
             <Select 
-              defaultValue={field.value} 
+              value={field.value} 
               onValueChange={field.onChange}
             >
               <FormControl>

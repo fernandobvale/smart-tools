@@ -16,7 +16,7 @@ export function PaymentFields({ form }: PaymentFieldsProps) {
           <FormItem>
             <FormLabel>Status do Pagamento</FormLabel>
             <Select 
-              defaultValue={field.value} 
+              value={field.value} 
               onValueChange={field.onChange}
             >
               <FormControl>
@@ -42,7 +42,7 @@ export function PaymentFields({ form }: PaymentFieldsProps) {
           <FormItem>
             <FormLabel>Confirmação dos Dados</FormLabel>
             <Select 
-              defaultValue={field.value} 
+              value={field.value} 
               onValueChange={field.onChange}
             >
               <FormControl>
