@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { WhatsappLogo } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function CertificateSuccess() {
@@ -28,7 +28,7 @@ export default function CertificateSuccess() {
             className="w-full"
           >
             <Button className="w-full gap-2" size="lg">
-              <WhatsappLogo className="w-5 h-5" />
+              <MessageCircle className="w-5 h-5" />
               Falar com Fernando Vale
             </Button>
           </a>
