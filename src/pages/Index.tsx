@@ -22,14 +22,24 @@ const Index = () => {
       return;
     }
 
-    const results = splitText(inputText, charLimit);
-    setSplitResults(results);
-    toast.success(`Texto dividido em ${results.length} partes`);
+    try {
+      const results = splitText(inputText, charLimit);
+      setSplitResults(results);
+      toast.success(`Texto dividido em ${results.length} partes`);
+    } catch (error) {
+      toast.error("Erro ao dividir o texto. Por favor, tente novamente.");
+      console.error("Error splitting text:", error);
+    }
   };
 
   const handleCopy = async (text: string, index: number) => {
-    await navigator.clipboard.writeText(text);
-    toast.success(`Parte ${index + 1} copiada para a área de transferência`);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`Parte ${index + 1} copiada para a área de transferência`);
+    } catch (error) {
+      toast.error("Erro ao copiar o texto. Por favor, tente novamente.");
+      console.error("Error copying text:", error);
+    }
   };
 
   const handleClear = () => {
@@ -39,16 +49,16 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+    <div className="container mx-auto p-4 md:p-8 min-h-screen">
+      <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl md:text-4xl font-bold text-foreground">Divisor de Texto</h1>
+          <h1 className="text-2xl md:text-4xl font-bold">Divisor de Texto</h1>
           <p className="text-muted-foreground">
             Divida seu texto em partes menores preservando frases completas
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="w-full sm:w-48">
             <Input
               type="number"
@@ -59,40 +69,38 @@ const Index = () => {
               placeholder="Limite de caracteres"
             />
           </div>
-          <Button onClick={handleSplit} className="w-full sm:w-auto">
-            Dividir Texto
-          </Button>
-          <Button
-            onClick={handleClear}
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
-            Limpar Tudo
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button onClick={handleSplit} className="flex-1 sm:flex-none">
+              Dividir Texto
+            </Button>
+            <Button
+              onClick={handleClear}
+              variant="outline"
+              className="flex-1 sm:flex-none"
+            >
+              Limpar Tudo
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
-            Digite seu texto
-          </label>
+          <label className="text-sm font-medium">Digite seu texto</label>
           <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Cole seu texto aqui..."
-            className="min-h-[200px] bg-background text-foreground dark:bg-gray-900 dark:text-gray-100"
+            className="min-h-[200px]"
           />
         </div>
 
         {splitResults.length > 0 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold text-foreground">
-              Resultados
-            </h2>
+            <h2 className="text-2xl font-semibold">Resultados</h2>
             <div className="grid gap-6">
               {splitResults.map((result, index) => (
                 <div
-                  key={index}
-                  className="relative bg-background border border-input rounded-lg p-4 dark:bg-gray-900"
+                  key={`result-${index}`}
+                  className="bg-card border rounded-lg p-4"
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-muted-foreground">
@@ -111,7 +119,7 @@ const Index = () => {
                   <Textarea
                     value={result}
                     readOnly
-                    className="min-h-[100px] bg-background text-foreground dark:bg-gray-900 dark:text-gray-100"
+                    className="min-h-[100px]"
                   />
                 </div>
               ))}
