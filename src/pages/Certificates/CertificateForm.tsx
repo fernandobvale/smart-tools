@@ -2,29 +2,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Send } from "lucide-react";
-import { CONTACT_CHANNELS, SHIPPING_STATUS, REFERENCE_SITES } from "./constants";
+import { ContactFields } from "@/components/certificates/form-fields/ContactFields";
+import { PaymentFields } from "@/components/certificates/form-fields/PaymentFields";
+import { AddressFields } from "@/components/certificates/form-fields/AddressFields";
+import { ShippingFields } from "@/components/certificates/form-fields/ShippingFields";
 
 const formSchema = z.object({
   email_aluno: z.string().email("Email inválido"),
@@ -93,272 +80,33 @@ export default function CertificateForm() {
         <Separator className="mb-8" />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email_aluno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email do Aluno</FormLabel>
-                  <FormControl>
-                    <Input placeholder="email@exemplo.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Informações de Contato</h2>
+              <ContactFields form={form} />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="canal_contato"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Canal de Contato</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o canal" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {CONTACT_CHANNELS.map((channel) => (
-                        <SelectItem key={channel.value} value={channel.value}>
-                          {channel.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Separator className="my-6" />
 
-            <FormField
-              control={form.control}
-              name="status_pagamento"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status do Pagamento</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="confirmado">Confirmado</SelectItem>
-                      <SelectItem value="pendente">Pendente</SelectItem>
-                      <SelectItem value="cancelado">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Informações de Pagamento</h2>
+              <PaymentFields form={form} />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="dados_confirmados"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirmação dos Dados</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Confirme os dados" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="true">Confirmado</SelectItem>
-                      <SelectItem value="false">Não Confirmado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Separator className="my-6" />
 
-            <FormField
-              control={form.control}
-              name="nome_aluno"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome do Aluno</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome completo" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Endereço</h2>
+              <AddressFields form={form} />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="endereco"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Endereço</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Rua, número" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Separator className="my-6" />
 
-            <FormField
-              control={form.control}
-              name="complemento"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Complemento</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Apartamento, bloco, etc" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Informações de Envio</h2>
+              <ShippingFields form={form} />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="bairro"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bairro</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Bairro" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cidade_estado"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cidade e Estado</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Cidade - UF" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cep"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CEP</FormLabel>
-                  <FormControl>
-                    <Input placeholder="00000-000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status_envio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status do Envio</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {SHIPPING_STATUS.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="site_referencia"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Site de Referência</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o site" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {REFERENCE_SITES.map((site) => (
-                        <SelectItem key={site.value} value={site.value}>
-                          {site.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="numero_pedido"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Número do Pedido</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123456" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="quantidade"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantidade</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="observacoes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Observações</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Observações adicionais" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full mt-8">
               Informar Dados
             </Button>
           </form>
