@@ -31,6 +31,8 @@ interface CertificateSectionProps {
   onCheckboxChange: (id: string) => void;
   showCheckboxes?: boolean;
   showSearch?: boolean;
+  onEdit: (certificate: Certificate) => void;
+  onDelete: (id: string) => void;
 }
 
 export const CertificateSection = ({
@@ -40,6 +42,8 @@ export const CertificateSection = ({
   onCheckboxChange,
   showCheckboxes = true,
   showSearch = false,
+  onEdit,
+  onDelete,
 }: CertificateSectionProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -67,6 +71,8 @@ export const CertificateSection = ({
           selectedCertificates={selectedCertificates}
           onCheckboxChange={onCheckboxChange}
           showCheckboxes={showCheckboxes}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       </div>
     </div>

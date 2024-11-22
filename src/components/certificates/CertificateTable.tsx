@@ -1,5 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface Certificate {
   id: string;
@@ -21,6 +23,8 @@ interface CertificateTableProps {
   selectedCertificates: string[];
   onCheckboxChange: (id: string) => void;
   showCheckboxes?: boolean;
+  onEdit: (certificate: Certificate) => void;
+  onDelete: (id: string) => void;
 }
 
 export const CertificateTable = ({
@@ -28,6 +32,8 @@ export const CertificateTable = ({
   selectedCertificates,
   onCheckboxChange,
   showCheckboxes = true,
+  onEdit,
+  onDelete,
 }: CertificateTableProps) => {
   return (
     <Table>
@@ -39,6 +45,7 @@ export const CertificateTable = ({
           <TableHead>Status</TableHead>
           <TableHead>Localização</TableHead>
           {!showCheckboxes && <TableHead>Código de Rastreio</TableHead>}
+          <TableHead>Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -57,6 +64,24 @@ export const CertificateTable = ({
             <TableCell>{certificate.status_envio}</TableCell>
             <TableCell>{certificate.cidade_estado}</TableCell>
             {!showCheckboxes && <TableCell>{certificate.codigo_rastreio}</TableCell>}
+            <TableCell>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onEdit(certificate)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onDelete(certificate.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

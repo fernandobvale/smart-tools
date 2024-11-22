@@ -8,6 +8,16 @@ import { toast } from "sonner";
 import { CertificateSection } from "@/components/certificates/CertificateSection";
 import { ShippingDataDialog } from "@/components/certificates/ShippingDataDialog";
 import { FileText } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Certificate {
   id: string;
@@ -36,6 +46,7 @@ export default function CertificateManagement() {
   const [trackingCode, setTrackingCode] = useState("");
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [isShippingDataDialogOpen, setIsShippingDataDialogOpen] = useState(false);
+  const [certificateToDelete, setCertificateToDelete] = useState<string | null>(null);
 
   const { data: certificates, refetch } = useQuery({
     queryKey: ["certificates"],
@@ -63,6 +74,32 @@ export default function CertificateManagement() {
         ? prev.filter((id) => id !== certificateId)
         : [...prev, certificateId]
     );
+  };
+
+  const handleEdit = (certificate: Certificate) => {
+    setSelectedCertificates([certificate.id]);
+    setIsShippingDataDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!certificateToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("certificates")
+        .delete()
+        .eq("id", certificateToDelete);
+
+      if (error) throw error;
+
+      toast.success("Certificado excluído com sucesso");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting certificate:", error);
+      toast.error("Erro ao excluir certificado");
+    } finally {
+      setCertificateToDelete(null);
+    }
   };
 
   const handleViewCertificates = () => {
@@ -170,6 +207,8 @@ export default function CertificateManagement() {
           onCheckboxChange={handleCheckboxChange}
           showCheckboxes={true}
           showSearch={false}
+          onEdit={handleEdit}
+          onDelete={setCertificateToDelete}
         />
 
         <CertificateSection
@@ -179,6 +218,8 @@ export default function CertificateManagement() {
           onCheckboxChange={handleCheckboxChange}
           showCheckboxes={false}
           showSearch={true}
+          onEdit={handleEdit}
+          onDelete={setCertificateToDelete}
         />
       </div>
 
@@ -205,6 +246,23 @@ export default function CertificateManagement() {
         onOpenChange={setIsShippingDataDialogOpen}
         certificate={selectedCertificate}
       />
+
+      <AlertDialog open={!!certificateToDelete} onOpenChange={() => setCertificateToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este certificado? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
