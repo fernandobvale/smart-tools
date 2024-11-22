@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
+import { format } from "date-fns";
 
 interface BulkActionsProps {
   selectedIds: string[];
@@ -23,8 +24,8 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-      const formattedDate = localDate.toISOString().split('T')[0];
+      // Format the date directly without timezone adjustments
+      const formattedDate = format(date, 'yyyy-MM-dd');
       onMarkAsPaid(formattedDate);
       setIsDatePickerOpen(false);
       setIsDropdownOpen(false);
