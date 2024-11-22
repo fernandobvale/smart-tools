@@ -11,7 +11,10 @@ import {
   MessageSquare,
   Sparkles,
   BookOpen,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { toast } from "sonner";
 
 const menuItems = [
   {
@@ -73,6 +76,12 @@ const menuItems = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Logout realizado com sucesso!");
+  };
 
   return (
     <div className="pb-12 min-h-screen">
@@ -94,6 +103,13 @@ export function Sidebar() {
                 <span className="ml-3">{item.title}</span>
               </Link>
             ))}
+            <button
+              onClick={handleSignOut}
+              className="text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-red-500 hover:bg-red-500/10 rounded-lg transition text-muted-foreground"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="ml-3">Sair</span>
+            </button>
           </div>
         </div>
       </div>
