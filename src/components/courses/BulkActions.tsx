@@ -24,7 +24,8 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-      onMarkAsPaid(localDate.toISOString().split('T')[0]);
+      const formattedDate = localDate.toISOString().split('T')[0];
+      onMarkAsPaid(formattedDate);
       setIsDatePickerOpen(false);
       setIsDropdownOpen(false);
     }
@@ -35,7 +36,7 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
       open={isDropdownOpen} 
       onOpenChange={(open) => {
         setIsDropdownOpen(open);
-        if (!open) {
+        if (!open && !isDatePickerOpen) {
           setIsDatePickerOpen(false);
         }
       }}
@@ -49,21 +50,14 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
       <DropdownMenuContent align="end">
         <Popover 
           open={isDatePickerOpen} 
-          onOpenChange={(open) => {
-            setIsDatePickerOpen(open);
-            if (!open) {
-              setIsDropdownOpen(false);
-            }
-          }}
+          onOpenChange={setIsDatePickerOpen}
         >
           <PopoverTrigger asChild>
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-                setIsDatePickerOpen(true);
               }}
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 setIsDatePickerOpen(true);
               }}
             >
@@ -74,9 +68,6 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
           <PopoverContent 
             className="w-auto p-0" 
             align="start"
-            onInteractOutside={(e) => {
-              e.preventDefault();
-            }}
           >
             <Calendar
               mode="single"
