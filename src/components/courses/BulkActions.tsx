@@ -8,7 +8,6 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, MoreHorizontal } from "lucide-react";
-import { format } from "date-fns";
 import { useState } from "react";
 
 interface BulkActionsProps {
@@ -18,11 +17,12 @@ interface BulkActionsProps {
 
 export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (selectedIds.length === 0) return null;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <MoreHorizontal className="h-4 w-4" />
@@ -32,7 +32,12 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
       <DropdownMenuContent align="end">
         <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
           <PopoverTrigger asChild>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setIsDatePickerOpen(true);
+              }}
+            >
               <CalendarIcon className="mr-2 h-4 w-4" />
               Marcar como pago
             </DropdownMenuItem>
@@ -46,6 +51,7 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
                   const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
                   onMarkAsPaid(localDate.toISOString().split('T')[0]);
                   setIsDatePickerOpen(false);
+                  setIsDropdownOpen(false);
                 }
               }}
               initialFocus
