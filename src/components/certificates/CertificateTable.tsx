@@ -44,7 +44,7 @@ export const CertificateTable = ({
           <TableHead>E-mail</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Localização</TableHead>
-          {!showCheckboxes && <TableHead>Código de Rastreio</TableHead>}
+          <TableHead>Código de Rastreio</TableHead>
           <TableHead>Ações</TableHead>
         </TableRow>
       </TableHeader>
@@ -63,7 +63,7 @@ export const CertificateTable = ({
             <TableCell>{certificate.email_aluno}</TableCell>
             <TableCell>{certificate.status_envio}</TableCell>
             <TableCell>{certificate.cidade_estado}</TableCell>
-            {!showCheckboxes && <TableCell>{certificate.codigo_rastreio}</TableCell>}
+            <TableCell>{certificate.codigo_rastreio || '-'}</TableCell>
             <TableCell>
               <div className="flex gap-2">
                 <Button
