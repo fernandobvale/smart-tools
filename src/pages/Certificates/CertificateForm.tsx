@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Send } from "lucide-react";
@@ -50,6 +50,20 @@ export default function CertificateForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       quantidade: 1,
+      email_aluno: "",
+      canal_contato: "",
+      status_pagamento: "",
+      dados_confirmados: "",
+      nome_aluno: "",
+      endereco: "",
+      complemento: "",
+      bairro: "",
+      cidade_estado: "",
+      cep: "",
+      status_envio: "",
+      site_referencia: "",
+      numero_pedido: "",
+      observacoes: "",
     },
   });
 
@@ -59,40 +73,11 @@ export default function CertificateForm() {
 
       if (error) throw error;
 
-      // Send email notification
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-certificate-notification`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            studentName: values.nome_aluno,
-            studentEmail: values.email_aluno,
-            orderNumber: values.numero_pedido,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        console.error("Failed to send email notification");
-      }
-
-      toast({
-        title: "Certificado registrado com sucesso!",
-        description: "O certificado foi salvo e está pronto para envio.",
-      });
-
+      toast.success("Certificado registrado com sucesso!");
       navigate("/certificates/manage");
     } catch (error) {
       console.error("Error submitting certificate:", error);
-      toast({
-        title: "Erro ao registrar certificado",
-        description: "Ocorreu um erro ao salvar o certificado. Tente novamente.",
-        variant: "destructive",
-      });
+      toast.error("Erro ao registrar certificado. Tente novamente.");
     }
   }
 
@@ -101,7 +86,9 @@ export default function CertificateForm() {
       <div className="container mx-auto py-6 max-w-3xl">
         <div className="flex items-center justify-center gap-2 mb-6">
           <Send className="h-6 w-6 mr-2" />
-          <h1 className="text-2xl font-bold text-center">Formulário Envio de Certificado</h1>
+          <h1 className="text-2xl font-bold text-center">
+            Formulário Envio de Certificado
+          </h1>
         </div>
         <Separator className="mb-8" />
         <Form {...form}>
@@ -126,7 +113,7 @@ export default function CertificateForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Canal de Contato</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o canal" />
@@ -151,7 +138,7 @@ export default function CertificateForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status do Pagamento</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o status" />
@@ -174,7 +161,7 @@ export default function CertificateForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirmação dos Dados</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Confirme os dados" />
@@ -280,7 +267,7 @@ export default function CertificateForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status do Envio</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o status" />
@@ -305,7 +292,7 @@ export default function CertificateForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Site de Referência</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o site" />
@@ -345,8 +332,8 @@ export default function CertificateForm() {
                 <FormItem>
                   <FormLabel>Quantidade</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       min="1"
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
@@ -371,7 +358,9 @@ export default function CertificateForm() {
               )}
             />
 
-            <Button type="submit" className="w-full">Informar Dados</Button>
+            <Button type="submit" className="w-full">
+              Informar Dados
+            </Button>
           </form>
         </Form>
       </div>
