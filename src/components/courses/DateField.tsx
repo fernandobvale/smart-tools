@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
 import { CourseFormValues } from "./types";
+import { useState } from "react";
 
 interface DateFieldProps {
   form?: UseFormReturn<CourseFormValues>;
@@ -18,6 +19,8 @@ interface DateFieldProps {
 }
 
 export function DateField({ form, name, label, required, value, onChange }: DateFieldProps) {
+  const [open, setOpen] = useState(false);
+
   if (form) {
     return (
       <FormField
@@ -26,7 +29,7 @@ export function DateField({ form, name, label, required, value, onChange }: Date
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>{label}</FormLabel>
-            <Popover>
+            <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
@@ -51,8 +54,9 @@ export function DateField({ form, name, label, required, value, onChange }: Date
                   selected={field.value ? parseISO(field.value) : required ? new Date() : undefined}
                   onSelect={(date) => {
                     if (date) {
-                      const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                      const localDate = new Date(date.getTime());
                       field.onChange(localDate.toISOString().split('T')[0]);
+                      setOpen(false); // Close the popover after selection
                     } else {
                       field.onChange("");
                     }
@@ -71,7 +75,7 @@ export function DateField({ form, name, label, required, value, onChange }: Date
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium">{label}</label>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
@@ -94,8 +98,9 @@ export function DateField({ form, name, label, required, value, onChange }: Date
             selected={value ? parseISO(value) : undefined}
             onSelect={(date) => {
               if (date && onChange) {
-                const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                const localDate = new Date(date.getTime());
                 onChange(localDate.toISOString().split('T')[0]);
+                setOpen(false); // Close the popover after selection
               }
             }}
             initialFocus
