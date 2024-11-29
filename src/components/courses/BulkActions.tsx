@@ -5,10 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
 
 interface BulkActionsProps {
@@ -17,16 +14,12 @@ interface BulkActionsProps {
 }
 
 export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-
   if (selectedIds.length === 0) return null;
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
-    
-    const formattedDate = format(date, 'yyyy-MM-dd');
+  const handleMarkAsPaid = () => {
+    const today = new Date();
+    const formattedDate = format(today, 'yyyy-MM-dd');
     onMarkAsPaid(formattedDate);
-    setIsDatePickerOpen(false);
   };
 
   return (
@@ -39,34 +32,9 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="z-50">
-          <Popover 
-            open={isDatePickerOpen}
-            onOpenChange={setIsDatePickerOpen}
-          >
-            <PopoverTrigger asChild>
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setIsDatePickerOpen(true);
-                }}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                Marcar como pago
-              </DropdownMenuItem>
-            </PopoverTrigger>
-            <PopoverContent 
-              className="w-auto p-0 z-[60]" 
-              align="start"
-              sideOffset={5}
-            >
-              <Calendar
-                mode="single"
-                selected={new Date()}
-                onSelect={handleDateSelect}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <DropdownMenuItem onClick={handleMarkAsPaid}>
+            Marcar como pago
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
