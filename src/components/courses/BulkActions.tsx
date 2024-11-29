@@ -26,57 +26,49 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
     
     const formattedDate = format(date, 'yyyy-MM-dd');
     onMarkAsPaid(formattedDate);
-    
-    // Delay closing to ensure the action completes
-    setTimeout(() => {
-      setIsDatePickerOpen(false);
-    }, 200);
+    setIsDatePickerOpen(false);
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="ml-2">Ações ({selectedIds.length})</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <Popover 
-          open={isDatePickerOpen}
-          onOpenChange={(open) => {
-            if (open) {
-              setIsDatePickerOpen(true);
-            }
-          }}
-        >
-          <PopoverTrigger asChild>
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setIsDatePickerOpen(true);
-              }}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Marcar como pago
-            </DropdownMenuItem>
-          </PopoverTrigger>
-          <PopoverContent 
-            className="w-auto p-0" 
-            align="start"
-            onPointerDownOutside={(e) => e.preventDefault()}
-            onInteractOutside={(e) => e.preventDefault()}
+    <div className="relative">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm">
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="ml-2">Ações ({selectedIds.length})</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="z-50">
+          <Popover 
+            open={isDatePickerOpen}
+            onOpenChange={setIsDatePickerOpen}
           >
-            <Calendar
-              mode="single"
-              selected={new Date()}
-              onSelect={handleDateSelect}
-              disabled={false}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <PopoverTrigger asChild>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setIsDatePickerOpen(true);
+                }}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Marcar como pago
+              </DropdownMenuItem>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-auto p-0 z-[60]" 
+              align="start"
+              sideOffset={5}
+            >
+              <Calendar
+                mode="single"
+                selected={new Date()}
+                onSelect={handleDateSelect}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
