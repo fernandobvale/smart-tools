@@ -18,47 +18,40 @@ interface BulkActionsProps {
 
 export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (selectedIds.length === 0) return null;
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      // Format the date directly without timezone adjustments
       const formattedDate = format(date, 'yyyy-MM-dd');
       onMarkAsPaid(formattedDate);
       setIsDatePickerOpen(false);
-      setIsDropdownOpen(false);
     }
   };
 
   return (
-    <DropdownMenu 
-      open={isDropdownOpen} 
-      onOpenChange={(open) => {
-        setIsDropdownOpen(open);
-        if (!open && !isDatePickerOpen) {
-          setIsDatePickerOpen(false);
-        }
-      }}
-    >
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <MoreHorizontal className="h-4 w-4" />
           <span className="ml-2">Ações ({selectedIds.length})</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" onCloseAutoFocus={(e) => {
+        // Prevent the dropdown from closing when clicking inside the calendar
+        if (isDatePickerOpen) {
+          e.preventDefault();
+        }
+      }}>
         <Popover 
           open={isDatePickerOpen} 
           onOpenChange={setIsDatePickerOpen}
+          modal={false}
         >
           <PopoverTrigger asChild>
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-              }}
-              onClick={() => {
                 setIsDatePickerOpen(true);
               }}
             >
@@ -69,6 +62,10 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
           <PopoverContent 
             className="w-auto p-0" 
             align="start"
+            onInteractOutside={(e) => {
+              // Prevent closing when interacting with the calendar
+              e.preventDefault();
+            }}
           >
             <Calendar
               mode="single"
