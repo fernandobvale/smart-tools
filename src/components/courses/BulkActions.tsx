@@ -25,6 +25,7 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
     if (date) {
       const formattedDate = format(date, 'yyyy-MM-dd');
       onMarkAsPaid(formattedDate);
+      // Close the popover after successful date selection
       setIsDatePickerOpen(false);
     }
   };
@@ -38,7 +39,6 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" onCloseAutoFocus={(e) => {
-        // Prevent the dropdown from closing when clicking inside the calendar
         if (isDatePickerOpen) {
           e.preventDefault();
         }
@@ -62,6 +62,10 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
           <PopoverContent 
             className="w-auto p-0" 
             align="start"
+            onPointerDownOutside={(e) => {
+              // Prevent closing when clicking inside the calendar
+              e.preventDefault();
+            }}
             onInteractOutside={(e) => {
               // Prevent closing when interacting with the calendar
               e.preventDefault();
