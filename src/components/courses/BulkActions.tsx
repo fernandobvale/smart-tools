@@ -25,8 +25,10 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
     if (date) {
       const formattedDate = format(date, 'yyyy-MM-dd');
       onMarkAsPaid(formattedDate);
-      // Close the popover after successful date selection
-      setIsDatePickerOpen(false);
+      // Aguarda a conclusão da ação antes de fechar
+      setTimeout(() => {
+        setIsDatePickerOpen(false);
+      }, 100);
     }
   };
 
@@ -38,14 +40,24 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
           <span className="ml-2">Ações ({selectedIds.length})</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onCloseAutoFocus={(e) => {
-        if (isDatePickerOpen) {
-          e.preventDefault();
-        }
-      }}>
+      <DropdownMenuContent 
+        align="end" 
+        onCloseAutoFocus={(e) => {
+          if (isDatePickerOpen) {
+            e.preventDefault();
+          }
+        }}
+      >
         <Popover 
           open={isDatePickerOpen} 
-          onOpenChange={setIsDatePickerOpen}
+          onOpenChange={(open) => {
+            // Só permite fechar se não estiver selecionando uma data
+            if (!open) {
+              setIsDatePickerOpen(false);
+            } else {
+              setIsDatePickerOpen(true);
+            }
+          }}
           modal={false}
         >
           <PopoverTrigger asChild>
@@ -63,12 +75,16 @@ export function BulkActions({ selectedIds, onMarkAsPaid }: BulkActionsProps) {
             className="w-auto p-0" 
             align="start"
             onPointerDownOutside={(e) => {
-              // Prevent closing when clicking inside the calendar
-              e.preventDefault();
+              // Previne o fechamento ao clicar dentro do calendário
+              if (isDatePickerOpen) {
+                e.preventDefault();
+              }
             }}
             onInteractOutside={(e) => {
-              // Prevent closing when interacting with the calendar
-              e.preventDefault();
+              // Previne o fechamento ao interagir com o calendário
+              if (isDatePickerOpen) {
+                e.preventDefault();
+              }
             }}
           >
             <Calendar
