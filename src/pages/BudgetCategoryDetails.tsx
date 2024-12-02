@@ -25,8 +25,9 @@ export default function BudgetCategoryDetails() {
       
       // Split period into month and year, assuming format MM/YY
       const [month, year] = (period || "").split("/");
-      const startDate = new Date(20 + year, parseInt(month) - 1, 1);
-      const endDate = new Date(20 + year, parseInt(month), 0); // Last day of the month
+      // Convert strings to numbers using parseInt with radix 10
+      const startDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10) - 1, 1);
+      const endDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10), 0); // Last day of the month
       
       console.log("Date range:", {
         startDate: startDate.toISOString(),
