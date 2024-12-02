@@ -1,18 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "@/lib/utils";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -25,13 +13,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { BudgetDetailsHeader } from "@/components/budget/BudgetDetailsHeader";
+import { BudgetEntriesTable } from "@/components/budget/BudgetEntriesTable";
 
 export default function BudgetCategoryDetails() {
   const navigate = useNavigate();
   const { category, month, year } = useParams();
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
-  
-  console.log("Parâmetros recebidos:", { category, month, year });
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["budget-details", category, month, year],
@@ -138,12 +126,10 @@ export default function BudgetCategoryDetails() {
   };
 
   const handleEdit = (entryId: string) => {
-    // Por enquanto apenas mostra um toast, implementaremos a edição depois
     toast.info("Funcionalidade de edição em desenvolvimento");
   };
 
   if (error) {
-    console.error("Erro na query:", error);
     return (
       <div className="container mx-auto p-6">
         <p className="text-red-500">Erro ao carregar os dados: {error.message}</p>
@@ -153,67 +139,24 @@ export default function BudgetCategoryDetails() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Button>
-        <h1 className="text-2xl font-bold mb-2">
-          Detalhes de {category} - {month}/{year}
-        </h1>
-        <p className="text-muted-foreground mb-4">
-          Total: {formatCurrency(data?.total || 0)}
-        </p>
-      </div>
+      <BudgetDetailsHeader
+        category={category || ""}
+        month={month || ""}
+        year={year || ""}
+        total={data?.total || 0}
+        onBack={() => navigate(-1)}
+      />
 
       {isLoading ? (
         <p>Carregando...</p>
       ) : data?.entries.length === 0 ? (
         <p>Nenhum lançamento encontrado para este período.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Data</TableHead>
-              <TableHead>Despesa</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="w-[100px]">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data?.entries.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>{format(new Date(entry.date), 'dd/MM/yyyy')}</TableCell>
-                <TableCell>{entry.expense.name}</TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(entry.amount)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEdit(entry.id)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setEntryToDelete(entry.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <BudgetEntriesTable
+          entries={data?.entries || []}
+          onEdit={handleEdit}
+          onDelete={setEntryToDelete}
+        />
       )}
 
       <AlertDialog open={!!entryToDelete} onOpenChange={() => setEntryToDelete(null)}>
