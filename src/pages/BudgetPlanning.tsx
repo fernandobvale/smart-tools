@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, BarChart2 } from "lucide-react";
 import { BudgetHeader } from "@/components/budget/BudgetHeader";
 import { BudgetForm } from "@/components/budget/BudgetForm";
+import { CategoryCard } from "@/components/budget/CategoryCard";
 
 export default function BudgetPlanning() {
   const [selectedPeriod, setSelectedPeriod] = useState("12/23");
@@ -18,6 +19,8 @@ export default function BudgetPlanning() {
       setSelectedPeriod("12/23");
     }
   };
+
+  const categories = ["OPEX", "PESSOAS", "CAPEX", "IMPOSTOS", "ANÚNCIOS"];
 
   return (
     <div className="container mx-auto p-6">
@@ -44,7 +47,15 @@ export default function BudgetPlanning() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Content will be replaced with new implementation */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category}
+                category={category}
+                period={selectedPeriod}
+              />
+            ))}
+          </div>
         </CardContent>
       </Card>
       <BudgetForm open={isFormOpen} onOpenChange={setIsFormOpen} />
