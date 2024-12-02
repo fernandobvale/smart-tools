@@ -18,7 +18,8 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
       console.log(`Iniciando busca para ${category} no período ${period}`);
       
       const [month, year] = period.split("/");
-      const startDate = new Date(`20${year}-${month}-01`);
+      // Construir a data corretamente para 2024
+      const startDate = new Date(`${year.length === 2 ? '20' + year : year}-${month.padStart(2, '0')}-01`);
       const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
       
       const startDateStr = startDate.toISOString().split('T')[0];
