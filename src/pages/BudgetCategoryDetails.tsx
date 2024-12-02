@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,14 +13,27 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 export default function BudgetCategoryDetails() {
   const navigate = useNavigate();
   const { category, month, year } = useParams();
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
   
   console.log("Parâmetros recebidos:", { category, month, year });
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["budget-details", category, month, year],
     queryFn: async () => {
       if (!category || !month || !year) {
@@ -103,6 +116,32 @@ export default function BudgetCategoryDetails() {
     enabled: !!category && !!month && !!year,
   });
 
+  const handleDelete = async () => {
+    if (!entryToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("budget_entries")
+        .delete()
+        .eq("id", entryToDelete);
+
+      if (error) throw error;
+
+      toast.success("Lançamento excluído com sucesso");
+      refetch();
+    } catch (error) {
+      console.error("Erro ao excluir lançamento:", error);
+      toast.error("Erro ao excluir lançamento");
+    } finally {
+      setEntryToDelete(null);
+    }
+  };
+
+  const handleEdit = (entryId: string) => {
+    // Por enquanto apenas mostra um toast, implementaremos a edição depois
+    toast.info("Funcionalidade de edição em desenvolvimento");
+  };
+
   if (error) {
     console.error("Erro na query:", error);
     return (
@@ -142,6 +181,7 @@ export default function BudgetCategoryDetails() {
               <TableHead>Data</TableHead>
               <TableHead>Despesa</TableHead>
               <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="w-[100px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,11 +192,46 @@ export default function BudgetCategoryDetails() {
                 <TableCell className="text-right">
                   {formatCurrency(entry.amount)}
                 </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleEdit(entry.id)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setEntryToDelete(entry.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       )}
+
+      <AlertDialog open={!!entryToDelete} onOpenChange={() => setEntryToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este lançamento? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
