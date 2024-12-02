@@ -80,6 +80,11 @@ export function BudgetForm({
 
       // Se tiver um novo nome de despesa, criar primeiro
       if (data.newExpenseName) {
+        console.log('Creating new expense:', {
+          category_id: data.categoryId,
+          name: data.newExpenseName
+        });
+
         const { data: newExpense, error: expenseError } = await supabase
           .from("budget_expenses")
           .insert({
@@ -89,7 +94,12 @@ export function BudgetForm({
           .select()
           .single();
 
-        if (expenseError) throw expenseError;
+        if (expenseError) {
+          console.error('Error creating new expense:', expenseError);
+          throw expenseError;
+        }
+        
+        console.log('New expense created:', newExpense);
         finalExpenseId = newExpense.id;
       }
 
@@ -107,17 +117,31 @@ export function BudgetForm({
         amount: numericAmount,
       };
 
-      console.log('Estrutura da tabela budget_entries:', {
-        columns: ['id', 'expense_id', 'date', 'amount', 'created_at']
-      });
+      console.log('Attempting to insert/update budget entry with data:', entryData);
       
-      console.log('Dados a serem inseridos:', entryData);
+      // Log table structure before operation
+      const { data: tableInfo, error: tableError } = await supabase
+        .from("budget_entries")
+        .select()
+        .limit(1);
+      
+      console.log('Table structure check:', {
+        data: tableInfo,
+        error: tableError
+      });
 
       if (mode === 'edit' && initialData?.id) {
-        const { error: updateError } = await supabase
+        console.log('Updating existing entry:', initialData.id);
+        const { data: updateResult, error: updateError } = await supabase
           .from("budget_entries")
           .update(entryData)
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .select();
+
+        console.log('Update response:', {
+          data: updateResult,
+          error: updateError
+        });
 
         if (updateError) {
           console.error('Update error:', updateError);
@@ -125,28 +149,20 @@ export function BudgetForm({
         }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
-        // Tentar buscar a estrutura da tabela primeiro
-        const { data: tableInfo, error: tableError } = await supabase
-          .from("budget_entries")
-          .select()
-          .limit(1);
-
-        console.log('Informações da tabela:', { data: tableInfo, error: tableError });
-
-        // Tentar a inserção
-        const { data: insertedData, error: entryError } = await supabase
+        console.log('Creating new entry');
+        const { data: insertResult, error: insertError } = await supabase
           .from("budget_entries")
           .insert([entryData])
           .select();
 
-        console.log('Resposta do insert:', { 
-          dados_enviados: entryData,
-          resposta: { data: insertedData, error: entryError }
+        console.log('Insert response:', {
+          data: insertResult,
+          error: insertError
         });
 
-        if (entryError) {
-          console.error('Insert error:', entryError);
-          throw entryError;
+        if (insertError) {
+          console.error('Insert error:', insertError);
+          throw insertError;
         }
         toast.success("Lançamento criado com sucesso!");
       }
@@ -160,7 +176,7 @@ export function BudgetForm({
       if (onSuccess) onSuccess();
       form.reset();
     } catch (error) {
-      console.error('Error details:', error);
+      console.error('Detailed error:', error);
       toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
     }
   };
