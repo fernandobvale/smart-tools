@@ -93,6 +93,10 @@ export function BudgetForm({
         return;
       }
 
+      // Convert amount string to number
+      const cleanAmount = data.amount.replace(/[^\d,]/g, '').replace(',', '.');
+      const numericAmount = parseFloat(cleanAmount);
+
       if (mode === 'edit' && initialData?.expenseId) {
         // Update existing entry
         const { error: updateError } = await supabase
@@ -100,7 +104,7 @@ export function BudgetForm({
           .update({
             expense_id: expenseId,
             date: data.date,
-            amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
+            amount: numericAmount,
           })
           .eq('id', initialData.expenseId);
 
@@ -113,7 +117,7 @@ export function BudgetForm({
           .insert({
             expense_id: expenseId,
             date: data.date,
-            amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
+            amount: numericAmount,
           });
 
         if (entryError) throw entryError;
