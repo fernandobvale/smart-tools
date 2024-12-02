@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
@@ -9,6 +10,8 @@ interface CategoryCardProps {
 }
 
 export function CategoryCard({ category, period }: CategoryCardProps) {
+  const navigate = useNavigate();
+  
   const { data: entries, isLoading } = useQuery({
     queryKey: ["budget-entries", category, period],
     queryFn: async () => {
@@ -69,8 +72,15 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
     ANÚNCIOS: "border-yellow-400",
   };
 
+  const handleClick = () => {
+    navigate(`/budget-planning/${category}/${period}`);
+  };
+
   return (
-    <Card className={`border-l-4 ${categoryColors[category as keyof typeof categoryColors]}`}>
+    <Card 
+      className={`border-l-4 ${categoryColors[category as keyof typeof categoryColors]} cursor-pointer hover:bg-accent/50 transition-colors`}
+      onClick={handleClick}
+    >
       <CardHeader>
         <CardTitle className="text-lg font-semibold">{category}</CardTitle>
       </CardHeader>
