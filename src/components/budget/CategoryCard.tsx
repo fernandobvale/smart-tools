@@ -7,34 +7,18 @@ import { formatCurrency } from "@/lib/utils";
 interface CategoryCardProps {
   category: string;
   period: string;
-  faturamentoTotal?: number;
 }
 
-export function CategoryCard({ category, period, faturamentoTotal }: CategoryCardProps) {
+export function CategoryCard({ category, period }: CategoryCardProps) {
   const navigate = useNavigate();
   
   const { data: entries, isLoading } = useQuery({
     queryKey: ["budget-entries", category, period],
     queryFn: async () => {
-      if (category === "DV8") {
-        const dv8Value = (faturamentoTotal || 0) * 0.1; // 10% do faturamento
-        return {
-          entries: [],
-          total: dv8Value
-        };
-      }
-
       const [month, year] = period.split("/");
-      const startDate = new Date(
-        month ? `20${year}-${month}-01` : `${year}-01-01`
-      );
+      const startDate = new Date(`20${year}-${month}-01`);
       const endDate = new Date(startDate);
-      
-      if (month) {
-        endDate.setMonth(startDate.getMonth() + 1);
-      } else {
-        endDate.setFullYear(startDate.getFullYear() + 1);
-      }
+      endDate.setMonth(startDate.getMonth() + 1);
       endDate.setDate(endDate.getDate() - 1);
 
       const { data: categoryData } = await supabase
@@ -61,13 +45,11 @@ export function CategoryCard({ category, period, faturamentoTotal }: CategoryCar
         .gte("date", startDate.toISOString())
         .lt("date", endDate.toISOString());
 
-      const total = entriesData?.reduce((sum, entry) => {
-        return sum + Number(entry.amount);
-      }, 0) || 0;
+      const total = entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
 
       return {
         entries: entriesData || [],
-        total,
+        total: total,
       };
     },
   });
@@ -83,7 +65,7 @@ export function CategoryCard({ category, period, faturamentoTotal }: CategoryCar
   };
 
   const handleClick = () => {
-    if (category === "DV8") return; // Disable navigation for DV8 card
+    if (category === "DV8") return;
     const [month, year] = period.split("/");
     const formattedMonth = month?.padStart(2, '0') || "01";
     navigate(`/budget-planning/${category}/${formattedMonth}/${year}`);
@@ -100,7 +82,7 @@ export function CategoryCard({ category, period, faturamentoTotal }: CategoryCar
       <CardContent>
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : entries?.entries.length === 0 && category !== "DV8" ? (
+        ) : entries?.entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Ainda não há lançamentos para este mês
           </p>
@@ -109,7 +91,7 @@ export function CategoryCard({ category, period, faturamentoTotal }: CategoryCar
             <p className="text-2xl font-bold">
               {formatCurrency(entries?.total || 0)}
             </p>
-            {category !== "DV8" && entries?.entries.length > 0 && (
+            {entries?.entries.length > 0 && (
               <p className="text-sm text-muted-foreground">
                 {entries.entries.length} lançamento{entries.entries.length === 1 ? "" : "s"}
               </p>

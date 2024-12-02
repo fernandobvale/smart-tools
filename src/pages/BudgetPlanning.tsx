@@ -5,50 +5,11 @@ import { Plus, BarChart2 } from "lucide-react";
 import { BudgetHeader } from "@/components/budget/BudgetHeader";
 import { BudgetForm } from "@/components/budget/BudgetForm";
 import { CategoryCard } from "@/components/budget/CategoryCard";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function BudgetPlanning() {
   const [selectedPeriod, setSelectedPeriod] = useState("01/24");
   const [viewType, setViewType] = useState<"monthly" | "annual">("monthly");
   const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const { data: faturamentoTotal = 0 } = useQuery({
-    queryKey: ["faturamento-total", selectedPeriod],
-    queryFn: async () => {
-      const [month, year] = selectedPeriod.split("/");
-      const startDate = new Date(`20${year}-${month}-01`);
-      const endDate = new Date(startDate);
-      endDate.setMonth(startDate.getMonth() + 1);
-      endDate.setDate(endDate.getDate() - 1);
-
-      const { data: categoryData } = await supabase
-        .from("budget_categories")
-        .select("id")
-        .eq("name", "FATURAMENTO")
-        .single();
-
-      if (!categoryData) return 0;
-
-      const { data: expenses } = await supabase
-        .from("budget_expenses")
-        .select("id")
-        .eq("category_id", categoryData.id);
-
-      if (!expenses || expenses.length === 0) return 0;
-
-      const expenseIds = expenses.map((expense) => expense.id);
-
-      const { data: entriesData } = await supabase
-        .from("budget_entries")
-        .select("amount")
-        .in("expense_id", expenseIds)
-        .gte("date", startDate.toISOString())
-        .lt("date", endDate.toISOString());
-
-      return entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
-    },
-  });
 
   const handleViewTypeChange = (value: "monthly" | "annual") => {
     setViewType(value);
@@ -92,7 +53,6 @@ export default function BudgetPlanning() {
                 key={category}
                 category={category}
                 period={selectedPeriod}
-                faturamentoTotal={faturamentoTotal}
               />
             ))}
           </div>
