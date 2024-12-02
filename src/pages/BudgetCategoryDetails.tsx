@@ -21,18 +21,17 @@ export default function BudgetCategoryDetails() {
   const { data, isLoading } = useQuery({
     queryKey: ["budget-details", category, period],
     queryFn: async () => {
-      const [month, year] = (period || "").split("/");
-      const startDate = new Date(
-        month ? `20${year}-${month}-01` : `${year}-01-01`
-      );
-      const endDate = new Date(startDate);
+      console.log("Fetching data for:", { category, period });
       
-      if (month) {
-        endDate.setMonth(startDate.getMonth() + 1);
-      } else {
-        endDate.setFullYear(startDate.getFullYear() + 1);
-      }
-      endDate.setDate(endDate.getDate() - 1);
+      // Split period into month and year, assuming format MM/YY
+      const [month, year] = (period || "").split("/");
+      const startDate = new Date(20 + year, parseInt(month) - 1, 1);
+      const endDate = new Date(20 + year, parseInt(month), 0); // Last day of the month
+      
+      console.log("Date range:", {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      });
 
       const { data: categoryData } = await supabase
         .from("budget_categories")
@@ -40,12 +39,16 @@ export default function BudgetCategoryDetails() {
         .eq("name", category)
         .single();
 
+      console.log("Category data:", categoryData);
+
       if (!categoryData) return { entries: [], total: 0 };
 
       const { data: expenses } = await supabase
         .from("budget_expenses")
         .select("id, name")
         .eq("category_id", categoryData.id);
+
+      console.log("Expenses:", expenses);
 
       if (!expenses || expenses.length === 0) return { entries: [], total: 0 };
 
@@ -55,8 +58,10 @@ export default function BudgetCategoryDetails() {
         .from("budget_entries")
         .select("*, expense:budget_expenses(name)")
         .in("expense_id", expenseIds)
-        .gte("date", startDate.toISOString())
-        .lt("date", endDate.toISOString());
+        .gte("date", startDate.toISOString().split('T')[0])
+        .lt("date", endDate.toISOString().split('T')[0]);
+
+      console.log("Entries data:", entriesData);
 
       const total = entriesData?.reduce((sum, entry) => {
         return sum + Number(entry.amount);
