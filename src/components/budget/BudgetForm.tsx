@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryField } from "./form-fields/CategoryField";
 import { ExpenseField } from "./form-fields/ExpenseField";
@@ -35,6 +35,8 @@ export function BudgetForm({
   onSuccess,
   mode = 'create'
 }: BudgetFormProps) {
+  const queryClient = useQueryClient();
+
   const { data: categories = [] } = useQuery({
     queryKey: ["budget-categories"],
     queryFn: async () => {
@@ -96,8 +98,6 @@ export function BudgetForm({
       }
 
       const numericAmount = parseCurrencyToNumber(data.amount);
-      console.log('Form submission - Original amount:', data.amount);
-      console.log('Form submission - Converted amount:', numericAmount);
 
       if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
@@ -123,6 +123,11 @@ export function BudgetForm({
         if (entryError) throw entryError;
         toast.success("Lançamento criado com sucesso!");
       }
+
+      // Invalidate and refetch relevant queries
+      await queryClient.invalidateQueries({ queryKey: ["budget-entries"] });
+      await queryClient.invalidateQueries({ queryKey: ["budget-details"] });
+      await queryClient.invalidateQueries({ queryKey: ["budget-categories"] });
 
       if (onOpenChange) onOpenChange(false);
       if (onSuccess) onSuccess();
