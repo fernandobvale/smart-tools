@@ -18,31 +18,33 @@ export default function BudgetCategoryDetails() {
   const navigate = useNavigate();
   const { category, period } = useParams();
   
+  console.log("Parâmetros recebidos:", { category, period });
+
   // Extrair mês e ano do parâmetro period
   const [month, year] = (period || "").split("/");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["budget-details", category, month, year],
     queryFn: async () => {
       if (!category || !month || !year) {
         throw new Error("Parâmetros obrigatórios ausentes");
       }
 
-      console.log("Buscando dados para:", { category, month, year });
-      
-      const startDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10) - 1, 1);
-      const endDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10), 0);
-      
-      console.log("Intervalo de datas:", {
+      // Criar datas para o início e fim do mês
+      const startDate = new Date(2000 + parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(2000 + parseInt(year), parseInt(month), 0);
+
+      console.log("Buscando dados para:", {
+        category,
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
+        endDate: endDate.toISOString(),
       });
 
       // Primeiro, buscar a categoria
       const { data: categoryData, error: categoryError } = await supabase
         .from("budget_categories")
         .select("id")
-        .eq("name", category)
+        .eq("name", category.toUpperCase())
         .single();
 
       if (categoryError) {
@@ -52,7 +54,10 @@ export default function BudgetCategoryDetails() {
 
       console.log("Dados da categoria:", categoryData);
 
-      if (!categoryData) return { entries: [], total: 0 };
+      if (!categoryData) {
+        console.error("Categoria não encontrada");
+        return { entries: [], total: 0 };
+      }
 
       // Depois, buscar as despesas da categoria
       const { data: expenses, error: expensesError } = await supabase
@@ -65,9 +70,12 @@ export default function BudgetCategoryDetails() {
         throw expensesError;
       }
 
-      console.log("Despesas:", expenses);
+      console.log("Despesas encontradas:", expenses);
 
-      if (!expenses || expenses.length === 0) return { entries: [], total: 0 };
+      if (!expenses || expenses.length === 0) {
+        console.log("Nenhuma despesa encontrada para a categoria");
+        return { entries: [], total: 0 };
+      }
 
       const expenseIds = expenses.map((expense) => expense.id);
 
@@ -77,27 +85,37 @@ export default function BudgetCategoryDetails() {
         .select("*, expense:budget_expenses(name)")
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString().split('T')[0])
-        .lt("date", endDate.toISOString().split('T')[0]);
+        .lte("date", endDate.toISOString().split('T')[0]);
 
       if (entriesError) {
         console.error("Erro ao buscar lançamentos:", entriesError);
         throw entriesError;
       }
 
-      console.log("Dados dos lançamentos:", entriesData);
+      console.log("Lançamentos encontrados:", entriesData);
 
       const total = entriesData?.reduce((sum, entry) => {
         return sum + Number(entry.amount);
       }, 0) || 0;
 
+      console.log("Total calculado:", total);
+
       return {
         entries: entriesData || [],
         total,
-        expenses,
       };
     },
     enabled: !!category && !!period,
   });
+
+  if (error) {
+    console.error("Erro na query:", error);
+    return (
+      <div className="container mx-auto p-6">
+        <p className="text-red-500">Erro ao carregar os dados: {error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">
