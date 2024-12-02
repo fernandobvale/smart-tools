@@ -78,7 +78,6 @@ export function BudgetForm({
     try {
       let finalExpenseId = data.expenseId;
 
-      // Se tiver um novo nome de despesa, criar primeiro
       if (data.newExpenseName) {
         console.log('Creating new expense:', {
           category_id: data.categoryId,
@@ -110,7 +109,7 @@ export function BudgetForm({
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
-      // Preparar dados para inserção
+      // Preparar dados para inserção usando snake_case para as colunas
       const entryData = {
         expense_id: finalExpenseId,
         date: data.date,
@@ -118,30 +117,12 @@ export function BudgetForm({
       };
 
       console.log('Attempting to insert/update budget entry with data:', entryData);
-      
-      // Log table structure before operation
-      const { data: tableInfo, error: tableError } = await supabase
-        .from("budget_entries")
-        .select()
-        .limit(1);
-      
-      console.log('Table structure check:', {
-        data: tableInfo,
-        error: tableError
-      });
 
       if (mode === 'edit' && initialData?.id) {
-        console.log('Updating existing entry:', initialData.id);
-        const { data: updateResult, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from("budget_entries")
           .update(entryData)
-          .eq('id', initialData.id)
-          .select();
-
-        console.log('Update response:', {
-          data: updateResult,
-          error: updateError
-        });
+          .eq('id', initialData.id);
 
         if (updateError) {
           console.error('Update error:', updateError);
@@ -149,16 +130,9 @@ export function BudgetForm({
         }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
-        console.log('Creating new entry');
-        const { data: insertResult, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from("budget_entries")
-          .insert([entryData])
-          .select();
-
-        console.log('Insert response:', {
-          data: insertResult,
-          error: insertError
-        });
+          .insert(entryData);
 
         if (insertError) {
           console.error('Insert error:', insertError);
