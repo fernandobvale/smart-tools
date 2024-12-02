@@ -97,6 +97,7 @@ export function BudgetEntriesTable({ entries, onEdit, onDelete, categoryId, onUp
           onOpenChange={setIsEditDialogOpen}
           categoryId={categoryId}
           initialData={{
+            id: selectedEntry.id,
             date: selectedEntry.date,
             amount: formatCurrency(selectedEntry.amount),
             expenseId: selectedEntry.expense.id,

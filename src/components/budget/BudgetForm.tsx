@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CategoryField } from "./form-fields/CategoryField";
 import { ExpenseField } from "./form-fields/ExpenseField";
 import { AmountField } from "./form-fields/AmountField";
+import { DateField } from "./form-fields/DateField";
 import { BudgetFormValues, budgetFormSchema } from "./types";
 import { parseCurrencyToNumber } from "@/utils/currencyUtils";
 
@@ -20,6 +21,7 @@ interface BudgetFormProps {
     date: string;
     amount: string;
     expenseId: string;
+    id?: string;
   };
   onSuccess?: () => void;
   mode?: 'create' | 'edit';
@@ -65,7 +67,7 @@ export function BudgetForm({
       categoryId: categoryId || "",
       expenseId: undefined,
       newExpenseName: undefined,
-      date: "",
+      date: new Date().toISOString().split('T')[0],
       amount: "",
     },
   });
@@ -93,12 +95,11 @@ export function BudgetForm({
         return;
       }
 
-      // Convert amount string to number using the updated utility function
       const numericAmount = parseCurrencyToNumber(data.amount);
       console.log('Form submission - Original amount:', data.amount);
       console.log('Form submission - Converted amount:', numericAmount);
 
-      if (mode === 'edit' && initialData?.expenseId) {
+      if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
           .from("budget_entries")
           .update({
@@ -106,7 +107,7 @@ export function BudgetForm({
             date: data.date,
             amount: numericAmount,
           })
-          .eq('expense_id', initialData.expenseId);
+          .eq('id', initialData.id);
 
         if (updateError) throw updateError;
         toast.success("Lançamento atualizado com sucesso!");
@@ -152,6 +153,7 @@ export function BudgetForm({
               )}
             />
 
+            <DateField form={form} />
             <AmountField form={form} />
 
             <Button type="submit" className="w-full">
