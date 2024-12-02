@@ -1,4 +1,3 @@
-import { BarChart2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -21,40 +20,32 @@ export function BudgetHeader({
   onPeriodChange,
 }: BudgetHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
-        <BarChart2 className="h-8 w-8 text-[#9b87f5]" />
-        <p className="text-sm text-muted-foreground">
-          Forecast {viewType === "annual" ? "Anual" : "Mensal"}
-        </p>
-      </div>
-      <div className="flex gap-4">
-        <Select
-          value={viewType}
-          onValueChange={(value: "monthly" | "annual") => onViewTypeChange(value)}
-        >
+    <div className="flex gap-4">
+      <Select
+        value={viewType}
+        onValueChange={(value: "monthly" | "annual") => onViewTypeChange(value)}
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Selecione a visualização" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="monthly">Visualização Mensal</SelectItem>
+          <SelectItem value="annual">Visualização Anual</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {viewType === "monthly" && (
+        <Select value={selectedPeriod} onValueChange={onPeriodChange}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Selecione a visualização" />
+            <SelectValue placeholder="Selecione o período" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="monthly">Visualização Mensal</SelectItem>
-            <SelectItem value="annual">Visualização Anual</SelectItem>
+            <SelectItem value="12/23">Dezembro/2023</SelectItem>
+            <SelectItem value="01/24">Janeiro/2024</SelectItem>
+            <SelectItem value="02/24">Fevereiro/2024</SelectItem>
           </SelectContent>
         </Select>
-
-        {viewType === "monthly" && (
-          <Select value={selectedPeriod} onValueChange={onPeriodChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Selecione o período" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="12/23">Dezembro/2023</SelectItem>
-              <SelectItem value="01/24">Janeiro/2024</SelectItem>
-              <SelectItem value="02/24">Fevereiro/2024</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
-      </div>
+      )}
     </div>
   );
 }
