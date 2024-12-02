@@ -49,77 +49,51 @@ export default function BudgetPlanning() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[200px] font-semibold text-primary bg-[#9b87f5]/10">Indicador</TableHead>
-                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">{forecastData.mesAno}</TableHead>
+                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">Indicador</TableHead>
+                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">Valor</TableHead>
+                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">%</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
                   <TableCell className="font-medium">Faturamento</TableCell>
                   <TableCell className="font-medium text-[#6E59A5]">{forecastData.faturamento}</TableCell>
+                  <TableCell>100%</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Impostos</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.impostoPerc}</span>
-                      <span className="text-[#7E69AB]">{forecastData.impostoRs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-[#7E69AB]">{forecastData.impostoRs}</TableCell>
+                  <TableCell>{forecastData.impostoPerc}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Pessoas</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.pessoasPerc}</span>
-                      <span className="text-[#7E69AB]">{forecastData.pessoasRs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-[#7E69AB]">{forecastData.pessoasRs}</TableCell>
+                  <TableCell>{forecastData.pessoasPerc}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">OPEX</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.opexPerc}</span>
-                      <span className="text-[#7E69AB]">{forecastData.opexRs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-[#7E69AB]">{forecastData.opexRs}</TableCell>
+                  <TableCell>{forecastData.opexPerc}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">CAPEX</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.capexPerc}</span>
-                      <span className="text-[#7E69AB]">{forecastData.capexRs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-[#7E69AB]">{forecastData.capexRs}</TableCell>
+                  <TableCell>{forecastData.capexPerc}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Investimentos</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.investPerc}</span>
-                      <span className="text-[#7E69AB]">{forecastData.investRs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-[#7E69AB]">{forecastData.investRs}</TableCell>
+                  <TableCell>{forecastData.investPerc}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">DV8</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.dv8Perc}</span>
-                      <span className="text-[#7E69AB]">{forecastData.dv8Rs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-[#7E69AB]">{forecastData.dv8Rs}</TableCell>
+                  <TableCell>{forecastData.dv8Perc}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Lucro</TableCell>
-                  <TableCell>
-                    <div className="flex justify-between">
-                      <span>{forecastData.lucroPerc}</span>
-                      <span className="font-medium text-[#6E59A5]">{forecastData.lucroRs}</span>
-                    </div>
-                  </TableCell>
+                  <TableCell className="font-medium text-[#6E59A5]">{forecastData.lucroRs}</TableCell>
+                  <TableCell>{forecastData.lucroPerc}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
