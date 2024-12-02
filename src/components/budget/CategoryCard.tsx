@@ -21,11 +21,12 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
       const startDate = new Date(`20${year}-${month}-01`);
       const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
       
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+      
       console.log('Período de busca:', {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        startDateFormatted: startDate.toISOString().split('T')[0],
-        endDateFormatted: endDate.toISOString().split('T')[0]
+        startDate: startDateStr,
+        endDate: endDateStr,
       });
 
       // Buscar categoria
@@ -63,13 +64,13 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .from("budget_entries")
         .select("*")
         .in("expense_id", expenseIds)
-        .gte("date", startDate.toISOString().split('T')[0])
-        .lte("date", endDate.toISOString().split('T')[0]);
+        .gte("date", startDateStr)
+        .lte("date", endDateStr);
 
       console.log(`Query de lançamentos para ${category}:`, {
         expenseIds,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
+        startDate: startDateStr,
+        endDate: endDateStr,
         results: entriesData
       });
 
