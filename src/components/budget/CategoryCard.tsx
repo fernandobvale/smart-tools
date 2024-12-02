@@ -7,23 +7,14 @@ import { formatCurrency } from "@/lib/utils";
 interface CategoryCardProps {
   category: string;
   period: string;
-  faturamentoTotal?: number;
 }
 
-export function CategoryCard({ category, period, faturamentoTotal }: CategoryCardProps) {
+export function CategoryCard({ category, period }: CategoryCardProps) {
   const navigate = useNavigate();
   
   const { data: entries, isLoading } = useQuery({
     queryKey: ["budget-entries", category, period],
     queryFn: async () => {
-      if (category === "DV8") {
-        const dv8Value = (faturamentoTotal || 0) * 0.1; // 10% do faturamento
-        return {
-          entries: [],
-          total: dv8Value
-        };
-      }
-
       const [month, year] = period.split("/");
       const startDate = new Date(
         month ? `20${year}-${month}-01` : `${year}-01-01`
@@ -100,7 +91,7 @@ export function CategoryCard({ category, period, faturamentoTotal }: CategoryCar
       <CardContent>
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : entries?.entries.length === 0 && category !== "DV8" ? (
+        ) : entries?.entries.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Ainda não há lançamentos para este mês
           </p>
