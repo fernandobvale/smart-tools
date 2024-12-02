@@ -16,12 +16,9 @@ import { format } from "date-fns";
 
 export default function BudgetCategoryDetails() {
   const navigate = useNavigate();
-  const { category, period } = useParams();
+  const { category, month, year } = useParams();
   
-  console.log("Parâmetros recebidos:", { category, period });
-
-  // Extrair mês e ano do parâmetro period
-  const [month, year] = (period || "").split("/");
+  console.log("Parâmetros recebidos:", { category, month, year });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["budget-details", category, month, year],
@@ -44,7 +41,7 @@ export default function BudgetCategoryDetails() {
       const { data: categoryData, error: categoryError } = await supabase
         .from("budget_categories")
         .select("id")
-        .eq("name", category.toUpperCase())
+        .eq("name", category)
         .single();
 
       if (categoryError) {
@@ -98,14 +95,12 @@ export default function BudgetCategoryDetails() {
         return sum + Number(entry.amount);
       }, 0) || 0;
 
-      console.log("Total calculado:", total);
-
       return {
         entries: entriesData || [],
         total,
       };
     },
-    enabled: !!category && !!period,
+    enabled: !!category && !!month && !!year,
   });
 
   if (error) {
@@ -129,7 +124,7 @@ export default function BudgetCategoryDetails() {
           Voltar
         </Button>
         <h1 className="text-2xl font-bold mb-2">
-          Detalhes de {category} - {period}
+          Detalhes de {category} - {month}/{year}
         </h1>
         <p className="text-muted-foreground mb-4">
           Total: {formatCurrency(data?.total || 0)}
