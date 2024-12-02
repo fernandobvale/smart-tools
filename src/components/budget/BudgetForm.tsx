@@ -76,11 +76,17 @@ export function BudgetForm({
 
   const onSubmit = async (data: BudgetFormValues) => {
     try {
+      // Primeiro, vamos garantir que temos uma despesa válida
       let expenseId = data.expenseId;
 
-      // Se não tiver expenseId e tiver newExpenseName, precisamos criar ou obter a despesa
+      // Se não temos um expenseId mas temos um nome para nova despesa
       if (!expenseId && data.newExpenseName) {
-        // Primeiro, verificar se já existe uma despesa com o mesmo nome na categoria
+        console.log('Verificando existência da despesa:', {
+          categoryId: data.categoryId,
+          name: data.newExpenseName
+        });
+
+        // Verificar se a despesa já existe
         const { data: existingExpense, error: searchError } = await supabase
           .from("budget_expenses")
           .select("id")
@@ -88,15 +94,17 @@ export function BudgetForm({
           .eq("name", data.newExpenseName)
           .single();
 
-        if (searchError && searchError.code !== 'PGRST116') { // PGRST116 é o código para "não encontrado"
+        if (searchError && searchError.code !== 'PGRST116') {
+          console.error('Erro ao buscar despesa:', searchError);
           throw searchError;
         }
 
         if (existingExpense) {
-          // Se a despesa já existe, usar o ID dela
+          console.log('Despesa encontrada:', existingExpense);
           expenseId = existingExpense.id;
         } else {
-          // Se não existe, criar nova despesa
+          console.log('Criando nova despesa');
+          // Criar nova despesa
           const { data: newExpense, error: createError } = await supabase
             .from("budget_expenses")
             .insert({
@@ -106,20 +114,29 @@ export function BudgetForm({
             .select()
             .single();
 
-          if (createError) throw createError;
+          if (createError) {
+            console.error('Erro ao criar despesa:', createError);
+            throw createError;
+          }
+
+          console.log('Nova despesa criada:', newExpense);
           expenseId = newExpense.id;
         }
       }
 
+      // Validar se temos um expense_id válido
       if (!expenseId) {
         toast.error("Selecione ou crie uma despesa");
         return;
       }
 
+      console.log('Prosseguindo com expense_id:', expenseId);
+
       const numericAmount = parseCurrencyToNumber(data.amount);
 
-      // Agora que temos certeza que temos um expenseId válido, podemos criar/atualizar o lançamento
+      // Criar ou atualizar o lançamento
       if (mode === 'edit' && initialData?.id) {
+        console.log('Atualizando lançamento existente');
         const { error: updateError } = await supabase
           .from("budget_entries")
           .update({
@@ -129,9 +146,13 @@ export function BudgetForm({
           })
           .eq('id', initialData.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Erro ao atualizar lançamento:', updateError);
+          throw updateError;
+        }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
+        console.log('Criando novo lançamento');
         const { error: insertError } = await supabase
           .from("budget_entries")
           .insert({
@@ -140,7 +161,10 @@ export function BudgetForm({
             amount: numericAmount,
           });
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Erro ao criar lançamento:', insertError);
+          throw insertError;
+        }
         toast.success("Lançamento criado com sucesso!");
       }
 
@@ -152,7 +176,7 @@ export function BudgetForm({
       if (onSuccess) onSuccess();
       form.reset();
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Erro completo:', error);
       toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
     }
   };
