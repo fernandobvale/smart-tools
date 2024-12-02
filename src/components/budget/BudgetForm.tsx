@@ -12,11 +12,26 @@ import { ExpenseField } from "./form-fields/ExpenseField";
 import { BudgetFormValues, budgetFormSchema } from "./types";
 
 interface BudgetFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  categoryId?: string;
+  initialData?: {
+    date: string;
+    amount: string;
+    expenseId: string;
+  };
+  onSuccess?: () => void;
+  mode?: 'create' | 'edit';
 }
 
-export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
+export function BudgetForm({ 
+  open, 
+  onOpenChange,
+  categoryId,
+  initialData,
+  onSuccess,
+  mode = 'create'
+}: BudgetFormProps) {
   const { data: categories = [] } = useQuery({
     queryKey: ["budget-categories"],
     queryFn: async () => {
@@ -45,8 +60,8 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
-    defaultValues: {
-      categoryId: "",
+    defaultValues: initialData || {
+      categoryId: categoryId || "",
       expenseId: undefined,
       newExpenseName: undefined,
       date: "",
@@ -78,22 +93,38 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
         return;
       }
 
-      // Create the budget entry
-      const { error: entryError } = await supabase
-        .from("budget_entries")
-        .insert({
-          expense_id: expenseId,
-          date: data.date,
-          amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
-        });
+      if (mode === 'edit' && initialData?.expenseId) {
+        // Update existing entry
+        const { error: updateError } = await supabase
+          .from("budget_entries")
+          .update({
+            expense_id: expenseId,
+            date: data.date,
+            amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
+          })
+          .eq('id', initialData.expenseId);
 
-      if (entryError) throw entryError;
+        if (updateError) throw updateError;
+        toast.success("Lançamento atualizado com sucesso!");
+      } else {
+        // Create new entry
+        const { error: entryError } = await supabase
+          .from("budget_entries")
+          .insert({
+            expense_id: expenseId,
+            date: data.date,
+            amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
+          });
 
-      toast.success("Lançamento criado com sucesso!");
-      onOpenChange(false);
+        if (entryError) throw entryError;
+        toast.success("Lançamento criado com sucesso!");
+      }
+
+      if (onOpenChange) onOpenChange(false);
+      if (onSuccess) onSuccess();
       form.reset();
     } catch (error) {
-      toast.error("Erro ao criar lançamento");
+      toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
       console.error(error);
     }
   };
@@ -102,7 +133,7 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Novo Lançamento</DialogTitle>
+          <DialogTitle>{mode === 'edit' ? 'Editar' : 'Novo'} Lançamento</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
