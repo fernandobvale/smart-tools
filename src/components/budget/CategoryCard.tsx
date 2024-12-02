@@ -18,14 +18,14 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
       console.log(`Iniciando busca para ${category} no período ${period}`);
       
       const [month, year] = period.split("/");
-      // Criar data inicial do mês (dia 1)
       const startDate = new Date(`20${year}-${month}-01`);
-      // Criar data final do mês (último dia)
       const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
       
       console.log('Período de busca:', {
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0]
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        startDateFormatted: startDate.toISOString().split('T')[0],
+        endDateFormatted: endDate.toISOString().split('T')[0]
       });
 
       // Buscar categoria
@@ -36,10 +36,9 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .single();
 
       console.log("Dados da categoria:", categoryData);
-      console.log("Erro ao buscar categoria:", categoryError);
-
+      
       if (categoryError || !categoryData) {
-        console.error(`Categoria ${category} não encontrada`);
+        console.error(`Categoria ${category} não encontrada:`, categoryError);
         return { entries: [], total: 0 };
       }
 
@@ -50,14 +49,14 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .eq("category_id", categoryData.id);
 
       console.log(`Despesas encontradas para ${category}:`, expenses);
-      console.log("Erro ao buscar despesas:", expensesError);
-
+      
       if (expensesError || !expenses || expenses.length === 0) {
-        console.error(`Nenhuma despesa encontrada para ${category}`);
+        console.error(`Nenhuma despesa encontrada para ${category}:`, expensesError);
         return { entries: [], total: 0 };
       }
 
       const expenseIds = expenses.map(expense => expense.id);
+      console.log(`IDs das despesas para ${category}:`, expenseIds);
 
       // Buscar lançamentos
       const { data: entriesData, error: entriesError } = await supabase
@@ -65,13 +64,17 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .select("*")
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString().split('T')[0])
-        .lte("date", endDate.toISOString().split('T')[0]); // Mudado de lt para lte para incluir o último dia
+        .lte("date", endDate.toISOString().split('T')[0]);
 
-      console.log(`Lançamentos encontrados para ${category}:`, entriesData);
-      console.log("Erro ao buscar lançamentos:", entriesError);
+      console.log(`Query de lançamentos para ${category}:`, {
+        expenseIds,
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+        results: entriesData
+      });
 
       if (entriesError) {
-        console.error(`Erro ao buscar lançamentos para ${category}`);
+        console.error(`Erro ao buscar lançamentos para ${category}:`, entriesError);
         return { entries: [], total: 0 };
       }
 
