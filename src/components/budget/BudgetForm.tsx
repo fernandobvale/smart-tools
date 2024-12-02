@@ -100,13 +100,17 @@ export function BudgetForm({
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
-      // Aqui está a correção principal - usando snake_case para o nome da coluna
+      // Preparar dados para inserção
       const entryData = {
         expense_id: finalExpenseId,
         date: data.date,
         amount: numericAmount,
       };
 
+      console.log('Estrutura da tabela budget_entries:', {
+        columns: ['id', 'expense_id', 'date', 'amount', 'created_at']
+      });
+      
       console.log('Dados a serem inseridos:', entryData);
 
       if (mode === 'edit' && initialData?.id) {
@@ -121,12 +125,24 @@ export function BudgetForm({
         }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
+        // Tentar buscar a estrutura da tabela primeiro
+        const { data: tableInfo, error: tableError } = await supabase
+          .from("budget_entries")
+          .select()
+          .limit(1);
+
+        console.log('Informações da tabela:', { data: tableInfo, error: tableError });
+
+        // Tentar a inserção
         const { data: insertedData, error: entryError } = await supabase
           .from("budget_entries")
           .insert([entryData])
           .select();
 
-        console.log('Resposta do insert:', { data: insertedData, error: entryError });
+        console.log('Resposta do insert:', { 
+          dados_enviados: entryData,
+          resposta: { data: insertedData, error: entryError }
+        });
 
         if (entryError) {
           console.error('Insert error:', entryError);
