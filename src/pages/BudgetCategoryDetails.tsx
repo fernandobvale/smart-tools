@@ -38,20 +38,32 @@ export default function BudgetCategoryDetails() {
         endDate: endDate.toISOString()
       });
 
-      const { data: categoryData } = await supabase
+      // Primeiro, buscar a categoria
+      const { data: categoryData, error: categoryError } = await supabase
         .from("budget_categories")
         .select("id")
         .eq("name", category)
         .single();
 
+      if (categoryError) {
+        console.error("Erro ao buscar categoria:", categoryError);
+        throw categoryError;
+      }
+
       console.log("Dados da categoria:", categoryData);
 
       if (!categoryData) return { entries: [], total: 0 };
 
-      const { data: expenses } = await supabase
+      // Depois, buscar as despesas da categoria
+      const { data: expenses, error: expensesError } = await supabase
         .from("budget_expenses")
         .select("id, name")
         .eq("category_id", categoryData.id);
+
+      if (expensesError) {
+        console.error("Erro ao buscar despesas:", expensesError);
+        throw expensesError;
+      }
 
       console.log("Despesas:", expenses);
 
@@ -59,12 +71,18 @@ export default function BudgetCategoryDetails() {
 
       const expenseIds = expenses.map((expense) => expense.id);
 
-      const { data: entriesData } = await supabase
+      // Por fim, buscar os lançamentos
+      const { data: entriesData, error: entriesError } = await supabase
         .from("budget_entries")
         .select("*, expense:budget_expenses(name)")
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString().split('T')[0])
         .lt("date", endDate.toISOString().split('T')[0]);
+
+      if (entriesError) {
+        console.error("Erro ao buscar lançamentos:", entriesError);
+        throw entriesError;
+      }
 
       console.log("Dados dos lançamentos:", entriesData);
 
@@ -81,7 +99,6 @@ export default function BudgetCategoryDetails() {
     enabled: !!category && !!period,
   });
 
-  // Removi a validação que estava causando o retorno prematuro
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
