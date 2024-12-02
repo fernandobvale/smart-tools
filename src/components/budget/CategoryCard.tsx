@@ -7,14 +7,23 @@ import { formatCurrency } from "@/lib/utils";
 interface CategoryCardProps {
   category: string;
   period: string;
+  faturamentoTotal?: number;
 }
 
-export function CategoryCard({ category, period }: CategoryCardProps) {
+export function CategoryCard({ category, period, faturamentoTotal }: CategoryCardProps) {
   const navigate = useNavigate();
   
   const { data: entries, isLoading } = useQuery({
     queryKey: ["budget-entries", category, period],
     queryFn: async () => {
+      if (category === "DV8") {
+        const dv8Value = (faturamentoTotal || 0) * 0.1; // 10% do faturamento
+        return {
+          entries: [],
+          total: dv8Value
+        };
+      }
+
       const [month, year] = period.split("/");
       const startDate = new Date(
         month ? `20${year}-${month}-01` : `${year}-01-01`
@@ -64,23 +73,25 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
   });
 
   const categoryColors = {
+    FATURAMENTO: "border-green-400",
     OPEX: "border-blue-400",
     PESSOAS: "border-green-400",
     CAPEX: "border-purple-400",
     IMPOSTOS: "border-red-400",
     ANÚNCIOS: "border-yellow-400",
+    DV8: "border-indigo-400",
   };
 
   const handleClick = () => {
+    if (category === "DV8") return; // Disable navigation for DV8 card
     const [month, year] = period.split("/");
-    const formattedMonth = month.padStart(2, '0');
+    const formattedMonth = month?.padStart(2, '0') || "01";
     navigate(`/budget-planning/${category}/${formattedMonth}/${year}`);
-    console.log("Navegando para:", `/budget-planning/${category}/${formattedMonth}/${year}`);
   };
 
   return (
     <Card 
-      className={`border-l-4 ${categoryColors[category as keyof typeof categoryColors]} cursor-pointer hover:bg-accent/50 transition-colors`}
+      className={`border-l-4 ${categoryColors[category as keyof typeof categoryColors]} ${category !== "DV8" ? "cursor-pointer hover:bg-accent/50" : ""} transition-colors`}
       onClick={handleClick}
     >
       <CardHeader>
@@ -89,7 +100,7 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
       <CardContent>
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : entries?.entries.length === 0 ? (
+        ) : entries?.entries.length === 0 && category !== "DV8" ? (
           <p className="text-sm text-muted-foreground">
             Ainda não há lançamentos para este mês
           </p>
@@ -98,9 +109,11 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
             <p className="text-2xl font-bold">
               {formatCurrency(entries?.total || 0)}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {entries?.entries.length} lançamento{entries?.entries.length === 1 ? "" : "s"}
-            </p>
+            {category !== "DV8" && (
+              <p className="text-sm text-muted-foreground">
+                {entries?.entries.length} lançamento{entries?.entries.length === 1 ? "" : "s"}
+              </p>
+            )}
           </div>
         )}
       </CardContent>
