@@ -65,16 +65,42 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
         }
       }
 
-      const { error: expenseError } = await supabase
+      // First create an expense entry for this category if it doesn't exist
+      const { data: existingExpense } = await supabase
+        .from("budget_expenses")
+        .select("id")
+        .eq("category_id", data.categoryId)
+        .eq("name", data.description)
+        .single();
+
+      let expenseId;
+      
+      if (existingExpense) {
+        expenseId = existingExpense.id;
+      } else {
+        const { data: newExpense, error: expenseError } = await supabase
+          .from("budget_expenses")
+          .insert({
+            category_id: data.categoryId,
+            name: data.description,
+          })
+          .select()
+          .single();
+
+        if (expenseError) throw expenseError;
+        expenseId = newExpense.id;
+      }
+
+      // Now create the budget entry with the expense_id
+      const { error: entryError } = await supabase
         .from("budget_entries")
-        .insert([{
-          category_id: data.categoryId,
-          description: data.description,
+        .insert({
+          expense_id: expenseId,
           date: data.date,
           amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
-        }]);
+        });
 
-      if (expenseError) throw expenseError;
+      if (entryError) throw entryError;
 
       toast.success("Lançamento criado com sucesso!");
       onOpenChange(false);
