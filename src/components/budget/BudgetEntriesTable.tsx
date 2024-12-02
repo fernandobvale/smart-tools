@@ -8,12 +8,6 @@ import {
   TableRow,
   TableFooter,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
@@ -25,6 +19,7 @@ interface Entry {
   date: string;
   amount: number;
   expense: {
+    id: string;
     name: string;
   };
 }
@@ -96,28 +91,23 @@ export function BudgetEntriesTable({ entries, onEdit, onDelete, categoryId, onUp
         </TableFooter>
       </Table>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Lançamento</DialogTitle>
-          </DialogHeader>
-          {selectedEntry && (
-            <BudgetForm
-              categoryId={categoryId}
-              initialData={{
-                date: selectedEntry.date,
-                amount: selectedEntry.amount.toString(),
-                expenseId: selectedEntry.id,
-              }}
-              onSuccess={() => {
-                setIsEditDialogOpen(false);
-                onUpdate();
-              }}
-              mode="edit"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {selectedEntry && (
+        <BudgetForm
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          categoryId={categoryId}
+          initialData={{
+            date: selectedEntry.date,
+            amount: formatCurrency(selectedEntry.amount),
+            expenseId: selectedEntry.expense.id,
+          }}
+          onSuccess={() => {
+            setIsEditDialogOpen(false);
+            onUpdate();
+          }}
+          mode="edit"
+        />
+      )}
     </>
   );
 }
