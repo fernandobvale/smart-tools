@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryField } from "./form-fields/CategoryField";
+import { ExpenseField } from "./form-fields/ExpenseField";
 import { BudgetFormValues, budgetFormSchema } from "./types";
 
 interface BudgetFormProps {
@@ -29,11 +30,25 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
     },
   });
 
+  const { data: expenses = [] } = useQuery({
+    queryKey: ["budget-expenses", categories],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("budget_expenses")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
     defaultValues: {
       categoryId: "",
-      description: "",
+      expenseId: undefined,
+      newExpenseName: undefined,
       date: "",
       amount: "",
     },
@@ -41,48 +56,15 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
 
   const onSubmit = async (data: BudgetFormValues) => {
     try {
-      // Get the category name for validation
-      const category = categories.find(cat => cat.id === data.categoryId);
-      
-      if (category?.name === "DV8") {
-        toast.error("A categoria DV8 é calculada automaticamente");
-        return;
-      }
+      let expenseId = data.expenseId;
 
-      // For revenue entries, check if there's already an entry for the month
-      if (category?.name === "FATURAMENTO") {
-        const month = new Date(data.date).toISOString().slice(0, 7); // Get YYYY-MM
-        const { data: existingRevenue } = await supabase
-          .from("budget_entries")
-          .select("id")
-          .eq("category_id", data.categoryId)
-          .ilike("date", `${month}%`)
-          .single();
-
-        if (existingRevenue) {
-          toast.error("Já existe um lançamento de faturamento para este mês");
-          return;
-        }
-      }
-
-      // First create an expense entry for this category if it doesn't exist
-      const { data: existingExpense } = await supabase
-        .from("budget_expenses")
-        .select("id")
-        .eq("category_id", data.categoryId)
-        .eq("name", data.description)
-        .single();
-
-      let expenseId;
-      
-      if (existingExpense) {
-        expenseId = existingExpense.id;
-      } else {
+      // If it's a new expense, create it first
+      if (data.newExpenseName) {
         const { data: newExpense, error: expenseError } = await supabase
           .from("budget_expenses")
           .insert({
             category_id: data.categoryId,
-            name: data.description,
+            name: data.newExpenseName,
           })
           .select()
           .single();
@@ -91,7 +73,12 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
         expenseId = newExpense.id;
       }
 
-      // Now create the budget entry with the expense_id
+      if (!expenseId) {
+        toast.error("Selecione ou crie uma despesa");
+        return;
+      }
+
+      // Create the budget entry
       const { error: entryError } = await supabase
         .from("budget_entries")
         .insert({
@@ -124,16 +111,10 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
               categories={categories}
             />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite a descrição" {...field} />
-                  </FormControl>
-                </FormItem>
+            <ExpenseField
+              form={form}
+              expenses={expenses.filter(expense => 
+                expense.category_id === form.watch("categoryId")
               )}
             />
 

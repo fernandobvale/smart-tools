@@ -18,7 +18,12 @@ export function CategoryField({ form, categories }: CategoryFieldProps) {
           <FormLabel>Categoria</FormLabel>
           <Select
             value={field.value}
-            onValueChange={field.onChange}
+            onValueChange={(value) => {
+              field.onChange(value);
+              // Reset expense-related fields when category changes
+              form.setValue("expenseId", undefined);
+              form.setValue("newExpenseName", undefined);
+            }}
           >
             <FormControl>
               <SelectTrigger>
@@ -27,12 +32,12 @@ export function CategoryField({ form, categories }: CategoryFieldProps) {
             </FormControl>
             <SelectContent>
               {categories
-                .filter(category => category.name !== "DV8") // Remove DV8 from options
+                .filter(category => !["DV8", "FATURAMENTO"].includes(category.name))
                 .map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </FormItem>
