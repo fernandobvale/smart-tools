@@ -17,16 +17,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 const budgetFormSchema = z.object({
-  periodo: z.string().min(1, "Período é obrigatório"),
-  faturamento: z.string().min(1, "Faturamento é obrigatório"),
-  impostoPerc: z.string().min(1, "Percentual de impostos é obrigatório"),
-  pessoasPerc: z.string().min(1, "Percentual de pessoas é obrigatório"),
-  opexPerc: z.string().min(1, "Percentual de OPEX é obrigatório"),
-  capexPerc: z.string().min(1, "Percentual de CAPEX é obrigatório"),
-  investPerc: z.string().min(1, "Percentual de investimentos é obrigatório"),
-  dv8Perc: z.string().min(1, "Percentual DV8 é obrigatório"),
+  categoryId: z.string().min(1, "Categoria é obrigatória"),
+  expenseId: z.string().min(1, "Despesa é obrigatória"),
+  date: z.string().min(1, "Data é obrigatória"),
+  amount: z.string().min(1, "Valor é obrigatório"),
 });
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>;
@@ -37,29 +43,92 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["budget-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("budget_categories")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: expenses = [] } = useQuery({
+    queryKey: ["budget-expenses", selectedCategory],
+    queryFn: async () => {
+      if (!selectedCategory) return [];
+      
+      const { data, error } = await supabase
+        .from("budget_expenses")
+        .select("*")
+        .eq("category_id", selectedCategory)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedCategory,
+  });
+
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
     defaultValues: {
-      periodo: "",
-      faturamento: "",
-      impostoPerc: "",
-      pessoasPerc: "",
-      opexPerc: "",
-      capexPerc: "",
-      investPerc: "",
-      dv8Perc: "",
+      categoryId: "",
+      expenseId: "",
+      date: "",
+      amount: "",
     },
   });
 
   const onSubmit = async (data: BudgetFormValues) => {
     try {
-      // TODO: Implementar a lógica de salvar os dados
-      console.log(data);
+      const { error } = await supabase.from("budget_entries").insert([{
+        expense_id: data.expenseId,
+        date: data.date,
+        amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
+      }]);
+
+      if (error) throw error;
+
       toast.success("Lançamento criado com sucesso!");
       onOpenChange(false);
       form.reset();
     } catch (error) {
       toast.error("Erro ao criar lançamento");
+      console.error(error);
+    }
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    form.setValue("categoryId", value);
+    form.setValue("expenseId", "");
+  };
+
+  const handleNewExpense = async (expenseName: string) => {
+    if (!selectedCategory) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("budget_expenses")
+        .insert([{
+          category_id: selectedCategory,
+          name: expenseName,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      form.setValue("expenseId", data.id);
+    } catch (error) {
+      toast.error("Erro ao criar nova despesa");
+      console.error(error);
     }
   };
 
@@ -73,100 +142,108 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="periodo"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Período (MM/AA)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="01/24" {...field} />
-                  </FormControl>
+                  <FormLabel>Categoria</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={handleCategoryChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a categoria" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               )}
             />
+
+            {selectedCategory && (
+              <FormField
+                control={form.control}
+                name="expenseId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Despesa</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione ou adicione uma despesa" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {expenses.map((expense) => (
+                          <SelectItem key={expense.id} value={expense.id}>
+                            {expense.name}
+                          </SelectItem>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            const name = window.prompt("Digite o nome da nova despesa:");
+                            if (name) handleNewExpense(name);
+                          }}
+                        >
+                          + Adicionar nova despesa
+                        </Button>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
-              name="faturamento"
+              name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Faturamento</FormLabel>
+                  <FormLabel>Data</FormLabel>
                   <FormControl>
-                    <Input placeholder="R$ 0,00" {...field} />
+                    <Input type="date" {...field} />
                   </FormControl>
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
-              name="impostoPerc"
+              name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Percentual de Impostos</FormLabel>
+                  <FormLabel>Valor</FormLabel>
                   <FormControl>
-                    <Input placeholder="0%" {...field} />
+                    <Input
+                      placeholder="R$ 0,00"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        const formattedValue = new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(Number(value) / 100);
+                        field.onChange(formattedValue);
+                      }}
+                    />
                   </FormControl>
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="pessoasPerc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Percentual de Pessoas</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0%" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="opexPerc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Percentual de OPEX</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0%" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="capexPerc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Percentual de CAPEX</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0%" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="investPerc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Percentual de Investimentos</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0%" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="dv8Perc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Percentual DV8</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0%" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+
             <Button type="submit" className="w-full">
               Salvar
             </Button>
