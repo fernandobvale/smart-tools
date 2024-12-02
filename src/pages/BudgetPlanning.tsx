@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BarChart2 } from "lucide-react";
 
 export default function BudgetPlanning() {
   const forecastData = [
@@ -33,61 +34,73 @@ export default function BudgetPlanning() {
   ];
 
   return (
-    <div className="space-y-6 px-4 md:px-8 py-8 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold">Plano Orçamentário</h1>
-          <p className="text-muted-foreground">
-            Forecast Anual - 2024
-          </p>
-        </div>
-      </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead className="font-semibold">Mês/Ano</TableHead>
-              <TableHead className="font-semibold">Faturamento</TableHead>
-              <TableHead className="font-semibold">IMPOSTO %</TableHead>
-              <TableHead className="font-semibold">IMPOSTO R$</TableHead>
-              <TableHead className="font-semibold">PESSOAS %</TableHead>
-              <TableHead className="font-semibold">PESSOAS R$</TableHead>
-              <TableHead className="font-semibold">OPEX %</TableHead>
-              <TableHead className="font-semibold">OPEX R$</TableHead>
-              <TableHead className="font-semibold">CAPEX %</TableHead>
-              <TableHead className="font-semibold">CAPEX R$</TableHead>
-              <TableHead className="font-semibold">INVEST %</TableHead>
-              <TableHead className="font-semibold">INVEST R$</TableHead>
-              <TableHead className="font-semibold">DV8 %</TableHead>
-              <TableHead className="font-semibold">DV8 R$</TableHead>
-              <TableHead className="font-semibold">LUCRO %</TableHead>
-              <TableHead className="font-semibold">LUCRO R$</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {forecastData.map((row, index) => (
-              <TableRow key={index} className="hover:bg-muted/50">
-                <TableCell>{row.mesAno}</TableCell>
-                <TableCell>{row.faturamento}</TableCell>
-                <TableCell>{row.impostoPerc}</TableCell>
-                <TableCell>{row.impostoRs}</TableCell>
-                <TableCell>{row.pessoasPerc}</TableCell>
-                <TableCell>{row.pessoasRs}</TableCell>
-                <TableCell>{row.opexPerc}</TableCell>
-                <TableCell>{row.opexRs}</TableCell>
-                <TableCell>{row.capexPerc}</TableCell>
-                <TableCell>{row.capexRs}</TableCell>
-                <TableCell>{row.investPerc}</TableCell>
-                <TableCell>{row.investRs}</TableCell>
-                <TableCell>{row.dv8Perc}</TableCell>
-                <TableCell>{row.dv8Rs}</TableCell>
-                <TableCell>{row.lucroPerc}</TableCell>
-                <TableCell>{row.lucroRs}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="space-y-6 p-6 animate-fade-in">
+      <Card className="border-none shadow-none">
+        <CardHeader className="pb-3">
+          <div className="flex items-center space-x-2">
+            <BarChart2 className="h-8 w-8 text-[#9b87f5]" />
+            <div>
+              <CardTitle className="text-2xl font-bold">Plano Orçamentário</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Forecast Anual - 2024
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="rounded-lg border bg-card">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">Mês/Ano</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">Faturamento</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">IMPOSTO %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">IMPOSTO R$</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">PESSOAS %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">PESSOAS R$</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">OPEX %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">OPEX R$</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">CAPEX %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">CAPEX R$</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">INVEST %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">INVEST R$</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">DV8 %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">DV8 R$</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">LUCRO %</TableHead>
+                    <TableHead className="font-semibold text-primary h-12 px-4 bg-[#9b87f5]/10">LUCRO R$</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {forecastData.map((row, index) => (
+                    <TableRow 
+                      key={index} 
+                      className="hover:bg-muted/50 transition-colors"
+                    >
+                      <TableCell className="font-medium">{row.mesAno}</TableCell>
+                      <TableCell className="font-medium text-[#6E59A5]">{row.faturamento}</TableCell>
+                      <TableCell>{row.impostoPerc}</TableCell>
+                      <TableCell className="text-[#7E69AB]">{row.impostoRs}</TableCell>
+                      <TableCell>{row.pessoasPerc}</TableCell>
+                      <TableCell className="text-[#7E69AB]">{row.pessoasRs}</TableCell>
+                      <TableCell>{row.opexPerc}</TableCell>
+                      <TableCell className="text-[#7E69AB]">{row.opexRs}</TableCell>
+                      <TableCell>{row.capexPerc}</TableCell>
+                      <TableCell className="text-[#7E69AB]">{row.capexRs}</TableCell>
+                      <TableCell>{row.investPerc}</TableCell>
+                      <TableCell className="text-[#7E69AB]">{row.investRs}</TableCell>
+                      <TableCell>{row.dv8Perc}</TableCell>
+                      <TableCell className="text-[#7E69AB]">{row.dv8Rs}</TableCell>
+                      <TableCell className="font-medium">{row.lucroPerc}</TableCell>
+                      <TableCell className="font-medium text-[#6E59A5]">{row.lucroRs}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
