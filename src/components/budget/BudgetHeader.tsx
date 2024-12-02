@@ -28,7 +28,7 @@ export function BudgetHeader({
         <div>
           <CardTitle className="text-2xl font-bold">Plano Orçamentário</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Forecast {viewType === "annual" ? "Anual" : "Mensal"} - 2024
+            Forecast {viewType === "annual" ? "Anual" : "Mensal"}
           </p>
         </div>
       </div>
