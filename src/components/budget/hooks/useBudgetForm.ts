@@ -49,8 +49,24 @@ export function useBudgetForm({
     });
   };
 
+  const validateExpenseId = (expenseId: string | undefined): boolean => {
+    if (!expenseId) {
+      console.error('Erro: expenseId está ausente');
+      return false;
+    }
+    
+    const uuidRegex = /^[0-9a-fA-F-]{36}$/;
+    if (!uuidRegex.test(expenseId)) {
+      console.error('Erro: expenseId não é um UUID válido:', expenseId);
+      return false;
+    }
+    
+    return true;
+  };
+
   const onSubmit = async (data: BudgetFormValues) => {
     try {
+      console.log('Iniciando submissão do formulário com dados:', data);
       let expenseId = data.expenseId;
 
       if (!expenseId && data.newExpenseName) {
@@ -59,6 +75,7 @@ export function useBudgetForm({
           name: data.newExpenseName
         });
 
+        // Primeiro, verifica se a despesa já existe
         const { data: existingExpense, error: searchError } = await supabase
           .from("budget_expenses")
           .select("id")
@@ -95,14 +112,20 @@ export function useBudgetForm({
         }
       }
 
-      if (!expenseId) {
-        toast.error("Selecione ou crie uma despesa");
+      if (!validateExpenseId(expenseId)) {
+        toast.error("ID da despesa inválido ou ausente");
         return;
       }
 
-      console.log('Prosseguindo com expense_id:', expenseId);
-
       const numericAmount = parseCurrencyToNumber(data.amount);
+
+      console.log('Dados a serem enviados para budget_entries:', {
+        expense_id: expenseId,
+        date: data.date,
+        amount: numericAmount,
+        mode: mode,
+        entryId: initialData?.id
+      });
 
       if (mode === 'edit' && initialData?.id) {
         console.log('Atualizando lançamento existente');
