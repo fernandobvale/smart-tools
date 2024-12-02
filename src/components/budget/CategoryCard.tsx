@@ -49,7 +49,14 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .gte("date", startDate.toISOString())
         .lt("date", endDate.toISOString());
 
-      const total = entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
+      // Ensure proper number handling for the total calculation
+      const total = entriesData?.reduce((sum, entry) => {
+        // Convert the amount to a number and add to sum
+        const entryAmount = typeof entry.amount === 'string' 
+          ? parseFloat(entry.amount) 
+          : Number(entry.amount);
+        return sum + entryAmount;
+      }, 0) || 0;
 
       return {
         entries: entriesData || [],
