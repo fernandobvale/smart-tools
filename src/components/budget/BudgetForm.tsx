@@ -100,27 +100,34 @@ export function BudgetForm({
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
-      // Preparar os dados para inserção/atualização
-      const entryData = {
-        expense_id: finalExpenseId,
-        date: data.date,
-        amount: numericAmount,
-      };
-
       if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
           .from("budget_entries")
-          .update(entryData)
+          .update({
+            expense_id: finalExpenseId,
+            date: data.date,
+            amount: numericAmount,
+          })
           .eq('id', initialData.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Update error:', updateError);
+          throw updateError;
+        }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
         const { error: entryError } = await supabase
           .from("budget_entries")
-          .insert(entryData);
+          .insert({
+            expense_id: finalExpenseId,
+            date: data.date,
+            amount: numericAmount,
+          });
 
-        if (entryError) throw entryError;
+        if (entryError) {
+          console.error('Insert error:', entryError);
+          throw entryError;
+        }
         toast.success("Lançamento criado com sucesso!");
       }
 
