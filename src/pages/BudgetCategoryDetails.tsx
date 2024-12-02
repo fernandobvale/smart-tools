@@ -15,16 +15,21 @@ import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
 
 export default function BudgetCategoryDetails() {
-  const { category, period } = useParams();
   const navigate = useNavigate();
+  const params = useParams();
+  const category = params.category;
+  const month = params.period?.split('/')[0];
+  const year = params.period?.split('/')[1];
 
   const { data, isLoading } = useQuery({
-    queryKey: ["budget-details", category, period],
+    queryKey: ["budget-details", category, month, year],
     queryFn: async () => {
-      console.log("Fetching data for:", { category, period });
+      if (!category || !month || !year) {
+        throw new Error("Missing required parameters");
+      }
+
+      console.log("Fetching data for:", { category, month, year });
       
-      // Split period into month and year, assuming format MM/YY
-      const [month, year] = (period || "").split("/");
       // Convert strings to numbers using parseInt with radix 10
       const startDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10) - 1, 1);
       const endDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10), 0); // Last day of the month
@@ -74,7 +79,16 @@ export default function BudgetCategoryDetails() {
         expenses,
       };
     },
+    enabled: !!category && !!month && !!year, // Only run query when all parameters are available
   });
+
+  if (!category || !month || !year) {
+    return (
+      <div className="container mx-auto p-6">
+        <p>Parâmetros inválidos</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -88,7 +102,7 @@ export default function BudgetCategoryDetails() {
           Voltar
         </Button>
         <h1 className="text-2xl font-bold mb-2">
-          Detalhes de {category} - {period}
+          Detalhes de {category} - {month}/{year}
         </h1>
         <p className="text-muted-foreground mb-4">
           Total: {formatCurrency(data?.total || 0)}
