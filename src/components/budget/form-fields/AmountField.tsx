@@ -2,6 +2,7 @@ import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/for
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { BudgetFormValues } from "../types";
+import { NumericFormat } from "react-number-format";
 
 interface AmountFieldProps {
   form: UseFormReturn<BudgetFormValues>;
@@ -16,23 +17,19 @@ export function AmountField({ form }: AmountFieldProps) {
         <FormItem>
           <FormLabel>Valor</FormLabel>
           <FormControl>
-            <Input
-              placeholder="R$ 0,00"
-              {...field}
-              onChange={(e) => {
-                let value = e.target.value.replace(/\D/g, "");
-                if (value.length > 2) {
-                  value = value.slice(0, -2) + "," + value.slice(-2);
-                }
-                if (value.length > 6) {
-                  value = value.slice(0, -6) + "." + value.slice(-6);
-                }
-                if (value) {
-                  field.onChange(`R$ ${value}`);
-                } else {
-                  field.onChange("");
-                }
+            <NumericFormat
+              customInput={Input}
+              value={field.value}
+              onValueChange={(values) => {
+                const { formattedValue } = values;
+                field.onChange(formattedValue);
+                console.log('NumericFormat value:', formattedValue); // Debug log
               }}
+              thousandSeparator="."
+              decimalSeparator=","
+              prefix="R$ "
+              decimalScale={2}
+              fixedDecimalScale
             />
           </FormControl>
         </FormItem>

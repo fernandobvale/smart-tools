@@ -93,9 +93,10 @@ export function BudgetForm({
         return;
       }
 
-      // Converte o valor para número usando a nova função utilitária
+      // Convert amount string to number using the updated utility function
       const numericAmount = parseCurrencyToNumber(data.amount);
-      console.log('Valor convertido:', numericAmount); // Debug
+      console.log('Form submission - Original amount:', data.amount);
+      console.log('Form submission - Converted amount:', numericAmount);
 
       if (mode === 'edit' && initialData?.expenseId) {
         const { error: updateError } = await supabase
@@ -105,7 +106,7 @@ export function BudgetForm({
             date: data.date,
             amount: numericAmount,
           })
-          .eq('id', initialData.expenseId);
+          .eq('expense_id', initialData.expenseId);
 
         if (updateError) throw updateError;
         toast.success("Lançamento atualizado com sucesso!");
@@ -127,7 +128,7 @@ export function BudgetForm({
       form.reset();
     } catch (error) {
       toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
-      console.error(error);
+      console.error('Error details:', error);
     }
   };
 
