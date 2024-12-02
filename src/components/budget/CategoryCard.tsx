@@ -52,7 +52,6 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .gte("date", startDate.toISOString())
         .lt("date", endDate.toISOString());
 
-      // Calculate total by treating amount as a number directly from the database
       const total = entriesData?.reduce((sum, entry) => {
         return sum + Number(entry.amount);
       }, 0) || 0;
@@ -73,7 +72,10 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
   };
 
   const handleClick = () => {
-    navigate(`/budget-planning/${category}/${period}`);
+    const [month, year] = period.split("/");
+    // Format the URL to ensure it matches the route pattern
+    const formattedMonth = month.padStart(2, '0');
+    navigate(`/budget-planning/${category}/${formattedMonth}/${year}`);
   };
 
   return (
