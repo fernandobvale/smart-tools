@@ -1,5 +1,4 @@
 import { BarChart2 } from "lucide-react";
-import { CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -25,12 +24,9 @@ export function BudgetHeader({
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <BarChart2 className="h-8 w-8 text-[#9b87f5]" />
-        <div>
-          <CardTitle className="text-2xl font-bold">Plano Orçamentário</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Forecast {viewType === "annual" ? "Anual" : "Mensal"}
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Forecast {viewType === "annual" ? "Anual" : "Mensal"}
+        </p>
       </div>
       <div className="flex gap-4">
         <Select

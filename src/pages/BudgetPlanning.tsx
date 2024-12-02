@@ -23,6 +23,7 @@ export default function BudgetPlanning() {
     <div className="container mx-auto p-6">
       <Card className="border-none shadow-none">
         <CardHeader className="pb-3">
+          <h1 className="text-2xl font-bold mb-6">Plano Orçamentário</h1>
           <div className="flex items-center justify-between">
             <BudgetHeader
               viewType={viewType}
