@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function BudgetPlanning() {
-  const [selectedPeriod, setSelectedPeriod] = useState("12/23");
+  const [selectedPeriod, setSelectedPeriod] = useState("01/24");
   const [viewType, setViewType] = useState<"monthly" | "annual">("monthly");
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -17,16 +17,9 @@ export default function BudgetPlanning() {
     queryKey: ["faturamento-total", selectedPeriod],
     queryFn: async () => {
       const [month, year] = selectedPeriod.split("/");
-      const startDate = new Date(
-        month ? `20${year}-${month}-01` : `${year}-01-01`
-      );
+      const startDate = new Date(`20${year}-${month}-01`);
       const endDate = new Date(startDate);
-      
-      if (month) {
-        endDate.setMonth(startDate.getMonth() + 1);
-      } else {
-        endDate.setFullYear(startDate.getFullYear() + 1);
-      }
+      endDate.setMonth(startDate.getMonth() + 1);
       endDate.setDate(endDate.getDate() - 1);
 
       const { data: categoryData } = await supabase
@@ -53,8 +46,7 @@ export default function BudgetPlanning() {
         .gte("date", startDate.toISOString())
         .lt("date", endDate.toISOString());
 
-      const total = entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
-      return total;
+      return entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
     },
   });
 
@@ -63,7 +55,7 @@ export default function BudgetPlanning() {
     if (value === "annual") {
       setSelectedPeriod("2024");
     } else {
-      setSelectedPeriod("12/23");
+      setSelectedPeriod("01/24");
     }
   };
 
@@ -100,7 +92,7 @@ export default function BudgetPlanning() {
                 key={category}
                 category={category}
                 period={selectedPeriod}
-                faturamentoTotal={category === "DV8" ? faturamentoTotal : undefined}
+                faturamentoTotal={faturamentoTotal}
               />
             ))}
           </div>

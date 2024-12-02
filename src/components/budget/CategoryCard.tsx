@@ -109,9 +109,9 @@ export function CategoryCard({ category, period, faturamentoTotal }: CategoryCar
             <p className="text-2xl font-bold">
               {formatCurrency(entries?.total || 0)}
             </p>
-            {category !== "DV8" && (
+            {category !== "DV8" && entries?.entries.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                {entries?.entries.length} lançamento{entries?.entries.length === 1 ? "" : "s"}
+                {entries.entries.length} lançamento{entries.entries.length === 1 ? "" : "s"}
               </p>
             )}
           </div>
