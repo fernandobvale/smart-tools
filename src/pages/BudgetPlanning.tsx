@@ -19,6 +19,7 @@ import {
 
 export default function BudgetPlanning() {
   const [selectedPeriod, setSelectedPeriod] = useState("12/23");
+  const [viewType, setViewType] = useState<"monthly" | "annual">("monthly");
 
   const forecastData = {
     "12/23": {
@@ -72,6 +73,23 @@ export default function BudgetPlanning() {
       lucroPerc: "11,02%",
       lucroRs: "R$ 24.795,00",
     },
+    "2024": {
+      faturamento: "R$ 2.640.000,00",
+      impostoPerc: "8,35%",
+      impostoRs: "R$ 220.440,00",
+      pessoasPerc: "17,66%",
+      pessoasRs: "R$ 466.224,00",
+      opexPerc: "8,71%",
+      opexRs: "R$ 229.944,00",
+      capexPerc: "26,49%",
+      capexRs: "R$ 699.336,00",
+      investPerc: "26,12%",
+      investRs: "R$ 689.568,00",
+      dv8Perc: "10,00%",
+      dv8Rs: "R$ 264.000,00",
+      lucroPerc: "11,02%",
+      lucroRs: "R$ 290.928,00",
+    },
   };
 
   const currentData = forecastData[selectedPeriod];
@@ -86,21 +104,40 @@ export default function BudgetPlanning() {
               <div>
                 <CardTitle className="text-2xl font-bold">Plano Orçamentário</CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Forecast Anual - 2024
+                  Forecast {viewType === "annual" ? "Anual" : "Mensal"} - 2024
                 </p>
               </div>
             </div>
-            <div className="w-[180px]">
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o período" />
+            <div className="flex gap-4">
+              <Select value={viewType} onValueChange={(value: "monthly" | "annual") => {
+                setViewType(value);
+                if (value === "annual") {
+                  setSelectedPeriod("2024");
+                } else {
+                  setSelectedPeriod("12/23");
+                }
+              }}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Selecione a visualização" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="12/23">Dezembro/2023</SelectItem>
-                  <SelectItem value="01/24">Janeiro/2024</SelectItem>
-                  <SelectItem value="02/24">Fevereiro/2024</SelectItem>
+                  <SelectItem value="monthly">Visualização Mensal</SelectItem>
+                  <SelectItem value="annual">Visualização Anual</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {viewType === "monthly" && (
+                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Selecione o período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="12/23">Dezembro/2023</SelectItem>
+                    <SelectItem value="01/24">Janeiro/2024</SelectItem>
+                    <SelectItem value="02/24">Fevereiro/2024</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </CardHeader>
