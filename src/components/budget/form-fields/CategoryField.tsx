@@ -6,10 +6,9 @@ import { BudgetFormValues } from "../types";
 interface CategoryFieldProps {
   form: UseFormReturn<BudgetFormValues>;
   categories: Array<{ id: string; name: string }>;
-  onCategoryChange: (value: string) => void;
 }
 
-export function CategoryField({ form, categories, onCategoryChange }: CategoryFieldProps) {
+export function CategoryField({ form, categories }: CategoryFieldProps) {
   return (
     <FormField
       control={form.control}
@@ -19,7 +18,7 @@ export function CategoryField({ form, categories, onCategoryChange }: CategoryFi
           <FormLabel>Categoria</FormLabel>
           <Select
             value={field.value}
-            onValueChange={onCategoryChange}
+            onValueChange={field.onChange}
           >
             <FormControl>
               <SelectTrigger>
@@ -27,7 +26,9 @@ export function CategoryField({ form, categories, onCategoryChange }: CategoryFi
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {categories.map((category) => (
+              {categories
+                .filter(category => category.name !== "DV8") // Remove DV8 from options
+                .map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>

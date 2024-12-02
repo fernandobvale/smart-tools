@@ -7,9 +7,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
 import { CategoryField } from "./form-fields/CategoryField";
-import { ExpenseField } from "./form-fields/ExpenseField";
 import { BudgetFormValues, budgetFormSchema } from "./types";
 
 interface BudgetFormProps {
@@ -18,8 +16,6 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
   const { data: categories = [] } = useQuery({
     queryKey: ["budget-categories"],
     queryFn: async () => {
@@ -33,28 +29,11 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
     },
   });
 
-  const { data: expenses = [], refetch: refetchExpenses } = useQuery({
-    queryKey: ["budget-expenses", selectedCategory],
-    queryFn: async () => {
-      if (!selectedCategory) return [];
-      
-      const { data, error } = await supabase
-        .from("budget_expenses")
-        .select("*")
-        .eq("category_id", selectedCategory)
-        .order("name");
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedCategory,
-  });
-
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
     defaultValues: {
       categoryId: "",
-      expenseId: "",
+      description: "",
       date: "",
       amount: "",
     },
@@ -62,52 +41,46 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
 
   const onSubmit = async (data: BudgetFormValues) => {
     try {
-      const { error } = await supabase.from("budget_entries").insert([{
-        expense_id: data.expenseId,
-        date: data.date,
-        amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
-      }]);
+      // Get the category name for validation
+      const category = categories.find(cat => cat.id === data.categoryId);
+      
+      if (category?.name === "DV8") {
+        toast.error("A categoria DV8 é calculada automaticamente");
+        return;
+      }
 
-      if (error) throw error;
+      // For revenue entries, check if there's already an entry for the month
+      if (category?.name === "FATURAMENTO") {
+        const month = new Date(data.date).toISOString().slice(0, 7); // Get YYYY-MM
+        const { data: existingRevenue } = await supabase
+          .from("budget_entries")
+          .select("id")
+          .eq("category_id", data.categoryId)
+          .ilike("date", `${month}%`)
+          .single();
+
+        if (existingRevenue) {
+          toast.error("Já existe um lançamento de faturamento para este mês");
+          return;
+        }
+      }
+
+      const { error: expenseError } = await supabase
+        .from("budget_entries")
+        .insert([{
+          category_id: data.categoryId,
+          description: data.description,
+          date: data.date,
+          amount: parseFloat(data.amount.replace(/[^0-9.-]+/g, "")),
+        }]);
+
+      if (expenseError) throw expenseError;
 
       toast.success("Lançamento criado com sucesso!");
       onOpenChange(false);
       form.reset();
     } catch (error) {
       toast.error("Erro ao criar lançamento");
-      console.error(error);
-    }
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    form.setValue("categoryId", value);
-    form.setValue("expenseId", "");
-  };
-
-  const handleNewExpense = async () => {
-    if (!selectedCategory) return;
-
-    const expenseName = window.prompt("Digite o nome da nova despesa:");
-    if (!expenseName) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("budget_expenses")
-        .insert([{
-          category_id: selectedCategory,
-          name: expenseName,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      form.setValue("expenseId", data.id);
-      refetchExpenses();
-      toast.success("Nova despesa criada com sucesso!");
-    } catch (error) {
-      toast.error("Erro ao criar nova despesa");
       console.error(error);
     }
   };
@@ -123,16 +96,20 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
             <CategoryField
               form={form}
               categories={categories}
-              onCategoryChange={handleCategoryChange}
             />
 
-            {selectedCategory && (
-              <ExpenseField
-                form={form}
-                expenses={expenses}
-                onNewExpense={handleNewExpense}
-              />
-            )}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite a descrição" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
