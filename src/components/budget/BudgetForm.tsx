@@ -100,6 +100,7 @@ export function BudgetForm({
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
+      // Aqui está a correção principal - usando snake_case para o nome da coluna
       const entryData = {
         expense_id: finalExpenseId,
         date: data.date,
@@ -120,9 +121,12 @@ export function BudgetForm({
         }
         toast.success("Lançamento atualizado com sucesso!");
       } else {
-        const { error: entryError } = await supabase
+        const { data: insertedData, error: entryError } = await supabase
           .from("budget_entries")
-          .insert(entryData);
+          .insert([entryData])
+          .select();
+
+        console.log('Resposta do insert:', { data: insertedData, error: entryError });
 
         if (entryError) {
           console.error('Insert error:', entryError);
