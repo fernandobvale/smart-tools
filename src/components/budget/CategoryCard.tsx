@@ -15,7 +15,7 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
   const { data: entries, isLoading } = useQuery({
     queryKey: ["budget-entries", category, period],
     queryFn: async () => {
-      console.log("Fetching data for category:", category, "period:", period);
+      console.log(`Iniciando busca para ${category} no período ${period}`);
       
       const [month, year] = period.split("/");
       const startDate = new Date(`20${year}-${month}-01`);
@@ -23,55 +23,59 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
       endDate.setMonth(startDate.getMonth() + 1);
       endDate.setDate(endDate.getDate() - 1);
 
-      // Primeiro, buscar o ID da categoria
+      // Buscar categoria
       const { data: categoryData, error: categoryError } = await supabase
         .from("budget_categories")
-        .select("id")
+        .select("*")
         .eq("name", category)
         .single();
 
-      console.log("Category data:", categoryData, "Error:", categoryError);
+      console.log("Dados da categoria:", categoryData);
+      console.log("Erro ao buscar categoria:", categoryError);
 
       if (categoryError || !categoryData) {
-        console.error("Error fetching category:", categoryError);
+        console.error(`Categoria ${category} não encontrada`);
         return { entries: [], total: 0 };
       }
 
-      // Depois, buscar as despesas dessa categoria
+      // Buscar despesas da categoria
       const { data: expenses, error: expensesError } = await supabase
         .from("budget_expenses")
-        .select("id")
+        .select("*")
         .eq("category_id", categoryData.id);
 
-      console.log("Expenses data:", expenses, "Error:", expensesError);
+      console.log(`Despesas encontradas para ${category}:`, expenses);
+      console.log("Erro ao buscar despesas:", expensesError);
 
       if (expensesError || !expenses || expenses.length === 0) {
-        console.error("Error fetching expenses:", expensesError);
+        console.error(`Nenhuma despesa encontrada para ${category}`);
         return { entries: [], total: 0 };
       }
 
-      const expenseIds = expenses.map((expense) => expense.id);
+      const expenseIds = expenses.map(expense => expense.id);
 
-      // Finalmente, buscar os lançamentos do período
+      // Buscar lançamentos
       const { data: entriesData, error: entriesError } = await supabase
         .from("budget_entries")
         .select("*")
         .in("expense_id", expenseIds)
-        .gte("date", startDate.toISOString())
-        .lt("date", endDate.toISOString());
+        .gte("date", startDate.toISOString().split('T')[0])
+        .lt("date", endDate.toISOString().split('T')[0]);
 
-      console.log("Entries data:", entriesData, "Error:", entriesError);
+      console.log(`Lançamentos encontrados para ${category}:`, entriesData);
+      console.log("Erro ao buscar lançamentos:", entriesError);
 
       if (entriesError) {
-        console.error("Error fetching entries:", entriesError);
+        console.error(`Erro ao buscar lançamentos para ${category}`);
         return { entries: [], total: 0 };
       }
 
       const total = entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
+      console.log(`Total calculado para ${category}:`, total);
 
       return {
         entries: entriesData || [],
-        total: total,
+        total,
       };
     },
   });
