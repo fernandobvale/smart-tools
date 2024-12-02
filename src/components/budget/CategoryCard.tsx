@@ -15,35 +15,57 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
   const { data: entries, isLoading } = useQuery({
     queryKey: ["budget-entries", category, period],
     queryFn: async () => {
+      console.log("Fetching data for category:", category, "period:", period);
+      
       const [month, year] = period.split("/");
       const startDate = new Date(`20${year}-${month}-01`);
       const endDate = new Date(startDate);
       endDate.setMonth(startDate.getMonth() + 1);
       endDate.setDate(endDate.getDate() - 1);
 
-      const { data: categoryData } = await supabase
+      // Primeiro, buscar o ID da categoria
+      const { data: categoryData, error: categoryError } = await supabase
         .from("budget_categories")
         .select("id")
         .eq("name", category)
         .single();
 
-      if (!categoryData) return { entries: [], total: 0 };
+      console.log("Category data:", categoryData, "Error:", categoryError);
 
-      const { data: expenses } = await supabase
+      if (categoryError || !categoryData) {
+        console.error("Error fetching category:", categoryError);
+        return { entries: [], total: 0 };
+      }
+
+      // Depois, buscar as despesas dessa categoria
+      const { data: expenses, error: expensesError } = await supabase
         .from("budget_expenses")
         .select("id")
         .eq("category_id", categoryData.id);
 
-      if (!expenses || expenses.length === 0) return { entries: [], total: 0 };
+      console.log("Expenses data:", expenses, "Error:", expensesError);
+
+      if (expensesError || !expenses || expenses.length === 0) {
+        console.error("Error fetching expenses:", expensesError);
+        return { entries: [], total: 0 };
+      }
 
       const expenseIds = expenses.map((expense) => expense.id);
 
-      const { data: entriesData } = await supabase
+      // Finalmente, buscar os lançamentos do período
+      const { data: entriesData, error: entriesError } = await supabase
         .from("budget_entries")
         .select("*")
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString())
         .lt("date", endDate.toISOString());
+
+      console.log("Entries data:", entriesData, "Error:", entriesError);
+
+      if (entriesError) {
+        console.error("Error fetching entries:", entriesError);
+        return { entries: [], total: 0 };
+      }
 
       const total = entriesData?.reduce((sum, entry) => sum + Number(entry.amount), 0) || 0;
 
