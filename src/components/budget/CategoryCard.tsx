@@ -48,6 +48,92 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         return { entries: [], total: 0 };
       }
 
+      // Se for DV8, primeiro buscar o faturamento
+      if (category === "DV8") {
+        const { data: faturamentoCategory } = await supabase
+          .from("budget_categories")
+          .select("*")
+          .eq("name", "FATURAMENTO")
+          .single();
+
+        if (faturamentoCategory) {
+          const { data: faturamentoExpenses } = await supabase
+            .from("budget_expenses")
+            .select("id")
+            .eq("category_id", faturamentoCategory.id);
+
+          if (faturamentoExpenses && faturamentoExpenses.length > 0) {
+            const faturamentoExpenseIds = faturamentoExpenses.map(exp => exp.id);
+            
+            const { data: faturamentoEntries } = await supabase
+              .from("budget_entries")
+              .select("*")
+              .in("expense_id", faturamentoExpenseIds)
+              .gte("date", startDateStr)
+              .lte("date", endDateStr);
+
+            if (faturamentoEntries && faturamentoEntries.length > 0) {
+              const faturamentoTotal = faturamentoEntries.reduce((sum, entry) => sum + Number(entry.amount), 0);
+              const dv8Value = faturamentoTotal * 0.1; // 10% do faturamento
+
+              // Buscar ou criar a despesa DV8
+              const { data: dv8Expense } = await supabase
+                .from("budget_expenses")
+                .select("*")
+                .eq("category_id", categoryData.id)
+                .eq("name", "DV8 Automático")
+                .single();
+
+              let dv8ExpenseId;
+              if (!dv8Expense) {
+                const { data: newDv8Expense } = await supabase
+                  .from("budget_expenses")
+                  .insert({ category_id: categoryData.id, name: "DV8 Automático" })
+                  .select()
+                  .single();
+                
+                if (newDv8Expense) {
+                  dv8ExpenseId = newDv8Expense.id;
+                }
+              } else {
+                dv8ExpenseId = dv8Expense.id;
+              }
+
+              if (dv8ExpenseId) {
+                // Inserir ou atualizar o lançamento do DV8
+                const { data: existingDv8Entry } = await supabase
+                  .from("budget_entries")
+                  .select("*")
+                  .eq("expense_id", dv8ExpenseId)
+                  .gte("date", startDateStr)
+                  .lte("date", endDateStr)
+                  .single();
+
+                if (existingDv8Entry) {
+                  await supabase
+                    .from("budget_entries")
+                    .update({ amount: dv8Value })
+                    .eq("id", existingDv8Entry.id);
+                } else {
+                  await supabase
+                    .from("budget_entries")
+                    .insert({
+                      expense_id: dv8ExpenseId,
+                      date: startDateStr,
+                      amount: dv8Value
+                    });
+                }
+
+                return {
+                  entries: [{ id: "dv8-auto", amount: dv8Value, date: startDateStr }],
+                  total: dv8Value
+                };
+              }
+            }
+          }
+        }
+      }
+
       // Buscar despesas da categoria
       const { data: expenses, error: expensesError } = await supabase
         .from("budget_expenses")
