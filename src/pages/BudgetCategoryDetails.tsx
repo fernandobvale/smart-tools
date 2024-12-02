@@ -54,7 +54,13 @@ export default function BudgetCategoryDetails() {
 
       const { data: entriesData } = await supabase
         .from("budget_entries")
-        .select("*, expense:budget_expenses(name)")
+        .select(`
+          *,
+          expense:budget_expenses (
+            id,
+            name
+          )
+        `)
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString().split('T')[0])
         .lte("date", endDate.toISOString().split('T')[0]);
