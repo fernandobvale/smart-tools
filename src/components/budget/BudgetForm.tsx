@@ -1,15 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryField } from "./form-fields/CategoryField";
 import { ExpenseField } from "./form-fields/ExpenseField";
+import { AmountField } from "./form-fields/AmountField";
 import { BudgetFormValues, budgetFormSchema } from "./types";
+import { parseCurrencyToNumber } from "@/utils/currencyUtils";
 
 interface BudgetFormProps {
   open?: boolean;
@@ -73,7 +74,6 @@ export function BudgetForm({
     try {
       let expenseId = data.expenseId;
 
-      // If it's a new expense, create it first
       if (data.newExpenseName) {
         const { data: newExpense, error: expenseError } = await supabase
           .from("budget_expenses")
@@ -93,12 +93,11 @@ export function BudgetForm({
         return;
       }
 
-      // Convert amount string to number
-      const cleanAmount = data.amount.replace(/[^\d,]/g, '').replace(',', '.');
-      const numericAmount = parseFloat(cleanAmount);
+      // Converte o valor para número usando a nova função utilitária
+      const numericAmount = parseCurrencyToNumber(data.amount);
+      console.log('Valor convertido:', numericAmount); // Debug
 
       if (mode === 'edit' && initialData?.expenseId) {
-        // Update existing entry
         const { error: updateError } = await supabase
           .from("budget_entries")
           .update({
@@ -111,7 +110,6 @@ export function BudgetForm({
         if (updateError) throw updateError;
         toast.success("Lançamento atualizado com sucesso!");
       } else {
-        // Create new entry
         const { error: entryError } = await supabase
           .from("budget_entries")
           .insert({
@@ -153,42 +151,7 @@ export function BudgetForm({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Valor</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="R$ 0,00"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        const formattedValue = new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(Number(value) / 100);
-                        field.onChange(formattedValue);
-                      }}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <AmountField form={form} />
 
             <Button type="submit" className="w-full">
               Salvar
