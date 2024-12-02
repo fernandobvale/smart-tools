@@ -16,25 +16,24 @@ import { format } from "date-fns";
 
 export default function BudgetCategoryDetails() {
   const navigate = useNavigate();
-  const params = useParams();
-  const category = params.category;
-  const month = params.period?.split('/')[0];
-  const year = params.period?.split('/')[1];
+  const { category, period } = useParams();
+  
+  // Extrair mês e ano do parâmetro period
+  const [month, year] = (period || "").split("/");
 
   const { data, isLoading } = useQuery({
     queryKey: ["budget-details", category, month, year],
     queryFn: async () => {
       if (!category || !month || !year) {
-        throw new Error("Missing required parameters");
+        throw new Error("Parâmetros obrigatórios ausentes");
       }
 
-      console.log("Fetching data for:", { category, month, year });
+      console.log("Buscando dados para:", { category, month, year });
       
-      // Convert strings to numbers using parseInt with radix 10
       const startDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10) - 1, 1);
-      const endDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10), 0); // Last day of the month
+      const endDate = new Date(2000 + parseInt(year, 10), parseInt(month, 10), 0);
       
-      console.log("Date range:", {
+      console.log("Intervalo de datas:", {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString()
       });
@@ -45,7 +44,7 @@ export default function BudgetCategoryDetails() {
         .eq("name", category)
         .single();
 
-      console.log("Category data:", categoryData);
+      console.log("Dados da categoria:", categoryData);
 
       if (!categoryData) return { entries: [], total: 0 };
 
@@ -54,7 +53,7 @@ export default function BudgetCategoryDetails() {
         .select("id, name")
         .eq("category_id", categoryData.id);
 
-      console.log("Expenses:", expenses);
+      console.log("Despesas:", expenses);
 
       if (!expenses || expenses.length === 0) return { entries: [], total: 0 };
 
@@ -67,7 +66,7 @@ export default function BudgetCategoryDetails() {
         .gte("date", startDate.toISOString().split('T')[0])
         .lt("date", endDate.toISOString().split('T')[0]);
 
-      console.log("Entries data:", entriesData);
+      console.log("Dados dos lançamentos:", entriesData);
 
       const total = entriesData?.reduce((sum, entry) => {
         return sum + Number(entry.amount);
@@ -79,17 +78,10 @@ export default function BudgetCategoryDetails() {
         expenses,
       };
     },
-    enabled: !!category && !!month && !!year, // Only run query when all parameters are available
+    enabled: !!category && !!period,
   });
 
-  if (!category || !month || !year) {
-    return (
-      <div className="container mx-auto p-6">
-        <p>Parâmetros inválidos</p>
-      </div>
-    );
-  }
-
+  // Removi a validação que estava causando o retorno prematuro
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
@@ -102,7 +94,7 @@ export default function BudgetCategoryDetails() {
           Voltar
         </Button>
         <h1 className="text-2xl font-bold mb-2">
-          Detalhes de {category} - {month}/{year}
+          Detalhes de {category} - {period}
         </h1>
         <p className="text-muted-foreground mb-4">
           Total: {formatCurrency(data?.total || 0)}
