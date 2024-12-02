@@ -1,25 +1,15 @@
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { BarChart2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { BudgetHeader } from "@/components/budget/BudgetHeader";
+import { BudgetTable } from "@/components/budget/BudgetTable";
+import { BudgetForm } from "@/components/budget/BudgetForm";
 
 export default function BudgetPlanning() {
   const [selectedPeriod, setSelectedPeriod] = useState("12/23");
   const [viewType, setViewType] = useState<"monthly" | "annual">("monthly");
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const forecastData = {
     "12/23": {
@@ -94,109 +84,39 @@ export default function BudgetPlanning() {
 
   const currentData = forecastData[selectedPeriod];
 
+  const handleViewTypeChange = (value: "monthly" | "annual") => {
+    setViewType(value);
+    if (value === "annual") {
+      setSelectedPeriod("2024");
+    } else {
+      setSelectedPeriod("12/23");
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <Card className="border-none shadow-none">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <BarChart2 className="h-8 w-8 text-[#9b87f5]" />
-              <div>
-                <CardTitle className="text-2xl font-bold">Plano Orçamentário</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Forecast {viewType === "annual" ? "Anual" : "Mensal"} - 2024
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <Select value={viewType} onValueChange={(value: "monthly" | "annual") => {
-                setViewType(value);
-                if (value === "annual") {
-                  setSelectedPeriod("2024");
-                } else {
-                  setSelectedPeriod("12/23");
-                }
-              }}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Selecione a visualização" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">Visualização Mensal</SelectItem>
-                  <SelectItem value="annual">Visualização Anual</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {viewType === "monthly" && (
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Selecione o período" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="12/23">Dezembro/2023</SelectItem>
-                    <SelectItem value="01/24">Janeiro/2024</SelectItem>
-                    <SelectItem value="02/24">Fevereiro/2024</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+            <BudgetHeader
+              viewType={viewType}
+              selectedPeriod={selectedPeriod}
+              onViewTypeChange={handleViewTypeChange}
+              onPeriodChange={setSelectedPeriod}
+            />
+            <Button onClick={() => setIsFormOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Lançamento
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">Indicador</TableHead>
-                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">Valor</TableHead>
-                  <TableHead className="font-semibold text-primary bg-[#9b87f5]/10">%</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium">Faturamento</TableCell>
-                  <TableCell className="font-medium text-[#6E59A5]">{currentData.faturamento}</TableCell>
-                  <TableCell>100%</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Impostos</TableCell>
-                  <TableCell className="text-[#7E69AB]">{currentData.impostoRs}</TableCell>
-                  <TableCell>{currentData.impostoPerc}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Pessoas</TableCell>
-                  <TableCell className="text-[#7E69AB]">{currentData.pessoasRs}</TableCell>
-                  <TableCell>{currentData.pessoasPerc}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">OPEX</TableCell>
-                  <TableCell className="text-[#7E69AB]">{currentData.opexRs}</TableCell>
-                  <TableCell>{currentData.opexPerc}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">CAPEX</TableCell>
-                  <TableCell className="text-[#7E69AB]">{currentData.capexRs}</TableCell>
-                  <TableCell>{currentData.capexPerc}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Investimentos</TableCell>
-                  <TableCell className="text-[#7E69AB]">{currentData.investRs}</TableCell>
-                  <TableCell>{currentData.investPerc}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">DV8</TableCell>
-                  <TableCell className="text-[#7E69AB]">{currentData.dv8Rs}</TableCell>
-                  <TableCell>{currentData.dv8Perc}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Lucro</TableCell>
-                  <TableCell className="font-medium text-[#6E59A5]">{currentData.lucroRs}</TableCell>
-                  <TableCell>{currentData.lucroPerc}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <BudgetTable data={currentData} />
           </div>
         </CardContent>
       </Card>
+      <BudgetForm open={isFormOpen} onOpenChange={setIsFormOpen} />
     </div>
   );
 }
