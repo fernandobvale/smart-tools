@@ -28,69 +28,36 @@ export default function BudgetCategoryDetails() {
         throw new Error("Parâmetros obrigatórios ausentes");
       }
 
-      // Criar datas para o início e fim do mês
       const startDate = new Date(2000 + parseInt(year), parseInt(month) - 1, 1);
       const endDate = new Date(2000 + parseInt(year), parseInt(month), 0);
 
-      console.log("Buscando dados para:", {
-        category,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-      });
-
-      // Primeiro, buscar a categoria
-      const { data: categoryData, error: categoryError } = await supabase
+      const { data: categoryData } = await supabase
         .from("budget_categories")
         .select("id")
         .eq("name", category)
         .single();
 
-      if (categoryError) {
-        console.error("Erro ao buscar categoria:", categoryError);
-        throw categoryError;
-      }
-
-      console.log("Dados da categoria:", categoryData);
-
       if (!categoryData) {
-        console.error("Categoria não encontrada");
-        return { entries: [], total: 0 };
+        return { entries: [], total: 0, categoryId: null };
       }
 
-      // Depois, buscar as despesas da categoria
-      const { data: expenses, error: expensesError } = await supabase
+      const { data: expenses } = await supabase
         .from("budget_expenses")
         .select("id, name")
         .eq("category_id", categoryData.id);
 
-      if (expensesError) {
-        console.error("Erro ao buscar despesas:", expensesError);
-        throw expensesError;
-      }
-
-      console.log("Despesas encontradas:", expenses);
-
       if (!expenses || expenses.length === 0) {
-        console.log("Nenhuma despesa encontrada para a categoria");
-        return { entries: [], total: 0 };
+        return { entries: [], total: 0, categoryId: categoryData.id };
       }
 
       const expenseIds = expenses.map((expense) => expense.id);
 
-      // Por fim, buscar os lançamentos
-      const { data: entriesData, error: entriesError } = await supabase
+      const { data: entriesData } = await supabase
         .from("budget_entries")
         .select("*, expense:budget_expenses(name)")
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString().split('T')[0])
         .lte("date", endDate.toISOString().split('T')[0]);
-
-      if (entriesError) {
-        console.error("Erro ao buscar lançamentos:", entriesError);
-        throw entriesError;
-      }
-
-      console.log("Lançamentos encontrados:", entriesData);
 
       const total = entriesData?.reduce((sum, entry) => {
         return sum + Number(entry.amount);
@@ -99,6 +66,7 @@ export default function BudgetCategoryDetails() {
       return {
         entries: entriesData || [],
         total,
+        categoryId: categoryData.id
       };
     },
     enabled: !!category && !!month && !!year,
@@ -123,10 +91,6 @@ export default function BudgetCategoryDetails() {
     } finally {
       setEntryToDelete(null);
     }
-  };
-
-  const handleEdit = (entryId: string) => {
-    toast.info("Funcionalidade de edição em desenvolvimento");
   };
 
   if (error) {
@@ -154,8 +118,10 @@ export default function BudgetCategoryDetails() {
       ) : (
         <BudgetEntriesTable
           entries={data?.entries || []}
-          onEdit={handleEdit}
+          onEdit={() => {}}
           onDelete={setEntryToDelete}
+          categoryId={data?.categoryId || ""}
+          onUpdate={refetch}
         />
       )}
 

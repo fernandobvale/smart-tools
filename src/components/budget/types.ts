@@ -9,3 +9,5 @@ export const budgetFormSchema = z.object({
 });
 
 export type BudgetFormValues = z.infer<typeof budgetFormSchema>;
+
+export type BudgetFormMode = "create" | "edit";
