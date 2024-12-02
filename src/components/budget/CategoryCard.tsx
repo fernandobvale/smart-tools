@@ -18,10 +18,15 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
       console.log(`Iniciando busca para ${category} no período ${period}`);
       
       const [month, year] = period.split("/");
+      // Criar data inicial do mês (dia 1)
       const startDate = new Date(`20${year}-${month}-01`);
-      const endDate = new Date(startDate);
-      endDate.setMonth(startDate.getMonth() + 1);
-      endDate.setDate(endDate.getDate() - 1);
+      // Criar data final do mês (último dia)
+      const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+      
+      console.log('Período de busca:', {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+      });
 
       // Buscar categoria
       const { data: categoryData, error: categoryError } = await supabase
@@ -60,7 +65,7 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
         .select("*")
         .in("expense_id", expenseIds)
         .gte("date", startDate.toISOString().split('T')[0])
-        .lt("date", endDate.toISOString().split('T')[0]);
+        .lte("date", endDate.toISOString().split('T')[0]); // Mudado de lt para lte para incluir o último dia
 
       console.log(`Lançamentos encontrados para ${category}:`, entriesData);
       console.log("Erro ao buscar lançamentos:", entriesError);
