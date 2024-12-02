@@ -76,8 +76,7 @@ const App = () => {
                   <Route path="/prompt-list" element={<PromptList />} />
                   <Route path="/courses" element={<CourseManagement />} />
                   <Route path="/budget-planning" element={<BudgetPlanning />} />
-                  <Route path="/budget-planning/:category/:period" element={<BudgetCategoryDetails />} />
-                  <Route path="/budget-planning/OPEX/01/24" element={<BudgetCategoryDetails />} />
+                  <Route path="/budget-planning/:category/:month/:year" element={<BudgetCategoryDetails />} />
                 </Route>
                 {/* Rota 404 - deve ser a última */}
                 <Route path="*" element={<NotFound />} />

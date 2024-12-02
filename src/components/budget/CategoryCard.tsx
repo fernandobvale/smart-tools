@@ -72,10 +72,12 @@ export function CategoryCard({ category, period }: CategoryCardProps) {
   };
 
   const handleClick = () => {
+    // Garantir que month tenha dois dígitos
     const [month, year] = period.split("/");
-    // Format the URL to ensure it matches the route pattern
     const formattedMonth = month.padStart(2, '0');
+    // Construir a URL corretamente
     navigate(`/budget-planning/${category}/${formattedMonth}/${year}`);
+    console.log("Navegando para:", `/budget-planning/${category}/${formattedMonth}/${year}`);
   };
 
   return (
