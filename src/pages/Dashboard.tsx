@@ -9,7 +9,8 @@ import {
   GraduationCap, 
   MessageSquare,
   Sparkles,
-  BookOpen
+  BookOpen,
+  BarChart2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -74,6 +75,12 @@ export default function Dashboard() {
       description: "Gerencie pagamentos de aulas editadas",
       icon: <BookOpen className="w-6 h-6 text-[#7E69AB]" />,
       href: "/courses"
+    },
+    {
+      title: "Plano Orçamentário",
+      description: "Gerencie e acompanhe seu orçamento",
+      icon: <BarChart2 className="w-6 h-6 text-[#6E59A5]" />,
+      href: "/budget-planning"
     }
   ];
 
