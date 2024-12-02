@@ -79,11 +79,6 @@ export function BudgetForm({
       let finalExpenseId = data.expenseId;
 
       if (data.newExpenseName) {
-        console.log('Creating new expense:', {
-          category_id: data.categoryId,
-          name: data.newExpenseName
-        });
-
         const { data: newExpense, error: expenseError } = await supabase
           .from("budget_expenses")
           .insert({
@@ -93,12 +88,7 @@ export function BudgetForm({
           .select()
           .single();
 
-        if (expenseError) {
-          console.error('Error creating new expense:', expenseError);
-          throw expenseError;
-        }
-        
-        console.log('New expense created:', newExpense);
+        if (expenseError) throw expenseError;
         finalExpenseId = newExpense.id;
       }
 
@@ -109,39 +99,31 @@ export function BudgetForm({
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
-      // Preparar dados para inserção usando snake_case para as colunas
-      const entryData = {
-        expense_id: finalExpenseId,
-        date: data.date,
-        amount: numericAmount,
-      };
-
-      console.log('Attempting to insert/update budget entry with data:', entryData);
-
       if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
           .from("budget_entries")
-          .update(entryData)
+          .update({
+            expense_id: finalExpenseId,
+            date: data.date,
+            amount: numericAmount,
+          })
           .eq('id', initialData.id);
 
-        if (updateError) {
-          console.error('Update error:', updateError);
-          throw updateError;
-        }
+        if (updateError) throw updateError;
         toast.success("Lançamento atualizado com sucesso!");
       } else {
         const { error: insertError } = await supabase
           .from("budget_entries")
-          .insert(entryData);
+          .insert({
+            expense_id: finalExpenseId,
+            date: data.date,
+            amount: numericAmount,
+          });
 
-        if (insertError) {
-          console.error('Insert error:', insertError);
-          throw insertError;
-        }
+        if (insertError) throw insertError;
         toast.success("Lançamento criado com sucesso!");
       }
 
-      // Invalidate and refetch relevant queries
       await queryClient.invalidateQueries({ queryKey: ["budget-entries"] });
       await queryClient.invalidateQueries({ queryKey: ["budget-details"] });
       await queryClient.invalidateQueries({ queryKey: ["budget-categories"] });
@@ -150,7 +132,7 @@ export function BudgetForm({
       if (onSuccess) onSuccess();
       form.reset();
     } catch (error) {
-      console.error('Detailed error:', error);
+      console.error('Error:', error);
       toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
     }
   };
