@@ -100,14 +100,18 @@ export function BudgetForm({
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
+      const entryData = {
+        expense_id: finalExpenseId,
+        date: data.date,
+        amount: numericAmount,
+      };
+
+      console.log('Dados a serem inseridos:', entryData);
+
       if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
           .from("budget_entries")
-          .update({
-            expense_id: finalExpenseId,
-            date: data.date,
-            amount: numericAmount,
-          })
+          .update(entryData)
           .eq('id', initialData.id);
 
         if (updateError) {
@@ -118,11 +122,7 @@ export function BudgetForm({
       } else {
         const { error: entryError } = await supabase
           .from("budget_entries")
-          .insert({
-            expense_id: finalExpenseId,
-            date: data.date,
-            amount: numericAmount,
-          });
+          .insert(entryData);
 
         if (entryError) {
           console.error('Insert error:', entryError);
