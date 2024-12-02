@@ -79,17 +79,31 @@ export function BudgetForm({
       let finalExpenseId = data.expenseId;
 
       if (data.newExpenseName) {
-        const { data: newExpense, error: expenseError } = await supabase
+        // Primeiro, verificar se já existe uma despesa com o mesmo nome na categoria
+        const { data: existingExpense } = await supabase
           .from("budget_expenses")
-          .insert({
-            category_id: data.categoryId,
-            name: data.newExpenseName,
-          })
-          .select()
+          .select("id")
+          .eq("category_id", data.categoryId)
+          .eq("name", data.newExpenseName)
           .single();
 
-        if (expenseError) throw expenseError;
-        finalExpenseId = newExpense.id;
+        if (existingExpense) {
+          // Se a despesa já existe, usar o ID dela
+          finalExpenseId = existingExpense.id;
+        } else {
+          // Se não existe, criar nova despesa
+          const { data: newExpense, error: expenseError } = await supabase
+            .from("budget_expenses")
+            .insert({
+              category_id: data.categoryId,
+              name: data.newExpenseName,
+            })
+            .select()
+            .single();
+
+          if (expenseError) throw expenseError;
+          finalExpenseId = newExpense.id;
+        }
       }
 
       if (!finalExpenseId) {
