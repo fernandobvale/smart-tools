@@ -1,41 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-
-const budgetFormSchema = z.object({
-  categoryId: z.string().min(1, "Categoria é obrigatória"),
-  expenseId: z.string().min(1, "Despesa é obrigatória"),
-  date: z.string().min(1, "Data é obrigatória"),
-  amount: z.string().min(1, "Valor é obrigatório"),
-});
-
-type BudgetFormValues = z.infer<typeof budgetFormSchema>;
+import { CategoryField } from "./form-fields/CategoryField";
+import { ExpenseField } from "./form-fields/ExpenseField";
+import { BudgetFormValues, budgetFormSchema } from "./types";
 
 interface BudgetFormProps {
   open: boolean;
@@ -58,7 +33,7 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
     },
   });
 
-  const { data: expenses = [] } = useQuery({
+  const { data: expenses = [], refetch: refetchExpenses } = useQuery({
     queryKey: ["budget-expenses", selectedCategory],
     queryFn: async () => {
       if (!selectedCategory) return [];
@@ -110,8 +85,11 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
     form.setValue("expenseId", "");
   };
 
-  const handleNewExpense = async (expenseName: string) => {
+  const handleNewExpense = async () => {
     if (!selectedCategory) return;
+
+    const expenseName = window.prompt("Digite o nome da nova despesa:");
+    if (!expenseName) return;
 
     try {
       const { data, error } = await supabase
@@ -126,6 +104,8 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
       if (error) throw error;
 
       form.setValue("expenseId", data.id);
+      refetchExpenses();
+      toast.success("Nova despesa criada com sucesso!");
     } catch (error) {
       toast.error("Erro ao criar nova despesa");
       console.error(error);
@@ -140,70 +120,17 @@ export function BudgetForm({ open, onOpenChange }: BudgetFormProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={handleCategoryChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a categoria" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
+            <CategoryField
+              form={form}
+              categories={categories}
+              onCategoryChange={handleCategoryChange}
             />
 
             {selectedCategory && (
-              <FormField
-                control={form.control}
-                name="expenseId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Despesa</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione ou adicione uma despesa" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {expenses.map((expense) => (
-                          <SelectItem key={expense.id} value={expense.id}>
-                            {expense.name}
-                          </SelectItem>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="w-full justify-start"
-                          onClick={() => {
-                            const name = window.prompt("Digite o nome da nova despesa:");
-                            if (name) handleNewExpense(name);
-                          }}
-                        >
-                          + Adicionar nova despesa
-                        </Button>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
+              <ExpenseField
+                form={form}
+                expenses={expenses}
+                onNewExpense={handleNewExpense}
               />
             )}
 
