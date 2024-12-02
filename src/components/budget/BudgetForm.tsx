@@ -76,23 +76,28 @@ export function BudgetForm({
 
   const onSubmit = async (data: BudgetFormValues) => {
     try {
-      let finalExpenseId = data.expenseId;
+      let expenseId = data.expenseId;
 
-      if (data.newExpenseName) {
+      // Se não tiver expenseId e tiver newExpenseName, precisamos criar ou obter a despesa
+      if (!expenseId && data.newExpenseName) {
         // Primeiro, verificar se já existe uma despesa com o mesmo nome na categoria
-        const { data: existingExpense } = await supabase
+        const { data: existingExpense, error: searchError } = await supabase
           .from("budget_expenses")
           .select("id")
           .eq("category_id", data.categoryId)
           .eq("name", data.newExpenseName)
           .single();
 
+        if (searchError && searchError.code !== 'PGRST116') { // PGRST116 é o código para "não encontrado"
+          throw searchError;
+        }
+
         if (existingExpense) {
           // Se a despesa já existe, usar o ID dela
-          finalExpenseId = existingExpense.id;
+          expenseId = existingExpense.id;
         } else {
           // Se não existe, criar nova despesa
-          const { data: newExpense, error: expenseError } = await supabase
+          const { data: newExpense, error: createError } = await supabase
             .from("budget_expenses")
             .insert({
               category_id: data.categoryId,
@@ -101,23 +106,24 @@ export function BudgetForm({
             .select()
             .single();
 
-          if (expenseError) throw expenseError;
-          finalExpenseId = newExpense.id;
+          if (createError) throw createError;
+          expenseId = newExpense.id;
         }
       }
 
-      if (!finalExpenseId) {
+      if (!expenseId) {
         toast.error("Selecione ou crie uma despesa");
         return;
       }
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
+      // Agora que temos certeza que temos um expenseId válido, podemos criar/atualizar o lançamento
       if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
           .from("budget_entries")
           .update({
-            expense_id: finalExpenseId,
+            expense_id: expenseId,
             date: data.date,
             amount: numericAmount,
           })
@@ -129,7 +135,7 @@ export function BudgetForm({
         const { error: insertError } = await supabase
           .from("budget_entries")
           .insert({
-            expense_id: finalExpenseId,
+            expense_id: expenseId,
             date: data.date,
             amount: numericAmount,
           });
