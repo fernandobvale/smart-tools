@@ -76,8 +76,9 @@ export function BudgetForm({
 
   const onSubmit = async (data: BudgetFormValues) => {
     try {
-      let expenseId = data.expenseId;
+      let finalExpenseId = data.expenseId;
 
+      // Se tiver um novo nome de despesa, criar primeiro
       if (data.newExpenseName) {
         const { data: newExpense, error: expenseError } = await supabase
           .from("budget_expenses")
@@ -89,24 +90,27 @@ export function BudgetForm({
           .single();
 
         if (expenseError) throw expenseError;
-        expenseId = newExpense.id;
+        finalExpenseId = newExpense.id;
       }
 
-      if (!expenseId) {
+      if (!finalExpenseId) {
         toast.error("Selecione ou crie uma despesa");
         return;
       }
 
       const numericAmount = parseCurrencyToNumber(data.amount);
 
+      // Preparar os dados para inserção/atualização
+      const entryData = {
+        expense_id: finalExpenseId,
+        date: data.date,
+        amount: numericAmount,
+      };
+
       if (mode === 'edit' && initialData?.id) {
         const { error: updateError } = await supabase
           .from("budget_entries")
-          .update({
-            expense_id: expenseId,
-            date: data.date,
-            amount: numericAmount,
-          })
+          .update(entryData)
           .eq('id', initialData.id);
 
         if (updateError) throw updateError;
@@ -114,11 +118,7 @@ export function BudgetForm({
       } else {
         const { error: entryError } = await supabase
           .from("budget_entries")
-          .insert({
-            expense_id: expenseId,
-            date: data.date,
-            amount: numericAmount,
-          });
+          .insert(entryData);
 
         if (entryError) throw entryError;
         toast.success("Lançamento criado com sucesso!");
@@ -133,8 +133,8 @@ export function BudgetForm({
       if (onSuccess) onSuccess();
       form.reset();
     } catch (error) {
-      toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
       console.error('Error details:', error);
+      toast.error(mode === 'edit' ? "Erro ao atualizar lançamento" : "Erro ao criar lançamento");
     }
   };
 
