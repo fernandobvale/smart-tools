@@ -1,4 +1,13 @@
-import { z } from "zod";
+export interface Course {
+  id: string;
+  nome_curso: string;
+  numero_aulas: number;
+  data_entrega: string;
+  valor: number;
+  data_pagamento: string | null;
+  status_pagamento: "Pendente" | "Pago" | "Cancelado";
+  nome_editor: string;
+}
 
 export const courseFormSchema = z.object({
   nome_curso: z.string().min(1, "Nome do curso é obrigatório"),

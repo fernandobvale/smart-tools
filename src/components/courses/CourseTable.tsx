@@ -1,15 +1,13 @@
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { CourseForm } from "./CourseForm";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { BulkActions } from "./BulkActions";
-import { generatePDFReport } from "@/utils/pdfReport";
 import { format, parseISO } from "date-fns";
+import { Course } from "./types";
+import { TableActions } from "./TableActions";
+import { TableRowActions } from "./TableRowActions";
+import CustomPagination from "@/components/cpf-consulta/CustomPagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,27 +19,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface Course {
-  id: string;
-  nome_curso: string;
-  numero_aulas: number;
-  data_entrega: string;
-  valor: number;
-  data_pagamento: string | null;
-  status_pagamento: "Pendente" | "Pago" | "Cancelado";
-  nome_editor: string;
-}
-
 interface CourseTableProps {
   courses: Course[];
   onUpdate: () => void;
 }
 
+const ITEMS_PER_PAGE = 20;
+
 export function CourseTable({ courses, onUpdate }: CourseTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const totalPages = Math.ceil(courses.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentCourses = courses.slice(startIndex, endIndex);
 
   const handleDelete = async () => {
     if (!deletingCourse) return;
@@ -87,28 +82,18 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
-    // Parse the ISO date string and format it directly without timezone adjustments
     return format(parseISO(dateString), 'dd/MM/yyyy');
   };
 
-  const totalValue = courses.reduce((sum, course) => sum + Number(course.valor), 0);
+  const totalValue = currentCourses.reduce((sum, course) => sum + Number(course.valor), 0);
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <BulkActions
-          selectedIds={selectedIds}
-          onMarkAsPaid={handleMarkAsPaid}
-        />
-        <Button
-          variant="outline"
-          onClick={() => generatePDFReport(courses)}
-          disabled={courses.length === 0}
-        >
-          <FileDown className="h-4 w-4 mr-2" />
-          Baixar Relatório
-        </Button>
-      </div>
+      <TableActions
+        selectedIds={selectedIds}
+        courses={courses}
+        onMarkAsPaid={handleMarkAsPaid}
+      />
 
       <div className="rounded-md border">
         <Table>
@@ -116,10 +101,10 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
             <TableRow>
               <TableHead className="w-[50px]">
                 <Checkbox
-                  checked={selectedIds.length === courses.length && courses.length > 0}
+                  checked={selectedIds.length === currentCourses.length && currentCourses.length > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedIds(courses.map(course => course.id));
+                      setSelectedIds(currentCourses.map(course => course.id));
                     } else {
                       setSelectedIds([]);
                     }
@@ -137,7 +122,7 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {courses.map((course) => (
+            {currentCourses.map((course) => (
               <TableRow key={course.id}>
                 <TableCell>
                   <Checkbox
@@ -159,40 +144,13 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
                 <TableCell>{course.status_pagamento}</TableCell>
                 <TableCell>{course.nome_editor}</TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setEditingCourse(course)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Editar Curso</DialogTitle>
-                        </DialogHeader>
-                        {editingCourse && (
-                          <CourseForm
-                            initialData={editingCourse}
-                            onSuccess={() => {
-                              setIsEditDialogOpen(false);
-                              onUpdate();
-                            }}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setDeletingCourse(course)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <TableRowActions
+                    course={course}
+                    isEditDialogOpen={isEditDialogOpen}
+                    setIsEditDialogOpen={setIsEditDialogOpen}
+                    onUpdate={onUpdate}
+                    onDeleteClick={setDeletingCourse}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -206,6 +164,16 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
           </TableFooter>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4">
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
 
       <AlertDialog open={!!deletingCourse} onOpenChange={() => setDeletingCourse(null)}>
         <AlertDialogContent>
