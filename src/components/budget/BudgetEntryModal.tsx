@@ -20,10 +20,12 @@ const formSchema = z.object({
   date: z.string().min(1, "Data é obrigatória"),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export function BudgetEntryModal() {
   const [open, setOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       categoryId: "",
@@ -46,9 +48,8 @@ export function BudgetEntryModal() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
-      // Primeiro, criar ou obter a despesa
       const { data: expense, error: expenseError } = await supabase
         .from("budget_expenses")
         .insert({
@@ -60,7 +61,6 @@ export function BudgetEntryModal() {
 
       if (expenseError) throw expenseError;
 
-      // Depois, criar o lançamento
       const { error: entryError } = await supabase
         .from("budget_entries")
         .insert({
@@ -158,7 +158,7 @@ export function BudgetEntryModal() {
               )}
             />
 
-            <DateField
+            <DateField<FormValues>
               form={form}
               name="date"
               label="Data"
