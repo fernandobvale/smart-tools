@@ -62,11 +62,6 @@ const tools = [
     href: "/courses",
     description: "Gerencie cursos e pagamentos de editores",
   },
-  {
-    title: "Plano Orçamentário",
-    href: "/budget-planning",
-    description: "Gerencie e acompanhe seu orçamento",
-  },
 ];
 
 export function CommandMenu() {

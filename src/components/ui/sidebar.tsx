@@ -11,7 +11,6 @@ import {
   MessageSquare,
   Sparkles,
   BookOpen,
-  BarChart2,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -72,11 +71,6 @@ const menuItems = [
     title: "Pagamento Editores",
     href: "/courses",
     icon: <BookOpen className="w-4 h-4" />,
-  },
-  {
-    title: "Plano Orçamentário",
-    href: "/budget-planning",
-    icon: <BarChart2 className="w-4 h-4" />,
   },
 ];
 
