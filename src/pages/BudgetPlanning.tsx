@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, BarChart2 } from "lucide-react";
+import { BarChart2 } from "lucide-react";
 import { BudgetHeader } from "@/components/budget/BudgetHeader";
-import { BudgetForm } from "@/components/budget/BudgetForm";
 import { CategoryCard } from "@/components/budget/CategoryCard";
 
 export default function BudgetPlanning() {
   const [selectedPeriod, setSelectedPeriod] = useState("01/24");
   const [viewType, setViewType] = useState<"monthly" | "annual">("monthly");
-  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleViewTypeChange = (value: "monthly" | "annual") => {
     setViewType(value);
@@ -40,10 +37,6 @@ export default function BudgetPlanning() {
               onViewTypeChange={handleViewTypeChange}
               onPeriodChange={setSelectedPeriod}
             />
-            <Button onClick={() => setIsFormOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Lançamento
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -58,7 +51,6 @@ export default function BudgetPlanning() {
           </div>
         </CardContent>
       </Card>
-      <BudgetForm open={isFormOpen} onOpenChange={setIsFormOpen} />
     </div>
   );
 }
