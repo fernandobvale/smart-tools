@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Wallet, Receipt, Users, Computer, Calculator, Target } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface BudgetCategory {
   id: string;
@@ -54,8 +55,11 @@ const BudgetPlanning = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Plano Orçamentário</h1>
+        <Button className="bg-[#9b87f5] hover:bg-[#7E69AB]">
+          Novo Lançamento
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
