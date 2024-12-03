@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { NumericFormat } from "react-number-format";
@@ -24,6 +24,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function BudgetEntryModal() {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,6 +51,7 @@ export function BudgetEntryModal() {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      // Primeiro, criar a despesa
       const { data: expense, error: expenseError } = await supabase
         .from("budget_expenses")
         .insert({
@@ -61,6 +63,11 @@ export function BudgetEntryModal() {
 
       if (expenseError) throw expenseError;
 
+      if (!expense) {
+        throw new Error("Falha ao criar a despesa");
+      }
+
+      // Depois, criar o lançamento associado à despesa
       const { error: entryError } = await supabase
         .from("budget_entries")
         .insert({
@@ -74,6 +81,10 @@ export function BudgetEntryModal() {
       toast.success("Lançamento criado com sucesso!");
       setOpen(false);
       form.reset();
+      
+      // Atualizar os dados em cache
+      queryClient.invalidateQueries({ queryKey: ["budget-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["budget-expenses"] });
     } catch (error) {
       console.error("Erro ao criar lançamento:", error);
       toast.error("Erro ao criar lançamento. Tente novamente.");
