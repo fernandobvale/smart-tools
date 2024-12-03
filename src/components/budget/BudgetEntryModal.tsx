@@ -158,7 +158,7 @@ export function BudgetEntryModal() {
               )}
             />
 
-            <DateField<FormValues>
+            <DateField
               form={form}
               name="date"
               label="Data"

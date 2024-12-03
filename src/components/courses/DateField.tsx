@@ -2,35 +2,55 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 
-interface DateFieldProps<T extends Record<string, any>> {
-  form: UseFormReturn<T>;
-  name: keyof T;
+interface DateFieldProps {
+  name: string;
   label: string;
+  value?: string;
+  onChange?: (date: string) => void;
+  form?: UseFormReturn<any>;
   required?: boolean;
 }
 
-export function DateField<T extends Record<string, any>>({ 
-  form, 
+export function DateField({ 
   name, 
   label, 
+  value,
+  onChange,
+  form,
   required 
-}: DateFieldProps<T>) {
+}: DateFieldProps) {
+  if (form) {
+    return (
+      <FormField
+        control={form.control}
+        name={name}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{label}{required && " *"}</FormLabel>
+            <FormControl>
+              <Input
+                type="date"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
+
   return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}{required && " *"}</FormLabel>
-          <FormControl>
-            <Input
-              type="date"
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <div className="space-y-2">
+      <label htmlFor={name} className="text-sm font-medium">
+        {label}{required && " *"}
+      </label>
+      <Input
+        type="date"
+        id={name}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+      />
+    </div>
   );
 }
