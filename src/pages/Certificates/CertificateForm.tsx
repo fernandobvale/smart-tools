@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -6,7 +7,6 @@ import { Form } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
 import { Send } from "lucide-react";
 import { ContactFields } from "@/components/certificates/form-fields/ContactFields";
 import { PaymentFields } from "@/components/certificates/form-fields/PaymentFields";
@@ -32,7 +32,6 @@ const formSchema = z.object({
 });
 
 export default function CertificateForm() {
-  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,8 +59,13 @@ export default function CertificateForm() {
 
       if (error) throw error;
 
-      toast.success("Certificado registrado com sucesso!");
-      navigate("/certificates/success");
+      toast.success("Certificado registrado com sucesso!", {
+        description: "Entre em contato com o Fernando Vale para dar continuidade ao processo!"
+      });
+      
+      // Resetar o formulário após o envio bem-sucedido
+      form.reset();
+      
     } catch (error) {
       console.error("Error submitting certificate:", error);
       toast.error("Erro ao registrar certificado. Tente novamente.");
