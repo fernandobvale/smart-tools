@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,11 @@ import { PersonalInfoFields } from "@/components/teacher-application/PersonalInf
 import { ExperienceFields } from "@/components/teacher-application/ExperienceFields";
 import { PrivacyField } from "@/components/teacher-application/PrivacyField";
 import { TeacherApplicationFormData, teacherApplicationSchema } from "@/components/teacher-application/types";
+import { useState } from "react";
 
 export default function TeacherApplication() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<TeacherApplicationFormData>({
     resolver: zodResolver(teacherApplicationSchema),
     defaultValues: {
@@ -25,17 +29,36 @@ export default function TeacherApplication() {
   });
 
   const onSubmit = async (values: TeacherApplicationFormData) => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
     try {
-      const { error: dbError } = await supabase.from("teacher_applications").insert([values]);
+      // First save to database
+      const { error: dbError } = await supabase
+        .from("teacher_applications")
+        .insert([{
+          full_name: values.full_name,
+          email: values.email,
+          whatsapp: values.whatsapp,
+          academic_background: values.academic_background,
+          teaching_experience: values.teaching_experience,
+          video_experience: values.video_experience,
+          motivation: values.motivation,
+          privacy_accepted: values.privacy_accepted
+        }]);
 
       if (dbError) {
         // Check if the error is due to duplicate email
         if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
           toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
+          setIsSubmitting(false);
           return;
         }
         throw dbError;
       }
+
+      console.log("Teacher application saved to database successfully");
 
       // Try to send email notification, but don't block the submission if it fails
       try {
@@ -71,6 +94,8 @@ export default function TeacherApplication() {
           ? error.message 
           : "Ocorreu um erro ao enviar sua inscrição. Por favor, tente novamente."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -96,9 +121,9 @@ export default function TeacherApplication() {
               <Button
                 type="submit"
                 className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
-                disabled={!form.formState.isValid}
+                disabled={!form.formState.isValid || isSubmitting}
               >
-                Enviar Inscrição
+                {isSubmitting ? "Enviando..." : "Enviar Inscrição"}
               </Button>
             </form>
           </Form>
