@@ -34,21 +34,25 @@ export default function TeacherApplication() {
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting form data:", values);
+      
       // First save to database
-      const { error: dbError } = await supabase
+      const { data, error: dbError } = await supabase
         .from("teacher_applications")
         .insert([{
           full_name: values.full_name,
           email: values.email,
-          whatsapp: values.whatsapp,
+          whatsapp: values.whatsapp.replace(/\D/g, ""), // Ensure only numbers
           academic_background: values.academic_background,
           teaching_experience: values.teaching_experience,
           video_experience: values.video_experience,
           motivation: values.motivation,
           privacy_accepted: values.privacy_accepted
-        }]);
+        }])
+        .select();
 
       if (dbError) {
+        console.error("Database error:", dbError);
         // Check if the error is due to duplicate email
         if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
           toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
@@ -58,7 +62,7 @@ export default function TeacherApplication() {
         throw dbError;
       }
 
-      console.log("Teacher application saved to database successfully");
+      console.log("Teacher application saved to database successfully:", data);
 
       // Try to send email notification, but don't block the submission if it fails
       try {
