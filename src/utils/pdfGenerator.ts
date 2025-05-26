@@ -1,7 +1,9 @@
+
 import { jsPDF } from "jspdf";
 import extenso from "extenso";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { parseCurrencyToNumber } from "./currencyUtils";
 
 interface PDFData {
   amount: string;
@@ -69,9 +71,18 @@ export const generateReceiptPDF = async (data: PDFData): Promise<boolean> => {
     yPos += 20;
     
     try {
-      // Convert numeric value to words
-      const numericValue = parseFloat(data.amount.replace(/[^\d,]/g, '').replace(',', '.'));
+      // Convert numeric value to words using the proper currency utility
+      console.log("Converting amount to number:", data.amount);
+      const numericValue = parseCurrencyToNumber(data.amount);
+      
+      if (numericValue === 0 || isNaN(numericValue)) {
+        console.error("Valor inválido após conversão:", numericValue);
+        throw new Error("Valor inválido para conversão");
+      }
+      
+      console.log("Numeric value after conversion:", numericValue);
       const valueInWords = extenso(numericValue, { mode: 'currency' });
+      console.log("Value in words:", valueInWords);
       
       // Main paragraph with company info and amount
       doc.setFontSize(12);
