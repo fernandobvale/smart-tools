@@ -33,7 +33,7 @@ export default function TeacherApplication() {
 
   async function onSubmit(values: TeacherApplicationFormData) {
     try {
-      // Build insert object with all required fields (no extra property like privacy_accepted twice)
+      // Build insert object with all required fields
       const insertObject = {
         full_name: values.full_name,
         email: values.email,
@@ -90,9 +90,7 @@ export default function TeacherApplication() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <PersonalInfoFields form={form} />
           <ExperienceFields form={form} />
-
           <PrivacyField form={form} />
-
           <Button type="submit" className="w-full mt-4">
             Enviar Candidatura
           </Button>
