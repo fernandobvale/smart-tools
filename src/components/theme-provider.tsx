@@ -1,4 +1,13 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
+
+// Diagnostic log
+console.log(
+  "[theme-provider.tsx] React object at import time:",
+  React,
+  "version:",
+  React.version
+);
 
 type Theme = "dark" | "light" | "system";
 
@@ -26,6 +35,13 @@ export function ThemeProvider({
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
+  // Diagnostic check for React hooks setup
+  if (!React.useState) {
+    throw new Error(
+      "React.useState is undefined. This usually means multiple React versions are installed."
+    );
+  }
+
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
@@ -65,8 +81,9 @@ export function ThemeProvider({
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
-  if (context === undefined)
+  if (context === undefined) {
     throw new Error("useTheme must be used within a ThemeProvider");
+  }
 
   return context;
 };
