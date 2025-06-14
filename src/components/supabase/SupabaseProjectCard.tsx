@@ -20,6 +20,7 @@ interface SupabaseProjectCardProps {
     db_password: string;
     db_name: string;
     created_at: string;
+    user_password?: string;
     user_password_hash?: string;
   }
   onEdit: (project: any) => void;
@@ -99,19 +100,19 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
             <span className="font-semibold">ID do Projeto: </span>
             <span className="break-all">{project.project_id}</span>
           </div>
-          {/* Nova linha: senha do usuário, se houver */}
-          {project.user_password_hash && (
+          {/* Senha original do usuário, se houver */}
+          {project.user_password && (
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold">Senha do Usuário: </span>
               <span
                 onClick={() => setShowSecret(s => ({ ...s, login: !s.login }))}
                 className="cursor-pointer select-none inline-flex items-center bg-accent/40 px-2 py-1 rounded"
-                title={showSecret.login ? project.user_password_hash : undefined}
+                title={showSecret.login ? project.user_password : undefined}
               >
                 <span className={`max-w-[180px] break-all ${showSecret.login ? "" : "text-muted-foreground"}`}>
-                  {showSecret.login ? project.user_password_hash : mask(project.user_password_hash)}
+                  {showSecret.login ? project.user_password : mask(project.user_password)}
                 </span>
-                <Button size="icon" variant="ghost" className="ml-1" onClick={e => { e.stopPropagation(); copyToClipboard(project.user_password_hash!); }}>
+                <Button size="icon" variant="ghost" className="ml-1" onClick={e => { e.stopPropagation(); copyToClipboard(project.user_password!); }}>
                   {/* Lucide "copy" */}
                   <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
                     strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy">

@@ -43,6 +43,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
       ...defaultValues,
       db_port: defaultValues?.db_port || 5432,
       db_name: defaultValues?.db_name || "postgres",
+      user_password: defaultValues?.user_password || "",
     },
   });
 
@@ -70,6 +71,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
           .update({
             project_name: values.project_name,
             user_email: values.user_email,
+            user_password: values.user_password || null,
             user_password_hash,
             supabase_url: values.supabase_url,
             anon_key: values.anon_key,
@@ -91,6 +93,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
           {
             project_name: values.project_name,
             user_email: values.user_email,
+            user_password: values.user_password || null,
             user_password_hash,
             supabase_url: values.supabase_url,
             anon_key: values.anon_key,
