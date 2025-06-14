@@ -1,6 +1,5 @@
 
 import * as React from "react";
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,9 +27,9 @@ interface TeacherApplicationLite {
 }
 
 const TeacherList = () => {
-  const [applications, setApplications] = useState<TeacherApplicationLite[]>([]);
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<TeacherApplicationLite | null>(null);
+  const [applications, setApplications] = React.useState<TeacherApplicationLite[]>([]);
+  const [open, setOpen] = React.useState(false);
+  const [selected, setSelected] = React.useState<TeacherApplicationLite | null>(null);
 
   const { isLoading, refetch, data } = useQuery({
     queryKey: ["teacher_applications"],
@@ -49,7 +48,7 @@ const TeacherList = () => {
     },
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (data) setApplications(data);
   }, [data]);
 
@@ -120,3 +119,4 @@ const TeacherList = () => {
 };
 
 export default TeacherList;
+
