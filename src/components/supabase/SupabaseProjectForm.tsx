@@ -210,7 +210,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
   return (
     <ScrollArea className="max-h-[80vh] pr-2">
       <Form {...form}>
-        <Tabs value={step} onValueChange={setStep}>
+        <Tabs value={step} onValueChange={(value) => setStep(value as "project" | "db")}>
           <TabsList className="w-full flex justify-around mb-4">
             <TabsTrigger value="project" className="w-full">Dados do Projeto</TabsTrigger>
             <TabsTrigger value="db" className="w-full">Banco de Dados</TabsTrigger>
