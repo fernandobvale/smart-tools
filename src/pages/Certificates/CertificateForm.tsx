@@ -11,6 +11,7 @@ import { ContactFields } from "@/components/certificates/form-fields/ContactFiel
 import { PaymentFields } from "@/components/certificates/form-fields/PaymentFields";
 import { AddressFields } from "@/components/certificates/form-fields/AddressFields";
 import { ShippingFields } from "@/components/certificates/form-fields/ShippingFields";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const formSchema = z.object({
   email_aluno: z.string().email("Email inválido"),
@@ -31,6 +32,8 @@ const formSchema = z.object({
 });
 
 export default function CertificateForm() {
+  const { user } = useAuth();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,17 +57,29 @@ export default function CertificateForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { error } = await supabase.from("certificates").insert([values]);
+      if (!user) {
+        toast.error("Você precisa estar logado para enviar certificados.");
+        return;
+      }
+
+      // Fix conversion: cast fields to correct types
+      const mappedValues = {
+        ...values,
+        user_id: user.id,
+        quantidade: Number(values.quantidade),
+        dados_confirmados: values.dados_confirmados === "Sim" || values.dados_confirmados === true,
+      };
+
+      const { error } = await supabase.from("certificates").insert(mappedValues);
 
       if (error) throw error;
 
       toast.success("Certificado registrado com sucesso!", {
         description: "Entre em contato com o Fernando Vale para dar continuidade ao processo!"
       });
-      
-      // Resetar o formulário após o envio bem-sucedido
+
       form.reset();
-      
+
     } catch (error) {
       console.error("Error submitting certificate:", error);
       toast.error("Erro ao registrar certificado. Tente novamente.");
