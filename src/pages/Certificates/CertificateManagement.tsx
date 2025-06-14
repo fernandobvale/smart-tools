@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/components/auth/AuthProvider"; // importar o contexto de autenticação
 
 interface Certificate {
   id: string;
@@ -152,8 +153,14 @@ export default function CertificateManagement() {
     }
   };
 
+  const { user } = useAuth(); // obter usuário autenticado
+
+  // Ajuste no método de criar um novo certificado (se houver lógica local de criação)
+  // Caso o formulário de criação seja em outra página (`/certificates/new`), 
+  // essa implementação deve ser feita naquela página. Aqui ficará apenas a referência.
   const handleOpenNewCertificateForm = () => {
-    window.open("/certificates/new", "_blank");
+    // Passa o user_id como query param (para garantir o preenchimento no form de criação)
+    window.open(`/certificates/new?user_id=${user?.id || ""}`, "_blank");
   };
 
   const selectedCertificate = certificates?.find(
