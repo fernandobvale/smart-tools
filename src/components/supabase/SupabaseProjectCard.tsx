@@ -1,4 +1,3 @@
-
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
 import { ClipboardCopy, Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ interface SupabaseProjectCardProps {
     db_password: string;
     db_name: string;
     created_at: string;
+    user_password_hash?: string;
   }
   onEdit: (project: any) => void;
   onDelete: (id: string) => void;
@@ -111,7 +111,7 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
                 <span className={`max-w-[180px] break-all ${showSecret.login ? "" : "text-muted-foreground"}`}>
                   {showSecret.login ? project.user_password_hash : mask(project.user_password_hash)}
                 </span>
-                <Button size="icon" variant="ghost" className="ml-1" onClick={e => { e.stopPropagation(); copyToClipboard(project.user_password_hash); }}>
+                <Button size="icon" variant="ghost" className="ml-1" onClick={e => { e.stopPropagation(); copyToClipboard(project.user_password_hash!); }}>
                   {/* Lucide "copy" */}
                   <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
                     strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy">
@@ -211,7 +211,7 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:gap-6">
             <div className="flex-1 min-w-0">
-              <span className="font-semibold">Host: </span>
+              <span className="font-semibold">Host: </span> 
               <span className="break-all">{project.db_host}:{project.db_port}</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -251,4 +251,3 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
     </Card>
   );
 }
-
