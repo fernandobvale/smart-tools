@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { CourseNameField } from "./FormFields/CourseNameField";
 import { NumberOfLessonsField } from "./FormFields/NumberOfLessonsField";
 import { ValueField } from "./FormFields/ValueField";
 import { PaymentStatusField } from "./FormFields/PaymentStatusField";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface CourseFormProps {
   initialData?: CourseFormValues & { id: string };
@@ -36,6 +38,9 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
       return data;
     },
   });
+
+  // Pega usuário autenticado
+  const { user } = useAuth();
 
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
@@ -67,6 +72,7 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
         data_pagamento: values.data_pagamento || null,
         status_pagamento: values.status_pagamento,
         nome_editor: values.nome_editor,
+        user_id: user?.id ?? null, // agora preenche também o user_id
       };
 
       console.log("Prepared course data:", courseData);
