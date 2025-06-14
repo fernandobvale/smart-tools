@@ -1,8 +1,10 @@
+import { createClient } from '@supabase/supabase-js';
 
-// DEPRECATED: Do not use this file. Please import from "@/integrations/supabase/client".
+const supabaseUrl = 'https://bgznszxombwvwhufowpm.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnem5zenhvbWJ3dndodWZvd3BtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE0NDMwNzYsImV4cCI6MjA0NzAxOTA3Nn0.1iVBmqX8CxRArC5wtNBhaLlkSp9-zJMSlK6R_Tsnj0M';
 
-// All Supabase client logic has been migrated to src/integrations/supabase/client.ts
-// for security and maintainability. This file is kept to avoid import errors, but
-// should never be used. If you find any usage, please update the import!
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
+}
 
-export {}
+export const supabase = createClient(supabaseUrl, supabaseKey);
