@@ -1,20 +1,11 @@
+
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
-// Guard: throw if React is null or undefined. Log the React version.
-if (!React || typeof React.useRef !== "function") {
-  // eslint-disable-next-line no-console
-  console.error("React is", React);
-  throw new Error(
-    "[Dialog component] React is not available or not imported correctly. Check your import statements and React version."
-  );
-} else {
-  // eslint-disable-next-line no-console
-  console.log("[Dialog component] React loaded, version:", React.version);
-}
+console.log("[dialog.tsx] React import is", React);
+console.log("[dialog.tsx] React version is", React.version);
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
