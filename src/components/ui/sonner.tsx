@@ -1,11 +1,14 @@
-import { useTheme } from "next-themes"
-import { Toaster as Sonner } from "sonner"
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+import { useTheme } from "@/components/theme-provider";
+import { Toaster as Sonner } from "sonner";
+
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  // Pegue o tema atual do ThemeProvider customizado
+  const { theme = "system" } = useTheme();
 
+  // O pacote sonner aceita os temas: "light" | "dark" | "system"
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
@@ -23,7 +26,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };
