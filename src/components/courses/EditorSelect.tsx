@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   FormControl,
@@ -26,6 +27,7 @@ import {
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface EditorSelectProps {
   form: UseFormReturn<any>;
@@ -38,6 +40,9 @@ export function EditorSelect({ form, editors, onEditorAdded }: EditorSelectProps
   const [newEditorName, setNewEditorName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Pega o usuário autenticado
+  const { user } = useAuth();
+
   const addNewEditor = async () => {
     if (!newEditorName.trim()) {
       toast.error("Nome do editor é obrigatório");
@@ -48,7 +53,10 @@ export function EditorSelect({ form, editors, onEditorAdded }: EditorSelectProps
     try {
       const { data, error } = await supabase
         .from("editores")
-        .insert([{ nome: newEditorName.trim() }])
+        .insert([{
+          nome: newEditorName.trim(),
+          user_id: user?.id ?? null,
+        }])
         .select()
         .single();
 
