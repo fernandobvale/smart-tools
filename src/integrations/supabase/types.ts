@@ -291,6 +291,66 @@ export type Database = {
         }
         Relationships: []
       }
+      supabase_projects: {
+        Row: {
+          anon_key: string
+          created_at: string
+          dashboard_url: string
+          db_host: string
+          db_name: string
+          db_password: string
+          db_port: number
+          db_user: string
+          id: string
+          project_id: string
+          project_name: string
+          service_role_key: string
+          supabase_url: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_password_hash: string | null
+        }
+        Insert: {
+          anon_key: string
+          created_at?: string
+          dashboard_url: string
+          db_host: string
+          db_name?: string
+          db_password: string
+          db_port?: number
+          db_user: string
+          id?: string
+          project_id: string
+          project_name: string
+          service_role_key: string
+          supabase_url: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+          user_password_hash?: string | null
+        }
+        Update: {
+          anon_key?: string
+          created_at?: string
+          dashboard_url?: string
+          db_host?: string
+          db_name?: string
+          db_password?: string
+          db_port?: number
+          db_user?: string
+          id?: string
+          project_id?: string
+          project_name?: string
+          service_role_key?: string
+          supabase_url?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_password_hash?: string | null
+        }
+        Relationships: []
+      }
       teacher_applications: {
         Row: {
           academic_background: string
