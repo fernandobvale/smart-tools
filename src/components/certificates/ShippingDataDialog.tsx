@@ -1,3 +1,6 @@
+
+// WARNING: Always import React as "import * as React from 'react'".
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -238,3 +241,5 @@ export function ShippingDataDialog({
     </Dialog>
   );
 }
+
+// ... file is getting long, consider splitting sections or form logic into smaller components if making future changes

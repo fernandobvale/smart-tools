@@ -1,3 +1,6 @@
+
+// WARNING: Always import React as "import * as React from 'react'" — do NOT use "import React from 'react'".
+import * as React from "react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";

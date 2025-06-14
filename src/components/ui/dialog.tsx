@@ -1,4 +1,7 @@
 
+// WARNING: Always import React as "import * as React from 'react'" throughout the project.
+// DO NOT use "import React from 'react'" to avoid React context mismatches with Radix UI and hooks.
+
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";

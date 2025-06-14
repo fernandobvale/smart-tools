@@ -1,4 +1,4 @@
-
+// WARNING: Always import React as "import * as React from 'react'" — do NOT use "import React from 'react'".
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
