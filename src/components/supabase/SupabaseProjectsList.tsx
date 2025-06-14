@@ -6,6 +6,8 @@ import { toast } from "@/hooks/use-toast";
 import { SupabaseProjectForm } from "./SupabaseProjectForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
 import { SupabaseProjectCard } from "./SupabaseProjectCard";
+import { ProjectDetailsModal } from "./ProjectDetailsModal";
+import { SupabaseProjectMiniCard } from "./SupabaseProjectMiniCard";
 
 type SupabaseProject = {
   id: string;
@@ -23,12 +25,15 @@ type SupabaseProject = {
   db_name: string;
   created_at: string;
   updated_at: string;
+  user_password?: string;
+  user_password_hash?: string;
 };
 
 export function SupabaseProjectsList() {
   const [projects, setProjects] = useState<SupabaseProject[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedProject, setSelectedProject] = useState<SupabaseProject | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   async function fetchProjects() {
@@ -62,6 +67,11 @@ export function SupabaseProjectsList() {
     setShowForm(true);
   }
 
+  function handleOpenDetails(project: SupabaseProject) {
+    setSelectedProject(project);
+    setModalOpen(true);
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -90,16 +100,25 @@ export function SupabaseProjectsList() {
         </Dialog>
       </div>
 
+      <ProjectDetailsModal
+        open={modalOpen}
+        onOpenChange={(v) => { setModalOpen(v); if (!v) setSelectedProject(null); }}
+        project={selectedProject}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
       {loading
         ? <div className="text-muted-foreground">Carregando...</div>
         : projects.length === 0
           ? <div className="text-muted-foreground text-center p-8">Nenhum projeto cadastrado.</div>
           : (
-            <div className="flex flex-col gap-8 items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map(project => (
-                <SupabaseProjectCard
+                <SupabaseProjectMiniCard
                   key={project.id}
                   project={project}
+                  onClick={() => handleOpenDetails(project)}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
