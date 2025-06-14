@@ -47,17 +47,44 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
           <CardTitle className="text-2xl truncate">{project.project_name}</CardTitle>
           <CardDescription
             title={project.supabase_url}
-            className="text-xs break-all w-full block"
+            className="text-xs break-all w-full block flex items-center"
+            style={{ display: "flex", alignItems: "center" }}
           >
-            {project.supabase_url}
+            <span className="break-all">{project.supabase_url}</span>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="ml-1"
+              title="Copiar URL"
+              onClick={(e) => {
+                e.stopPropagation();
+                copyToClipboard(project.supabase_url);
+              }}
+            >
+              {/* Lucide "copy" */}
+              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+                strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+              </svg>
+            </Button>
           </CardDescription>
         </div>
         <div className="flex gap-2 pt-2 md:pt-0">
           <Button size="icon" variant="ghost" onClick={() => onEdit(project)} title="Editar">
-            <Pencil size={18} />
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+              strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil">
+              <path d="m18 2 4 4-14.5 14.5c-.4.4-.8.7-1.3.8l-4 1c-.3.1-.6-.2-.5-.5l1-4c.1-.5.4-.9.8-1.3Z" />
+              <path d="M15 6 18 9" />
+            </svg>
           </Button>
           <Button size="icon" variant="ghost" onClick={() => onDelete(project.id)} title="Deletar">
-            <Trash2 size={18} />
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+              strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2">
+              <path d="M3 6h18" />
+              <path d="M8 6v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6" />
+            </svg>
           </Button>
         </div>
       </CardHeader>
@@ -72,6 +99,48 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
             <span className="font-semibold">ID do Projeto: </span>
             <span className="break-all">{project.project_id}</span>
           </div>
+          {/* Nova linha: senha do usuário, se houver */}
+          {project.user_password_hash && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold">Senha do Usuário: </span>
+              <span
+                onClick={() => setShowSecret(s => ({ ...s, login: !s.login }))}
+                className="cursor-pointer select-none inline-flex items-center bg-accent/40 px-2 py-1 rounded"
+                title={showSecret.login ? project.user_password_hash : undefined}
+              >
+                <span className={`max-w-[180px] break-all ${showSecret.login ? "" : "text-muted-foreground"}`}>
+                  {showSecret.login ? project.user_password_hash : mask(project.user_password_hash)}
+                </span>
+                <Button size="icon" variant="ghost" className="ml-1" onClick={e => { e.stopPropagation(); copyToClipboard(project.user_password_hash); }}>
+                  {/* Lucide "copy" */}
+                  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+                    strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                  </svg>
+                </Button>
+                <Button size="icon" variant="ghost" className="ml-1"
+                  onClick={e => { e.stopPropagation(); setShowSecret(s => ({ ...s, login: !s.login })); }}>
+                  {/* Lucide toggle eye/eye-off */}
+                  {showSecret.login ? (
+                    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+                      strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye-off">
+                      <path d="M17.94 17.94A10.06 10.06 0 0 1 12 20c-7 0-10-8-10-8a17.46 17.46 0 0 1 4.22-5.53" />
+                      <path d="M1 1l22 22" />
+                      <path d="M9.53 9.53A3.5 3.5 0 0 0 12 15.5c.46 0 .9-.08 1.31-.22" />
+                      <path d="M17.94 17.94A10.06 10.06 0 0 1 12 20c-7 0-10-8-10-8a17.46 17.46 0 0 1 4.22-5.53" />
+                    </svg>
+                  ) : (
+                    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+                      strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye">
+                      <path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8-11-8-11-8Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </Button>
+              </span>
+            </div>
+          )}
           <div>
             <span className="font-semibold">Dashboard: </span>
             <a
@@ -182,3 +251,4 @@ export function SupabaseProjectCard({ project, onEdit, onDelete }: SupabaseProje
     </Card>
   );
 }
+
