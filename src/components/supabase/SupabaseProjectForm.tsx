@@ -122,7 +122,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
 
   const renderPwField = (
     name: "user_password" | "db_password",
-    label: string,
+    label: React.ReactNode,
     visible: boolean,
     setVisible: (v: boolean) => void
   ) => (
