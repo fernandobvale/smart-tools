@@ -1,98 +1,169 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, Copy } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
-const SeoGenerator = () => {
+export default function SeoGenerator() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [keywords, setKeywords] = useState("");
-  const [generatedContent, setGeneratedContent] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [generatedResult, setGeneratedResult] = useState<{
+    title: string;
+    description: string;
+    url: string;
+  } | null>(null);
+  const { toast } = useToast();
 
-  const generateSeoContent = async () => {
-    setLoading(true);
+  const isTitleValid = title.length <= 60;
+  const isDescriptionValid = description.length >= 130 && description.length <= 150;
+
+  const handleGenerateDescription = async () => {
+    if (!title) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira um título",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-seo-content", {
-        body: {
-          title,
-          description,
-          keywords,
-        },
+      const { data, error } = await supabase.functions.invoke('generate-seo', {
+        body: { title }
       });
 
-      if (error) {
-        console.error("Error generating content:", error);
-        toast.error("Erro ao gerar conteúdo SEO. Tente novamente.");
-      } else {
-        setGeneratedContent(data);
-        toast.success("Conteúdo SEO gerado com sucesso!");
-      }
+      if (error) throw error;
+
+      setGeneratedResult({
+        title: title,
+        description: data.generatedText,
+        url: `https://example.com/${title.toLowerCase().replace(/\s+/g, "-")}`,
+      });
+      setDescription(data.generatedText);
     } catch (error) {
-      console.error("Unexpected error:", error);
-      toast.error("Ocorreu um erro inesperado. Tente novamente.");
+      console.error('Error:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao gerar descrição. Tente novamente.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(generatedContent);
-    toast.success("Conteúdo copiado para a área de transferência!");
+  const handleCopyDescription = async () => {
+    try {
+      await navigator.clipboard.writeText(description);
+      toast({
+        title: "Copiado!",
+        description: "Descrição copiada para a área de transferência",
+      });
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar a descrição",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Gerador de Conteúdo SEO</h1>
+    <div className="container max-w-3xl py-8 space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold">Gerador de Descrições SEO</h1>
+        <p className="text-muted-foreground">
+          Gere descrições otimizadas para SEO utilizando IA
+        </p>
+      </div>
+
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="title">Título:</Label>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Título
+            <span
+              className={`ml-2 ${
+                !isTitleValid ? "text-destructive" : "text-muted-foreground"
+              }`}
+            >
+              ({title.length}/60)
+            </span>
+          </label>
           <Input
-            type="text"
-            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="Digite o título do seu conteúdo"
+            maxLength={60}
           />
         </div>
-        <div>
-          <Label htmlFor="description">Descrição:</Label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <div>
-          <Label htmlFor="keywords">Palavras-chave (separadas por vírgula):</Label>
-          <Input
-            type="text"
-            id="keywords"
-            value={keywords}
-            onChange={(e) => setKeywords(e.target.value)}
-          />
-        </div>
-        <Button onClick={generateSeoContent} disabled={loading}>
-          {loading ? "Gerando..." : "Gerar Conteúdo SEO"}
-        </Button>
-        {generatedContent && (
-          <div className="mt-4">
-            <Label>Conteúdo Gerado:</Label>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Descrição
+            <span
+              className={`ml-2 ${
+                !isDescriptionValid ? "text-destructive" : "text-muted-foreground"
+              }`}
+            >
+              ({description.length}/150)
+            </span>
+          </label>
+          <div className="flex gap-2">
             <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="A descrição será gerada automaticamente"
+              maxLength={150}
+              className="h-24"
               readOnly
-              value={generatedContent}
-              className="bg-gray-100"
             />
-            <Button onClick={handleCopyToClipboard} className="mt-2">
-              Copiar para a Área de Transferência
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopyDescription}
+              disabled={!description}
+              title="Copiar descrição"
+            >
+              <Copy className="h-4 w-4" />
             </Button>
           </div>
-        )}
+        </div>
+
+        <Button
+          onClick={handleGenerateDescription}
+          disabled={isLoading || !isTitleValid}
+          className="w-full sm:w-auto"
+        >
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isLoading ? "Gerando..." : "Gerar Descrição"}
+        </Button>
       </div>
+
+      {generatedResult && (
+        <div className="space-y-4 animate-fade-in">
+          <h2 className="text-lg font-semibold">Prévia do Resultado</h2>
+          <Alert>
+            <AlertDescription>
+              <div className="space-y-1">
+                <div className="text-blue-600 hover:underline cursor-pointer font-medium">
+                  {generatedResult.title}
+                </div>
+                <div className="text-green-700 text-sm">
+                  {generatedResult.url}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {generatedResult.description}
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
     </div>
   );
-};
-
-export default SeoGenerator;
+}
