@@ -33,13 +33,21 @@ export default function TeacherApplication() {
 
   async function onSubmit(values: TeacherApplicationFormData) {
     try {
-      // Save to Supabase
+      // Build insert object with all required fields (no extra property like privacy_accepted twice)
+      const insertObject = {
+        full_name: values.full_name,
+        email: values.email,
+        whatsapp: values.whatsapp,
+        academic_background: values.academic_background,
+        teaching_experience: values.teaching_experience,
+        video_experience: values.video_experience,
+        motivation: values.motivation,
+        privacy_accepted: !!values.privacy_accepted,
+      };
+
       const { error } = await supabase
         .from("teacher_applications")
-        .insert({
-          ...values,
-          privacy_accepted: !!values.privacy_accepted,
-        });
+        .insert(insertObject);
 
       if (error) throw error;
 

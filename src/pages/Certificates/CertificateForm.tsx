@@ -64,18 +64,27 @@ export default function CertificateForm() {
         return;
       }
 
-      // Fix: map fields to correct types/values
-      const mappedValues = {
-        ...values,
+      // Build insert object containing all required fields for certificates table
+      const insertData = {
         user_id: user.id,
-        // "dados_confirmados" should be boolean, compare string to "Sim"
+        email_aluno: values.email_aluno,
+        canal_contato: values.canal_contato,
+        status_pagamento: values.status_pagamento,
         dados_confirmados: values.dados_confirmados === "Sim",
+        nome_aluno: values.nome_aluno,
+        endereco: values.endereco,
+        complemento: values.complemento ?? "",
+        bairro: values.bairro,
+        cidade_estado: values.cidade_estado,
+        cep: values.cep,
+        status_envio: values.status_envio,
+        site_referencia: values.site_referencia,
+        numero_pedido: values.numero_pedido,
         quantidade: Number(values.quantidade),
+        observacoes: values.observacoes ?? "",
       };
 
-      // All fields needed by Supabase are present in "values"
-
-      const { error } = await supabase.from("certificates").insert(mappedValues);
+      const { error } = await supabase.from("certificates").insert(insertData);
 
       if (error) throw error;
 
