@@ -62,13 +62,16 @@ export default function CertificateForm() {
         return;
       }
 
-      // Fix conversion: cast fields to correct types
+      // Fix: map fields to correct types/values
       const mappedValues = {
         ...values,
         user_id: user.id,
+        // "dados_confirmados" should be boolean, compare string to "Sim"
+        dados_confirmados: values.dados_confirmados === "Sim",
         quantidade: Number(values.quantidade),
-        dados_confirmados: values.dados_confirmados === "Sim" || values.dados_confirmados === true,
       };
+
+      // All fields needed by Supabase are present in "values"
 
       const { error } = await supabase.from("certificates").insert(mappedValues);
 
