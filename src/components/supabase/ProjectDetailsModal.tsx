@@ -35,19 +35,30 @@ export function ProjectDetailsModal({ open, onOpenChange, project, onEdit, onDel
   if (!project) return null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl w-full">
-        <DialogHeader>
-          <DialogTitle>Detalhes do Projeto</DialogTitle>
-          <DialogDescription>
-            Veja todas as informações e credenciais desse projeto.
-          </DialogDescription>
-        </DialogHeader>
-        <SupabaseProjectCard project={project} onEdit={onEdit} onDelete={onDelete} />
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="ghost">Fechar</Button>
-          </DialogClose>
-        </DialogFooter>
+      <DialogContent
+        className="max-w-2xl w-full max-h-[90vh] overflow-y-auto p-0"
+        style={{ padding: 0 }}
+      >
+        <div className="flex flex-col h-full">
+          <DialogHeader className="sticky top-0 z-10 bg-background pt-6 pb-2 px-6 shadow-sm">
+            <DialogTitle>Detalhes do Projeto</DialogTitle>
+            <DialogDescription>
+              Veja todas as informações e credenciais desse projeto.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-0 pt-1">
+            <SupabaseProjectCard
+              project={project}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          </div>
+          <DialogFooter className="sticky bottom-0 z-10 bg-background px-6 py-2 mt-0 shadow-[0_-2px_8px_-6px_rgba(0,0,0,0.07)]">
+            <DialogClose asChild>
+              <Button variant="ghost">Fechar</Button>
+            </DialogClose>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
