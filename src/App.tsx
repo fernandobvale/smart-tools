@@ -1,5 +1,4 @@
 import React from "react";
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -42,7 +41,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
           <AuthProvider>
-            <Toaster />
+            {/* Removed duplicate Toaster. Sonner will handle all toasts. */}
             <Sonner />
             <Routes>
               <Route path="/login" element={<Login />} />
