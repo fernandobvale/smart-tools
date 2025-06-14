@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -15,6 +16,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PatternFormat } from "react-number-format";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const formSchema = z.object({
   full_name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
@@ -36,8 +38,14 @@ interface PayeeFormProps {
   onSuccess?: () => void;
 }
 
-const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProps) => {
+const PayeeForm = ({
+  payee,
+  mode = "create",
+  onClose,
+  onSuccess,
+}: PayeeFormProps) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,10 +59,19 @@ const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProp
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      if (!user?.id) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para cadastrar beneficiários.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (mode === "edit" && payee) {
         const { error } = await supabase
           .from("payees")
-          .update(values)
+          .update({ ...values, user_id: user.id })
           .eq("id", payee.id);
 
         if (error) {
@@ -69,7 +86,10 @@ const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProp
           description: "Os dados do beneficiário foram atualizados com sucesso!",
         });
       } else {
-        const { error } = await supabase.from("payees").insert([values]);
+        // Inserção: user_id agora é obrigatório pelo RLS
+        const { error } = await supabase
+          .from("payees")
+          .insert([{ ...values, user_id: user.id }]);
 
         if (error) {
           if (error.code === "23505") {
@@ -97,7 +117,10 @@ const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProp
       console.error("Error:", error);
       toast({
         title: "Erro ao salvar",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao salvar o beneficiário.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro ao salvar o beneficiário.",
         variant: "destructive",
       });
     }
