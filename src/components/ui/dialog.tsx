@@ -1,13 +1,11 @@
 
-// WARNING: Always import React as "import * as React from 'react'" throughout the project.
-// DO NOT use "import React from 'react'" to avoid React context mismatches with Radix UI and hooks.
-
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Removed debug log lines that could cause context issues
+console.log("[dialog.tsx] React import is", React);
+console.log("[dialog.tsx] React version is", React.version);
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;

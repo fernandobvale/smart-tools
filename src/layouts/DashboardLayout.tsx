@@ -1,5 +1,3 @@
-
-import * as React from "react";
 import { Sidebar } from "@/components/ui/sidebar";
 import { Outlet } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";

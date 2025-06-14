@@ -1,100 +1,311 @@
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { teacherApplicationSchema, TeacherApplicationFormData } from "@/components/teacher-application/types";
-import { PersonalInfoFields } from "@/components/teacher-application/PersonalInfoFields";
-import { ExperienceFields } from "@/components/teacher-application/ExperienceFields";
-import { PrivacyField } from "@/components/teacher-application/PrivacyField";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableCaption,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
 
-const initialValues: TeacherApplicationFormData = {
-  full_name: "",
-  email: "",
-  whatsapp: "",
-  academic_background: "",
-  teaching_experience: "",
-  video_experience: "",
-  motivation: "",
-  privacy_accepted: false,
-};
+interface TeacherApplication {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  nome_completo: string;
+  email: string;
+  telefone: string;
+  cpf: string;
+  data_nascimento: string;
+  endereco: string;
+  formacao: string;
+  experiencia: string;
+  cursos_desejados: string;
+  disponibilidade: string;
+  observacoes: string | null;
+  status: "pendente" | "aprovado" | "rejeitado";
+}
 
 export default function TeacherApplication() {
-  const [submitted, setSubmitted] = React.useState(false);
+  const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
+  const [statusUpdateDialogOpen, setStatusUpdateDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const form = useForm<TeacherApplicationFormData>({
-    resolver: zodResolver(teacherApplicationSchema),
-    defaultValues: initialValues,
+  const { data: applications, refetch } = useQuery({
+    queryKey: ["teacherApplications"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("teacher_applications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as TeacherApplication[];
+    },
   });
 
-  async function onSubmit(values: TeacherApplicationFormData) {
-    try {
-      // Build insert object with all required fields
-      const insertObject = {
-        full_name: values.full_name,
-        email: values.email,
-        whatsapp: values.whatsapp,
-        academic_background: values.academic_background,
-        teaching_experience: values.teaching_experience,
-        video_experience: values.video_experience,
-        motivation: values.motivation,
-        privacy_accepted: !!values.privacy_accepted,
-      };
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  };
 
+  const handleCheckboxChange = (applicationId: string) => {
+    setSelectedApplications((prev) =>
+      prev.includes(applicationId)
+        ? prev.filter((id) => id !== applicationId)
+        : [...prev, applicationId]
+    );
+  };
+
+  const handleStatusUpdate = async () => {
+    try {
       const { error } = await supabase
         .from("teacher_applications")
-        .insert(insertObject);
+        .update({ status: newStatus })
+        .in("id", selectedApplications);
 
       if (error) throw error;
 
-      setSubmitted(true);
-      toast.success("Candidatura enviada!", {
-        description: "Recebemos sua candidatura com sucesso. Entraremos em contato por email ou WhatsApp caso você avance para a próxima etapa.",
-      });
-      form.reset(initialValues);
-    } catch (err) {
-      console.error("Erro ao enviar candidatura:", err);
-      toast.error("Erro ao enviar candidatura.", {
-        description: "Por favor, tente novamente mais tarde.",
-      });
+      toast.success("Status atualizado com sucesso!");
+      setSelectedApplications([]);
+      setStatusUpdateDialogOpen(false);
+      refetch();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Erro ao atualizar o status");
     }
-  }
+  };
 
-  if (submitted) {
+  const filteredApplications = applications?.filter((application) => {
+    const searchLower = searchTerm.toLowerCase();
     return (
-      <div className="container max-w-xl mx-auto py-12 flex flex-col items-center">
-        <h1 className="text-2xl font-bold text-center mb-4">Candidatura Enviada!</h1>
-        <p className="text-center text-muted-foreground mb-8">
-          Obrigado por se candidatar a professor(a)! 
-          Em caso de dúvidas, envie um email para <a className="underline text-blue-600" href="mailto:contato@unovacursos.com.br">contato@unovacursos.com.br</a>.
-        </p>
-        <Button onClick={() => setSubmitted(false)}>Enviar outra candidatura</Button>
-      </div>
+      application.nome_completo.toLowerCase().includes(searchLower) ||
+      application.email.toLowerCase().includes(searchLower) ||
+      application.cpf.includes(searchTerm)
     );
-  }
+  });
 
   return (
-    <div className="container max-w-xl mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-2 text-center">Candidatura para Professor(a)</h1>
-      <p className="mb-6 text-center text-muted-foreground">
-        Preencha o formulário abaixo para se candidatar a uma vaga de professor(a) da Unova Cursos.
-        Seus dados serão analisados cuidadosamente pela nossa equipe.
-      </p>
-      <Separator className="mb-6" />
+    <div className="container mx-auto py-6">
+      <h1 className="text-2xl font-bold mb-4">
+        Gerenciamento de Aplicações de Professores
+      </h1>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <PersonalInfoFields form={form} />
-          <ExperienceFields form={form} />
-          <PrivacyField form={form} />
-          <Button type="submit" className="w-full mt-4">
-            Enviar Candidatura
+      <div className="flex justify-between items-center mb-4">
+        <Input
+          type="text"
+          placeholder="Buscar por nome, email ou CPF..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md"
+        />
+        <div className="space-x-2">
+          <Button
+            onClick={() => setStatusUpdateDialogOpen(true)}
+            disabled={selectedApplications.length === 0}
+          >
+            Atualizar Status
           </Button>
-        </form>
-      </Form>
+          <Button variant="outline" onClick={() => refetch()}>
+            Atualizar Lista
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={
+                    selectedApplications.length === filteredApplications?.length &&
+                    filteredApplications?.length > 0
+                  }
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedApplications(
+                        filteredApplications.map((app) => app.id)
+                      );
+                    } else {
+                      setSelectedApplications([]);
+                    }
+                  }}
+                />
+              </TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>CPF</TableHead>
+              <TableHead>Data de Aplicação</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredApplications?.map((application) => (
+              <TableRow key={application.id}>
+                <TableCell className="font-medium">
+                  <Checkbox
+                    checked={selectedApplications.includes(application.id)}
+                    onCheckedChange={() => handleCheckboxChange(application.id)}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{application.nome_completo}</TableCell>
+                <TableCell>{application.email}</TableCell>
+                <TableCell>{application.cpf}</TableCell>
+                <TableCell>{formatDate(application.created_at)}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      application.status === "aprovado"
+                        ? "success"
+                        : application.status === "rejeitado"
+                          ? "destructive"
+                          : "secondary"
+                    }
+                  >
+                    {application.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Ver Detalhes
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Detalhes da Aplicação</DialogTitle>
+                        <DialogDescription>
+                          Informações completas sobre a aplicação de{" "}
+                          {application.nome_completo}.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label>Nome Completo</Label>
+                            <Input
+                              type="text"
+                              value={application.nome_completo}
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input type="email" value={application.email} readOnly />
+                          </div>
+                          <div>
+                            <Label>Telefone</Label>
+                            <Input type="tel" value={application.telefone} readOnly />
+                          </div>
+                          <div>
+                            <Label>CPF</Label>
+                            <Input type="text" value={application.cpf} readOnly />
+                          </div>
+                          <div>
+                            <Label>Data de Nascimento</Label>
+                            <Input
+                              type="text"
+                              value={formatDate(application.data_nascimento)}
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <Label>Endereço</Label>
+                            <Input type="text" value={application.endereco} readOnly />
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Formação</Label>
+                          <Textarea value={application.formacao} readOnly />
+                        </div>
+                        <div>
+                          <Label>Experiência</Label>
+                          <Textarea value={application.experiencia} readOnly />
+                        </div>
+                        <div>
+                          <Label>Cursos Desejados</Label>
+                          <Textarea value={application.cursos_desejados} readOnly />
+                        </div>
+                        <div>
+                          <Label>Disponibilidade</Label>
+                          <Input type="text" value={application.disponibilidade} readOnly />
+                        </div>
+                        <div>
+                          <Label>Observações</Label>
+                          <Textarea value={application.observacoes || ""} readOnly />
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={statusUpdateDialogOpen} onOpenChange={setStatusUpdateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Atualizar Status</DialogTitle>
+            <DialogDescription>
+              Selecione o novo status para as aplicações selecionadas.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Label htmlFor="status">Novo Status</Label>
+            <select
+              id="status"
+              className="rounded-md border shadow-sm focus:ring-primary-500 focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={newStatus}
+              onChange={(e) =>
+                setNewStatus(e.target.value as "pendente" | "aprovado" | "rejeitado")
+              }
+            >
+              <option value="pendente">Pendente</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="rejeitado">Rejeitado</option>
+            </select>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setStatusUpdateDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" onClick={handleStatusUpdate}>
+              Atualizar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

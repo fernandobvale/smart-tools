@@ -1,6 +1,3 @@
-
-// WARNING: Always import React as "import * as React from 'react'".
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Pencil, Trash2 } from "lucide-react";

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -12,7 +11,6 @@ import { ContactFields } from "@/components/certificates/form-fields/ContactFiel
 import { PaymentFields } from "@/components/certificates/form-fields/PaymentFields";
 import { AddressFields } from "@/components/certificates/form-fields/AddressFields";
 import { ShippingFields } from "@/components/certificates/form-fields/ShippingFields";
-import { useAuth } from "@/components/auth/AuthProvider";
 
 const formSchema = z.object({
   email_aluno: z.string().email("Email inválido"),
@@ -33,8 +31,6 @@ const formSchema = z.object({
 });
 
 export default function CertificateForm() {
-  const { user } = useAuth();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,41 +54,17 @@ export default function CertificateForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      if (!user) {
-        toast.error("Você precisa estar logado para enviar certificados.");
-        return;
-      }
-
-      // Build insert object containing all required fields for certificates table
-      const insertData = {
-        user_id: user.id,
-        email_aluno: values.email_aluno,
-        canal_contato: values.canal_contato,
-        status_pagamento: values.status_pagamento,
-        dados_confirmados: values.dados_confirmados === "Sim",
-        nome_aluno: values.nome_aluno,
-        endereco: values.endereco,
-        complemento: values.complemento ?? "",
-        bairro: values.bairro,
-        cidade_estado: values.cidade_estado,
-        cep: values.cep,
-        status_envio: values.status_envio,
-        site_referencia: values.site_referencia,
-        numero_pedido: values.numero_pedido,
-        quantidade: Number(values.quantidade),
-        observacoes: values.observacoes ?? "",
-      };
-
-      const { error } = await supabase.from("certificates").insert(insertData);
+      const { error } = await supabase.from("certificates").insert([values]);
 
       if (error) throw error;
 
       toast.success("Certificado registrado com sucesso!", {
         description: "Entre em contato com o Fernando Vale para dar continuidade ao processo!"
       });
-
+      
+      // Resetar o formulário após o envio bem-sucedido
       form.reset();
-
+      
     } catch (error) {
       console.error("Error submitting certificate:", error);
       toast.error("Erro ao registrar certificado. Tente novamente.");
