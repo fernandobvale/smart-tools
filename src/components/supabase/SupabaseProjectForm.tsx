@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +12,6 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InfoTooltip } from "./InfoTooltip";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const formSchema = z.object({
   project_name: z.string().min(2, "Nome obrigatório"),
@@ -49,6 +49,8 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
 
   const [pwVisible, setPwVisible] = useState(false);
   const [dbPwVisible, setDbPwVisible] = useState(false);
+  // O controle da etapa: "project" ou "db"
+  const [step, setStep] = useState<"project" | "db">("project");
 
   async function handleSubmit(values: FormValues) {
     try {
@@ -57,13 +59,10 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
         toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
         return;
       }
-
-      // Hash the user password if filled
       let user_password_hash = undefined;
       if (values.user_password) {
         user_password_hash = await bcrypt.hash(values.user_password, 10);
       }
-
       if (defaultValues?.id) {
         // Update
         const { error } = await supabase
@@ -112,6 +111,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
         toast({ title: "Projeto salvo com sucesso" });
       }
       form.reset();
+      setStep("project"); // Volta para primeira etapa após submit
       onSubmitDone();
     } catch (error: any) {
       toast({ title: "Erro ao salvar projeto", description: error.message, variant: "destructive" });
@@ -172,56 +172,34 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
     />
   );
 
-  // Informações de onde encontrar cada campo (pt-br)
+  // InfoTooltips...
   const info = {
-    project_name:
-      "Nome personalizável para você identificar o projeto. Não precisa ser igual ao nome no Supabase.",
-    user_email:
-      "Email do usuário administrador do projeto no Supabase ou o email principal cadastrado.",
-    user_password:
-      "Senha do usuário administrador, se desejar salvar. Não é obrigatório.",
-    supabase_url:
-      "No Supabase: Home > Projeto > Settings > API > Project URL.",
-    anon_key:
-      "No Supabase: Home > Projeto > Settings > API > Project API keys > anon public.",
-    service_role_key:
-      "No Supabase: Home > Projeto > Settings > API > Project API keys > service_role.",
-    project_id:
-      "No Supabase: Home > Projeto. O ID aparece na URL da dashboard (https://app.supabase.com/project/[ID]).",
-    dashboard_url:
-      "Normalmente: https://app.supabase.com/project/[Project ID]. Substitua pelo ID correto.",
-    db_host:
-      "No Supabase: Home > Projeto > Settings > Database > Host.",
-    db_port:
-      "No Supabase: Home > Projeto > Settings > Database > Port (padrão: 5432).",
-    db_user:
-      "No Supabase: Home > Projeto > Settings > Database > User (padrão: postgres).",
-    db_password:
-      "No Supabase: Home > Projeto > Settings > Database > Password.",
-    db_name:
-      "Nome do banco padrão é 'postgres', mas pode ser alterado se você criou outro banco.",
+    project_name: "Nome personalizável para você identificar o projeto. Não precisa ser igual ao nome no Supabase.",
+    user_email: "Email do usuário administrador do projeto no Supabase ou o email principal cadastrado.",
+    user_password: "Senha do usuário administrador, se desejar salvar. Não é obrigatório.",
+    supabase_url: "No Supabase: Home > Projeto > Settings > API > Project URL.",
+    anon_key: "No Supabase: Home > Projeto > Settings > API > Project API keys > anon public.",
+    service_role_key: "No Supabase: Home > Projeto > Settings > API > Project API keys > service_role.",
+    project_id: "No Supabase: Home > Projeto. O ID aparece na URL da dashboard.",
+    dashboard_url: "Normalmente: https://app.supabase.com/project/[Project ID]. Substitua pelo ID correto.",
+    db_host: "No Supabase: Home > Projeto > Settings > Database > Host.",
+    db_port: "No Supabase: Home > Projeto > Settings > Database > Port (padrão: 5432).",
+    db_user: "No Supabase: Home > Projeto > Settings > Database > User (padrão: postgres).",
+    db_password: "No Supabase: Home > Projeto > Settings > Database > Password.",
+    db_name: "Nome do banco padrão é 'postgres', mas pode ser alterado se você criou outro banco.",
   };
-
-  // Links diretos (opcional)
   const projectDashboardLink = "https://app.supabase.com/project";
   const settingsApiLink = "https://app.supabase.com/project/_/settings/api";
   const settingsDbLink = "https://app.supabase.com/project/_/settings/database";
 
-  // We'll manage which tab/step is active
-  const [step, setStep] = useState<"project" | "db">("project");
-
   return (
     <ScrollArea className="max-h-[80vh] pr-2">
       <Form {...form}>
-        <Tabs value={step} onValueChange={(value) => setStep(value as "project" | "db")}>
-          <TabsList className="w-full flex justify-around mb-4">
-            <TabsTrigger value="project" className="w-full">Dados do Projeto</TabsTrigger>
-            <TabsTrigger value="db" className="w-full">Banco de Dados</TabsTrigger>
-          </TabsList>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <TabsContent value="project" forceMount>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          {/* PARTE 1: DADOS DO PROJETO */}
+          {step === "project" && (
+            <div>
               <div className="grid md:grid-cols-2 gap-4">
-                {/* Nome do projeto e Email */}
                 <FormField
                   control={form.control}
                   name="project_name"
@@ -368,8 +346,11 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
                   Próximo: Banco de Dados
                 </Button>
               </div>
-            </TabsContent>
-            <TabsContent value="db" forceMount>
+            </div>
+          )}
+          {/* PARTE 2: BANCO DE DADOS */}
+          {step === "db" && (
+            <div>
               <div className="font-semibold text-xl pb-2 flex items-center gap-2">
                 🛢️ Banco de Dados PostgreSQL
                 <InfoTooltip description="Estas informações ficam em Settings > Database no painel do Supabase." link={settingsDbLink} />
@@ -466,9 +447,9 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
                   {defaultValues?.id ? "Salvar Alterações" : "Salvar Projeto"}
                 </Button>
               </div>
-            </TabsContent>
-          </form>
-        </Tabs>
+            </div>
+          )}
+        </form>
       </Form>
     </ScrollArea>
   );
