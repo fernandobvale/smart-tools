@@ -45,6 +45,7 @@ export type Database = {
           status_envio: string
           status_pagamento: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           bairro: string
@@ -66,6 +67,7 @@ export type Database = {
           status_envio: string
           status_pagamento: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           bairro?: string
@@ -87,6 +89,7 @@ export type Database = {
           status_envio?: string
           status_pagamento?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -97,6 +100,7 @@ export type Database = {
           id: string
           nome: string
           saldo: string | null
+          user_id: string | null
         }
         Insert: {
           cpf: string
@@ -104,6 +108,7 @@ export type Database = {
           id?: string
           nome: string
           saldo?: string | null
+          user_id?: string | null
         }
         Update: {
           cpf?: string
@@ -111,6 +116,7 @@ export type Database = {
           id?: string
           nome?: string
           saldo?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -125,6 +131,7 @@ export type Database = {
           numero_aulas: number
           status_pagamento: string
           updated_at: string
+          user_id: string | null
           valor: number
         }
         Insert: {
@@ -137,6 +144,7 @@ export type Database = {
           numero_aulas: number
           status_pagamento: string
           updated_at?: string
+          user_id?: string | null
           valor: number
         }
         Update: {
@@ -149,6 +157,7 @@ export type Database = {
           numero_aulas?: number
           status_pagamento?: string
           updated_at?: string
+          user_id?: string | null
           valor?: number
         }
         Relationships: []
@@ -178,6 +187,7 @@ export type Database = {
           id: string
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           content: string
@@ -185,6 +195,7 @@ export type Database = {
           id?: string
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           content?: string
@@ -192,6 +203,7 @@ export type Database = {
           id?: string
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -203,6 +215,7 @@ export type Database = {
           full_name: string
           id: string
           pix_key: string
+          user_id: string | null
         }
         Insert: {
           bank_name: string
@@ -211,6 +224,7 @@ export type Database = {
           full_name: string
           id?: string
           pix_key: string
+          user_id?: string | null
         }
         Update: {
           bank_name?: string
@@ -219,6 +233,7 @@ export type Database = {
           full_name?: string
           id?: string
           pix_key?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -259,6 +274,7 @@ export type Database = {
           created_at: string
           generated_prompt: string
           id: string
+          user_id: string | null
           workload: string
         }
         Insert: {
@@ -273,6 +289,7 @@ export type Database = {
           created_at?: string
           generated_prompt: string
           id?: string
+          user_id?: string | null
           workload: string
         }
         Update: {
@@ -287,6 +304,7 @@ export type Database = {
           created_at?: string
           generated_prompt?: string
           id?: string
+          user_id?: string | null
           workload?: string
         }
         Relationships: []
@@ -393,6 +411,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -404,7 +443,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -519,6 +558,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

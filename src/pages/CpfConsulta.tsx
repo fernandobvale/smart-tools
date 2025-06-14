@@ -10,6 +10,7 @@ import CpfInput from "@/components/cpf-consulta/CpfInput";
 import SearchHistory from "@/components/cpf-consulta/SearchHistory";
 import CustomPagination from "@/components/cpf-consulta/CustomPagination";
 import { validateCPF } from "@/lib/cpf-utils";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const CpfConsulta = () => {
   const [cpf, setCpf] = useState("");
@@ -17,6 +18,7 @@ const CpfConsulta = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const consultarCpf = async () => {
     const cleanCpf = cpf.replace(/\D/g, "");
@@ -33,13 +35,14 @@ const CpfConsulta = () => {
     }
 
     const data = await response.json();
-    
+
     await supabase
       .from("cpf_searches")
       .insert({
         cpf: cleanCpf,
         nome: data.nome,
         saldo: data.saldo,
+        user_id: user?.id, // garante o user_id correto
       });
 
     queryClient.invalidateQueries({ queryKey: ["cpf-history"] });
