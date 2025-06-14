@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InfoTooltip } from "./InfoTooltip";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const formSchema = z.object({
   project_name: z.string().min(2, "Nome obrigatório"),
@@ -203,252 +204,268 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
   const settingsApiLink = "https://app.supabase.com/project/_/settings/api";
   const settingsDbLink = "https://app.supabase.com/project/_/settings/database";
 
+  // We'll manage which tab/step is active
+  const [step, setStep] = useState<"project" | "db">("project");
+
   return (
     <ScrollArea className="max-h-[80vh] pr-2">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          {/* Nome e Autenticação */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="project_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Nome do Projeto *
-                    <InfoTooltip description={info.project_name} />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Meu Projeto Supabase" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+        <Tabs value={step} onValueChange={setStep}>
+          <TabsList className="w-full flex justify-around mb-4">
+            <TabsTrigger value="project" className="w-full">Dados do Projeto</TabsTrigger>
+            <TabsTrigger value="db" className="w-full">Banco de Dados</TabsTrigger>
+          </TabsList>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <TabsContent value="project" forceMount>
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Nome do projeto e Email */}
+                <FormField
+                  control={form.control}
+                  name="project_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Nome do Projeto *
+                        <InfoTooltip description={info.project_name} />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Meu Projeto Supabase" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="user_email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Email do Usuário *
+                        <InfoTooltip description={info.user_email} />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" placeholder="usuario@email.com" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {renderPwField(
+                "user_password",
+                <>
+                  Senha do Usuário (opcional)
+                  <InfoTooltip description={info.user_password} />
+                </>,
+                pwVisible,
+                setPwVisible
               )}
-            />
-            <FormField
-              control={form.control}
-              name="user_email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Email do Usuário *
-                    <InfoTooltip description={info.user_email} />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} type="email" placeholder="usuario@email.com" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="supabase_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Supabase URL *
+                        <InfoTooltip
+                          description={info.supabase_url}
+                          link={settingsApiLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="https://xyzcompany.supabase.co" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="anon_key"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Anon Key *
+                        <InfoTooltip
+                          description={info.anon_key}
+                          link={settingsApiLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="service_role_key"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Service Role Key *
+                        <InfoTooltip
+                          description={info.service_role_key}
+                          link={settingsApiLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} type="password" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="project_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        ID do Projeto *
+                        <InfoTooltip
+                          description={info.project_id}
+                          link={projectDashboardLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="xyzcompany" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="dashboard_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Link do Painel (Dashboard) *
+                      <InfoTooltip
+                        description={info.dashboard_url}
+                        link={projectDashboardLink}
+                      />
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="https://app.supabase.com/project/xyzcompany" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end pt-4">
+                <Button type="button" onClick={() => setStep("db")}>
+                  Próximo: Banco de Dados
+                </Button>
+              </div>
+            </TabsContent>
+            <TabsContent value="db" forceMount>
+              <div className="font-semibold text-xl pb-2 flex items-center gap-2">
+                🛢️ Banco de Dados PostgreSQL
+                <InfoTooltip description="Estas informações ficam em Settings > Database no painel do Supabase." link={settingsDbLink} />
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="db_host"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Host *
+                        <InfoTooltip
+                          description={info.db_host}
+                          link={settingsDbLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="db.xyzcompany.supabase.co" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="db_port"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Porta *
+                        <InfoTooltip
+                          description={info.db_port}
+                          link={settingsDbLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} type="number" placeholder="5432" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="db_user"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Usuário *
+                        <InfoTooltip
+                          description={info.db_user}
+                          link={settingsDbLink}
+                        />
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="postgres" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {renderPwField(
+                "db_password",
+                <>
+                  Senha do Banco de Dados *
+                  <InfoTooltip description={info.db_password} link={settingsDbLink} />
+                </>,
+                dbPwVisible,
+                setDbPwVisible
               )}
-            />
-          </div>
-
-          {renderPwField(
-            "user_password",
-            <>
-              Senha do Usuário (opcional)
-              <InfoTooltip description={info.user_password} />
-            </>,
-            pwVisible,
-            setPwVisible
-          )}
-
-          {/* Infos Supabase */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="supabase_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Supabase URL *
-                    <InfoTooltip
-                      description={info.supabase_url}
-                      link={settingsApiLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="https://xyzcompany.supabase.co" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="anon_key"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Anon Key *
-                    <InfoTooltip
-                      description={info.anon_key}
-                      link={settingsApiLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="service_role_key"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Service Role Key *
-                    <InfoTooltip
-                      description={info.service_role_key}
-                      link={settingsApiLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="project_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    ID do Projeto *
-                    <InfoTooltip
-                      description={info.project_id}
-                      link={projectDashboardLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="xyzcompany" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormField
-            control={form.control}
-            name="dashboard_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Link do Painel (Dashboard) *
-                  <InfoTooltip
-                    description={info.dashboard_url}
-                    link={projectDashboardLink}
-                  />
-                </FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="https://app.supabase.com/project/xyzcompany" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* Infos Postgres */}
-          <div className="font-semibold text-xl pt-4 pb-2 flex items-center gap-2">
-            🛢️ Banco de Dados PostgreSQL
-            <InfoTooltip description="Estas informações ficam em Settings > Database no painel do Supabase." link={settingsDbLink} />
-          </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="db_host"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Host *
-                    <InfoTooltip
-                      description={info.db_host}
-                      link={settingsDbLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="db.xyzcompany.supabase.co" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="db_port"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Porta *
-                    <InfoTooltip
-                      description={info.db_port}
-                      link={settingsDbLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} type="number" placeholder="5432" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="db_user"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Usuário *
-                    <InfoTooltip
-                      description={info.db_user}
-                      link={settingsDbLink}
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="postgres" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          {renderPwField(
-            "db_password",
-            <>
-              Senha do Banco de Dados *
-              <InfoTooltip description={info.db_password} link={settingsDbLink} />
-            </>,
-            dbPwVisible,
-            setDbPwVisible
-          )}
-
-          <FormField
-            control={form.control}
-            name="db_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Nome do banco *
-                  <InfoTooltip description={info.db_name} link={settingsDbLink} />
-                </FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="postgres" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {defaultValues?.id ? "Salvar Alterações" : "Salvar Projeto"}
-          </Button>
-        </form>
+              <FormField
+                control={form.control}
+                name="db_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Nome do banco *
+                      <InfoTooltip description={info.db_name} link={settingsDbLink} />
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="postgres" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-between pt-4">
+                <Button type="button" variant="secondary" onClick={() => setStep("project")}>
+                  Voltar
+                </Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {defaultValues?.id ? "Salvar Alterações" : "Salvar Projeto"}
+                </Button>
+              </div>
+            </TabsContent>
+          </form>
+        </Tabs>
       </Form>
     </ScrollArea>
   );
