@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -86,10 +87,18 @@ const PayeeForm = ({
           description: "Os dados do beneficiário foram atualizados com sucesso!",
         });
       } else {
-        // Inserção: user_id agora é obrigatório pelo RLS
+        // Fix: use exact type and required fields for insert
         const { error } = await supabase
           .from("payees")
-          .insert([{ ...values, user_id: user.id }]);
+          .insert([
+            {
+              full_name: values.full_name,
+              cpf: values.cpf,
+              pix_key: values.pix_key,
+              bank_name: values.bank_name,
+              user_id: user.id,
+            }
+          ]);
 
         if (error) {
           if (error.code === "23505") {
@@ -207,3 +216,5 @@ const PayeeForm = ({
 };
 
 export default PayeeForm;
+
+// ... file is getting long, consider splitting sections or form logic into smaller components if making future changes
