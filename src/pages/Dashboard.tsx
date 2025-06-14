@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Scissors,
@@ -10,7 +11,8 @@ import {
   MessageSquare,
   Sparkles,
   BookOpen,
-  Calculator
+  Calculator,
+  Database // Novo ícone
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -92,6 +94,13 @@ export default function Dashboard() {
       icon: <Calculator className="w-6 h-6 text-[#9b87f5]" />,
       href: "https://plano-orcamentario.netlify.app/",
       external: true
+    },
+    {
+      title: "Supabase",
+      description: "Gerencie senhas de projetos Supabase",
+      icon: <Database className="w-6 h-6 text-[#7E69AB]" />,
+      href: "/supabase",
+      external: false
     }
   ];
 

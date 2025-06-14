@@ -1,3 +1,4 @@
+
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,7 +9,7 @@ import {
 } from "@/components/ui/command";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Navigation, LogOut } from "lucide-react";
+import { Navigation, LogOut, Database } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 const tools = [
@@ -61,6 +62,11 @@ const tools = [
     title: "Gestão de Cursos",
     href: "/courses",
     description: "Gerencie cursos e pagamentos de editores",
+  },
+  {
+    title: "Supabase",
+    href: "/supabase",
+    description: "Gerencie senhas de projetos Supabase",
   },
 ];
 

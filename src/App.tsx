@@ -27,6 +27,7 @@ import PromptGenerator from "./pages/PromptGenerator";
 import PromptList from "./pages/PromptList";
 import CourseManagement from "./pages/CourseManagement";
 import NotFound from "./pages/NotFound";
+import Supabase from "./pages/Supabase"; // Novo import
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +75,7 @@ const App = () => {
                   <Route path="/prompt-generator" element={<PromptGenerator />} />
                   <Route path="/prompt-list" element={<PromptList />} />
                   <Route path="/courses" element={<CourseManagement />} />
+                  <Route path="/supabase" element={<Supabase />} />
                 </Route>
                 {/* Rota 404 - deve ser a última */}
                 <Route path="*" element={<NotFound />} />

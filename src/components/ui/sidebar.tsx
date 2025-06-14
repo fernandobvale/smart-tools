@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -13,6 +14,7 @@ import {
   BookOpen,
   LogOut,
   Calculator,
+  Database, // Novo ícone
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { toast } from "sonner";
@@ -89,6 +91,12 @@ const menuItems = [
     href: "https://plano-orcamentario.netlify.app/",
     icon: <Calculator className="w-4 h-4" />,
     external: true
+  },
+  {
+    title: "Supabase",
+    href: "/supabase",
+    icon: <Database className="w-4 h-4" />,
+    external: false
   },
 ];
 
