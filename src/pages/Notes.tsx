@@ -1,195 +1,139 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import Subscript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
-import Image from '@tiptap/extension-image';
-import { NotesList } from "@/components/notes/NotesList";
-import { NoteHeader } from "@/components/notes/NoteHeader";
-import { NoteEditor } from "@/components/notes/NoteEditor";
-import { useNoteMutations } from "@/components/notes/NoteMutations";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Note } from "@/components/notes/Note";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const Notes = () => {
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
-  
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({ openOnClick: false }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Underline,
-      Subscript,
-      Superscript,
-      TextStyle,
-      Color,
-      Image,
-    ],
-    editorProps: {
-      attributes: {
-        class: "prose prose-sm max-w-none dark:prose-invert p-4 min-h-[500px] outline-none",
-      },
-    },
-  });
+interface NoteType {
+  id: string;
+  created_at: string;
+  title: string;
+  content: string;
+}
 
-  const { data: notes, isLoading, refetch } = useQuery({
-    queryKey: ['notes'],
+export default function Notes() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [notes, setNotes] = useState<NoteType[]>([]);
+
+  const { data: fetchedNotes, isError, isLoading } = useQuery({
+    queryKey: ["notes"],
     queryFn: async () => {
+      if (!user) return [];
       const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      
+        .from("notes")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
-      return data;
+      return data as NoteType[];
     },
   });
 
-  const { updateNoteMutation, deleteNoteMutation } = useNoteMutations(() => {
-    setSelectedNoteId(null);
-  });
-
-  const handleSave = () => {
-    if (selectedNoteId && editor) {
-      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
-      if (selectedNote) {
-        updateNoteMutation.mutate({
-          id: selectedNoteId,
-          title: selectedNote.title,
-          content: editor.getHTML(),
-        });
-      }
+  useEffect(() => {
+    if (fetchedNotes) {
+      setNotes(fetchedNotes);
     }
-  };
+  }, [fetchedNotes]);
 
-  const handleExport = () => {
-    if (selectedNoteId && editor) {
-      const content = editor.getHTML();
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-          <meta charset="UTF-8">
-          <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
-            img { max-width: 100%; height: auto; }
-            p { margin-bottom: 1em; }
-            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; }
-          </style>
-        </head>
-        <body>${content}</body>
-        </html>
-      `;
+  const createNote = async () => {
+    if (!user) return;
 
-      const blob = new Blob([htmlContent], { type: 'application/vnd.ms-word;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
-      const fileName = `${selectedNote?.title || 'nota'}.doc`;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
-  const addImage = () => {
-    const url = window.prompt('URL da imagem:');
-    if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
-  const handleNewNote = async () => {
     try {
-      if (editor) {
-        editor.commands.clearContent();
-      }
-      
-      const { data, error } = await supabase
-        .from('notes')
-        .insert([{ 
-          title: 'Nova nota', 
-          content: '<p>Digite o conteúdo da sua nota aqui...</p>' 
-        }])
-        .select()
-        .single();
+      const { error } = await supabase.from("notes").insert({
+        user_id: user.id,
+        title,
+        content,
+      });
 
       if (error) throw error;
-      
-      if (data) {
-        setSelectedNoteId(data.id);
-        refetch();
-        toast.success('Nova nota criada');
-      }
+
+      setOpen(false);
+      setTitle("");
+      setContent("");
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      toast.success("Nota criada com sucesso!");
     } catch (error) {
-      toast.error('Erro ao criar nova nota');
+      console.error("Error creating note:", error);
+      toast.error("Erro ao criar nota");
     }
   };
-
-  useEffect(() => {
-    if (notes?.length && !selectedNoteId) {
-      setSelectedNoteId(notes[0].id);
-    }
-  }, [notes, selectedNoteId]);
-
-  useEffect(() => {
-    if (selectedNoteId && notes) {
-      const selectedNote = notes.find((note) => note.id === selectedNoteId);
-      if (selectedNote && editor) {
-        editor.commands.setContent(selectedNote.content);
-      }
-    }
-  }, [selectedNoteId, notes, editor]);
-
-  if (isLoading) {
-    return <div>Carregando...</div>;
-  }
-
-  const selectedNote = notes?.find((note) => note.id === selectedNoteId);
 
   return (
-    <div className="container py-8 animate-fade-in flex flex-col gap-4">
-      {selectedNoteId && selectedNote && (
-        <>
-          <NoteHeader
-            title={selectedNote.title}
-            onRename={(newTitle) => {
-              updateNoteMutation.mutate({
-                id: selectedNoteId,
-                title: newTitle,
-                content: editor?.getHTML() || '',
-              });
-            }}
-            onDelete={() => deleteNoteMutation.mutate(selectedNoteId)}
-            onNewNote={handleNewNote}
-          />
-          <NoteEditor
-            editor={editor}
-            onSave={handleSave}
-            onExport={handleExport}
-            addImage={addImage}
-          />
-        </>
-      )}
-      
-      <NotesList
-        notes={notes || []}
-        onNoteSelect={setSelectedNoteId}
-        selectedNoteId={selectedNoteId}
-      />
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Suas Notas</h1>
+        <Button onClick={() => setOpen(true)}>Criar Nota</Button>
+      </div>
+
+      {isLoading && <p>Carregando notas...</p>}
+      {isError && <p>Erro ao carregar notas.</p>}
+
+      <ScrollArea className="mb-4 h-[70vh] w-full rounded-md border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {notes.map((note) => (
+            <Note key={note.id} note={note} onDeleteSuccess={() => {
+              const newNotes = notes.filter((n) => n.id !== note.id);
+              setNotes(newNotes);
+            }} />
+          ))}
+        </div>
+      </ScrollArea>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Criar Nova Nota</DialogTitle>
+            <DialogDescription>
+              Adicione um título e conteúdo para sua nova nota.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                Título
+              </Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="content" className="text-right mt-2">
+                Conteúdo
+              </Label>
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <Button type="submit" onClick={createNote}>
+            Criar nota
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default Notes;
+}

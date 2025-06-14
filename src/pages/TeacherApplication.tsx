@@ -1,138 +1,311 @@
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { PersonalInfoFields } from "@/components/teacher-application/PersonalInfoFields";
-import { ExperienceFields } from "@/components/teacher-application/ExperienceFields";
-import { PrivacyField } from "@/components/teacher-application/PrivacyField";
-import { TeacherApplicationFormData, teacherApplicationSchema } from "@/components/teacher-application/types";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableCaption,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
+interface TeacherApplication {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  nome_completo: string;
+  email: string;
+  telefone: string;
+  cpf: string;
+  data_nascimento: string;
+  endereco: string;
+  formacao: string;
+  experiencia: string;
+  cursos_desejados: string;
+  disponibilidade: string;
+  observacoes: string | null;
+  status: "pendente" | "aprovado" | "rejeitado";
+}
 
 export default function TeacherApplication() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<TeacherApplicationFormData>({
-    resolver: zodResolver(teacherApplicationSchema),
-    defaultValues: {
-      full_name: "",
-      email: "",
-      whatsapp: "",
-      academic_background: "",
-      teaching_experience: "",
-      video_experience: "",
-      motivation: "",
-      privacy_accepted: false,
+  const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
+  const [statusUpdateDialogOpen, setStatusUpdateDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: applications, refetch } = useQuery({
+    queryKey: ["teacherApplications"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("teacher_applications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as TeacherApplication[];
     },
   });
 
-  const onSubmit = async (values: TeacherApplicationFormData) => {
-    if (isSubmitting) return;
-    
-    setIsSubmitting(true);
-    
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  };
+
+  const handleCheckboxChange = (applicationId: string) => {
+    setSelectedApplications((prev) =>
+      prev.includes(applicationId)
+        ? prev.filter((id) => id !== applicationId)
+        : [...prev, applicationId]
+    );
+  };
+
+  const handleStatusUpdate = async () => {
     try {
-      console.log("Submitting form data:", values);
-      
-      // First save to database
-      const { data, error: dbError } = await supabase
+      const { error } = await supabase
         .from("teacher_applications")
-        .insert([{
-          full_name: values.full_name,
-          email: values.email,
-          whatsapp: values.whatsapp.replace(/\D/g, ""), // Ensure only numbers
-          academic_background: values.academic_background,
-          teaching_experience: values.teaching_experience,
-          video_experience: values.video_experience,
-          motivation: values.motivation,
-          privacy_accepted: values.privacy_accepted
-        }])
-        .select();
+        .update({ status: newStatus })
+        .in("id", selectedApplications);
 
-      if (dbError) {
-        console.error("Database error:", dbError);
-        // Check if the error is due to duplicate email
-        if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
-          toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
-          setIsSubmitting(false);
-          return;
-        }
-        throw dbError;
-      }
+      if (error) throw error;
 
-      console.log("Teacher application saved to database successfully:", data);
-
-      // Try to send email notification, but don't block the submission if it fails
-      try {
-        const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
-          body: {
-            name: values.full_name,
-            email: values.email,
-          },
-        });
-
-        if (functionError) {
-          console.error("Email notification failed:", functionError);
-          // Show a success message but mention that email might be delayed
-          toast.success(
-            "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
-          );
-        } else {
-          toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
-        }
-      } catch (emailError) {
-        console.error("Failed to send email notification:", emailError);
-        // Still show success but mention the email delay
-        toast.success(
-          "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
-        );
-      }
-
-      form.reset();
+      toast.success("Status atualizado com sucesso!");
+      setSelectedApplications([]);
+      setStatusUpdateDialogOpen(false);
+      refetch();
     } catch (error) {
-      console.error("Error submitting application:", error);
-      toast.error(
-        error instanceof Error 
-          ? error.message 
-          : "Ocorreu um erro ao enviar sua inscrição. Por favor, tente novamente."
-      );
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error updating status:", error);
+      toast.error("Erro ao atualizar o status");
     }
   };
 
+  const filteredApplications = applications?.filter((application) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      application.nome_completo.toLowerCase().includes(searchLower) ||
+      application.email.toLowerCase().includes(searchLower) ||
+      application.cpf.includes(searchTerm)
+    );
+  });
+
   return (
-    <div className="min-h-screen bg-[#1A1F2C] text-white">
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex flex-col items-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">
-            Formulário de Inscrição para Professor
-          </h1>
-          <p className="text-gray-400 text-center max-w-2xl">
-            Por favor, preencha todas as informações abaixo para se candidatar a professor parceiro da Unova Cursos.
-          </p>
-        </div>
+    <div className="container mx-auto py-6">
+      <h1 className="text-2xl font-bold mb-4">
+        Gerenciamento de Aplicações de Professores
+      </h1>
 
-        <div className="max-w-2xl mx-auto bg-[#2A2F3C] p-6 rounded-lg shadow-lg">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <PersonalInfoFields form={form} />
-              <ExperienceFields form={form} />
-              <PrivacyField form={form} />
-
-              <Button
-                type="submit"
-                className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
-                disabled={!form.formState.isValid || isSubmitting}
-              >
-                {isSubmitting ? "Enviando..." : "Enviar Inscrição"}
-              </Button>
-            </form>
-          </Form>
+      <div className="flex justify-between items-center mb-4">
+        <Input
+          type="text"
+          placeholder="Buscar por nome, email ou CPF..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md"
+        />
+        <div className="space-x-2">
+          <Button
+            onClick={() => setStatusUpdateDialogOpen(true)}
+            disabled={selectedApplications.length === 0}
+          >
+            Atualizar Status
+          </Button>
+          <Button variant="outline" onClick={() => refetch()}>
+            Atualizar Lista
+          </Button>
         </div>
       </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={
+                    selectedApplications.length === filteredApplications?.length &&
+                    filteredApplications?.length > 0
+                  }
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedApplications(
+                        filteredApplications.map((app) => app.id)
+                      );
+                    } else {
+                      setSelectedApplications([]);
+                    }
+                  }}
+                />
+              </TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>CPF</TableHead>
+              <TableHead>Data de Aplicação</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredApplications?.map((application) => (
+              <TableRow key={application.id}>
+                <TableCell className="font-medium">
+                  <Checkbox
+                    checked={selectedApplications.includes(application.id)}
+                    onCheckedChange={() => handleCheckboxChange(application.id)}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">{application.nome_completo}</TableCell>
+                <TableCell>{application.email}</TableCell>
+                <TableCell>{application.cpf}</TableCell>
+                <TableCell>{formatDate(application.created_at)}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      application.status === "aprovado"
+                        ? "success"
+                        : application.status === "rejeitado"
+                          ? "destructive"
+                          : "secondary"
+                    }
+                  >
+                    {application.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Ver Detalhes
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Detalhes da Aplicação</DialogTitle>
+                        <DialogDescription>
+                          Informações completas sobre a aplicação de{" "}
+                          {application.nome_completo}.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label>Nome Completo</Label>
+                            <Input
+                              type="text"
+                              value={application.nome_completo}
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <Label>Email</Label>
+                            <Input type="email" value={application.email} readOnly />
+                          </div>
+                          <div>
+                            <Label>Telefone</Label>
+                            <Input type="tel" value={application.telefone} readOnly />
+                          </div>
+                          <div>
+                            <Label>CPF</Label>
+                            <Input type="text" value={application.cpf} readOnly />
+                          </div>
+                          <div>
+                            <Label>Data de Nascimento</Label>
+                            <Input
+                              type="text"
+                              value={formatDate(application.data_nascimento)}
+                              readOnly
+                            />
+                          </div>
+                          <div>
+                            <Label>Endereço</Label>
+                            <Input type="text" value={application.endereco} readOnly />
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Formação</Label>
+                          <Textarea value={application.formacao} readOnly />
+                        </div>
+                        <div>
+                          <Label>Experiência</Label>
+                          <Textarea value={application.experiencia} readOnly />
+                        </div>
+                        <div>
+                          <Label>Cursos Desejados</Label>
+                          <Textarea value={application.cursos_desejados} readOnly />
+                        </div>
+                        <div>
+                          <Label>Disponibilidade</Label>
+                          <Input type="text" value={application.disponibilidade} readOnly />
+                        </div>
+                        <div>
+                          <Label>Observações</Label>
+                          <Textarea value={application.observacoes || ""} readOnly />
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={statusUpdateDialogOpen} onOpenChange={setStatusUpdateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Atualizar Status</DialogTitle>
+            <DialogDescription>
+              Selecione o novo status para as aplicações selecionadas.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Label htmlFor="status">Novo Status</Label>
+            <select
+              id="status"
+              className="rounded-md border shadow-sm focus:ring-primary-500 focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={newStatus}
+              onChange={(e) =>
+                setNewStatus(e.target.value as "pendente" | "aprovado" | "rejeitado")
+              }
+            >
+              <option value="pendente">Pendente</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="rejeitado">Rejeitado</option>
+            </select>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setStatusUpdateDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" onClick={handleStatusUpdate}>
+              Atualizar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
