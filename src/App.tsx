@@ -1,8 +1,6 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -43,45 +41,43 @@ const App = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-          <TooltipProvider>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                {/* Rotas públicas */}
-                <Route path="/certificates/new" element={<CertificateForm />} />
-                <Route path="/certificates/success" element={<CertificateSuccess />} />
-                <Route path="/teacher-application" element={<TeacherApplication />} />
-                {/* Rotas protegidas */}
-                <Route
-                  element={
-                    <RequireAuth>
-                      <DashboardLayout />
-                    </RequireAuth>
-                  }
-                >
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/text-splitter" element={<Index />} />
-                  <Route path="/receipts" element={<Receipts />} />
-                  <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
-                  <Route path="/cpf-consulta" element={<CpfConsulta />} />
-                  <Route path="/seo-generator" element={<SeoGenerator />} />
-                  <Route path="/markdown-editor" element={<MarkdownEditor />} />
-                  <Route path="/notes" element={<Notes />} />
-                  <Route path="/certificates/manage" element={<CertificateManagement />} />
-                  <Route path="/teacher-list" element={<TeacherList />} />
-                  <Route path="/prompt-generator" element={<PromptGenerator />} />
-                  <Route path="/prompt-list" element={<PromptList />} />
-                  <Route path="/courses" element={<CourseManagement />} />
-                  <Route path="/supabase" element={<Supabase />} />
-                </Route>
-                {/* Rota 404 - deve ser a última */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {/* Rotas públicas */}
+              <Route path="/certificates/new" element={<CertificateForm />} />
+              <Route path="/certificates/success" element={<CertificateSuccess />} />
+              <Route path="/teacher-application" element={<TeacherApplication />} />
+              {/* Rotas protegidas */}
+              <Route
+                element={
+                  <RequireAuth>
+                    <DashboardLayout />
+                  </RequireAuth>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/text-splitter" element={<Index />} />
+                <Route path="/receipts" element={<Receipts />} />
+                <Route path="/receipts/new/:payeeId" element={<ReceiptForm />} />
+                <Route path="/cpf-consulta" element={<CpfConsulta />} />
+                <Route path="/seo-generator" element={<SeoGenerator />} />
+                <Route path="/markdown-editor" element={<MarkdownEditor />} />
+                <Route path="/notes" element={<Notes />} />
+                <Route path="/certificates/manage" element={<CertificateManagement />} />
+                <Route path="/teacher-list" element={<TeacherList />} />
+                <Route path="/prompt-generator" element={<PromptGenerator />} />
+                <Route path="/prompt-list" element={<PromptList />} />
+                <Route path="/courses" element={<CourseManagement />} />
+                <Route path="/supabase" element={<Supabase />} />
+              </Route>
+              {/* Rota 404 - deve ser a última */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </BrowserRouter>
