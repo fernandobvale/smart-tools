@@ -36,12 +36,6 @@ export default function TeacherApplication() {
     try {
       console.log("=== TEACHER APPLICATION SUBMISSION START ===");
       console.log("Form data:", values);
-      console.log("Supabase client initialized:", !!supabase);
-      
-      // Check authentication status
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      console.log("Current session:", session ? "authenticated" : "anonymous");
-      console.log("Auth error:", authError);
       
       // Prepare clean data for insertion
       const applicationData = {
@@ -74,19 +68,12 @@ export default function TeacherApplication() {
         if (dbError.code === '23505') {
           if (dbError.message.includes('teacher_applications_email_key')) {
             toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
-            setIsSubmitting(false);
             return;
           }
         }
         
-        // RLS policy violation
-        if (dbError.code === '42501') {
-          console.error("RLS Policy violation detected");
-          toast.error("Erro de permissão ao enviar inscrição. Por favor, tente novamente ou entre em contato conosco.");
-          setIsSubmitting(false);
-          return;
-        }
-        
+        // Generic error handling
+        toast.error("Ocorreu um erro ao enviar sua inscrição. Por favor, tente novamente.");
         throw dbError;
       }
 
@@ -104,17 +91,15 @@ export default function TeacherApplication() {
         });
 
         if (functionError) {
-          console.error("=== EMAIL NOTIFICATION ERROR ===");
-          console.error("Function error:", functionError);
+          console.error("Email notification error:", functionError);
           toast.success(
             "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
           );
         } else {
-          console.log("=== EMAIL SUCCESS ===");
+          console.log("Email sent successfully");
           toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
         }
       } catch (emailError) {
-        console.error("=== EMAIL EXCEPTION ===");
         console.error("Failed to send email notification:", emailError);
         toast.success(
           "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
@@ -127,8 +112,6 @@ export default function TeacherApplication() {
     } catch (error) {
       console.error("=== GENERAL ERROR ===");
       console.error("Error submitting application:", error);
-      console.error("Error type:", typeof error);
-      console.error("Error constructor:", error?.constructor?.name);
       
       toast.error(
         error instanceof Error 
