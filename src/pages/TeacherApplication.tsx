@@ -38,20 +38,29 @@ export default function TeacherApplication() {
       console.log("Form data:", values);
       console.log("Supabase client initialized:", !!supabase);
       
-      // First save to database
+      // Check authentication status
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      console.log("Current session:", session ? "authenticated" : "anonymous");
+      console.log("Auth error:", authError);
+      
+      // Prepare clean data for insertion
+      const applicationData = {
+        full_name: values.full_name.trim(),
+        email: values.email.trim().toLowerCase(),
+        whatsapp: values.whatsapp.replace(/\D/g, ""), // Remove non-digits
+        academic_background: values.academic_background.trim(),
+        teaching_experience: values.teaching_experience.trim(),
+        video_experience: values.video_experience,
+        motivation: values.motivation.trim(),
+        privacy_accepted: values.privacy_accepted
+      };
+
+      console.log("Clean application data:", applicationData);
       console.log("Attempting to insert into teacher_applications table...");
+      
       const { data, error: dbError } = await supabase
         .from("teacher_applications")
-        .insert([{
-          full_name: values.full_name,
-          email: values.email,
-          whatsapp: values.whatsapp.replace(/\D/g, ""), // Ensure only numbers
-          academic_background: values.academic_background,
-          teaching_experience: values.teaching_experience,
-          video_experience: values.video_experience,
-          motivation: values.motivation,
-          privacy_accepted: values.privacy_accepted
-        }])
+        .insert([applicationData])
         .select();
 
       if (dbError) {
@@ -61,19 +70,30 @@ export default function TeacherApplication() {
         console.error("Error details:", dbError.details);
         console.error("Error hint:", dbError.hint);
         
-        // Check if the error is due to duplicate email
-        if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
-          toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
+        // Check for specific error types
+        if (dbError.code === '23505') {
+          if (dbError.message.includes('teacher_applications_email_key')) {
+            toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
+            setIsSubmitting(false);
+            return;
+          }
+        }
+        
+        // RLS policy violation
+        if (dbError.code === '42501') {
+          console.error("RLS Policy violation detected");
+          toast.error("Erro de permissão ao enviar inscrição. Por favor, tente novamente ou entre em contato conosco.");
           setIsSubmitting(false);
           return;
         }
+        
         throw dbError;
       }
 
       console.log("=== DATABASE SUCCESS ===");
       console.log("Teacher application saved successfully:", data);
 
-      // Try to send email notification, but don't block the submission if it fails
+      // Try to send email notification
       try {
         console.log("Attempting to send email notification...");
         const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
@@ -86,7 +106,6 @@ export default function TeacherApplication() {
         if (functionError) {
           console.error("=== EMAIL NOTIFICATION ERROR ===");
           console.error("Function error:", functionError);
-          // Show a success message but mention that email might be delayed
           toast.success(
             "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
           );
@@ -97,7 +116,6 @@ export default function TeacherApplication() {
       } catch (emailError) {
         console.error("=== EMAIL EXCEPTION ===");
         console.error("Failed to send email notification:", emailError);
-        // Still show success but mention the email delay
         toast.success(
           "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
         );
