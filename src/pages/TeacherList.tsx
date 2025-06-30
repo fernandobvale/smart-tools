@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, UserPlus } from "lucide-react";
+import { Loader2, Search, UserPlus, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface TeacherApplication {
   id: string;
@@ -29,6 +41,8 @@ interface TeacherApplication {
 export default function TeacherList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherApplication | null>(null);
+  const [teacherToDelete, setTeacherToDelete] = useState<TeacherApplication | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: teachers, isLoading } = useQuery({
     queryKey: ["teacher-applications"],
@@ -48,6 +62,26 @@ export default function TeacherList() {
       return data as TeacherApplication[];
     },
   });
+
+  const handleDelete = async (teacher: TeacherApplication) => {
+    try {
+      const { error } = await supabase
+        .from("teacher_applications")
+        .delete()
+        .eq("id", teacher.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Inscrição de professor excluída com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["teacher-applications"] });
+      setTeacherToDelete(null);
+    } catch (error) {
+      console.error("Error deleting teacher application:", error);
+      toast.error("Erro ao excluir inscrição de professor");
+    }
+  };
 
   const filteredTeachers = teachers?.filter(
     (teacher) =>
@@ -104,63 +138,98 @@ export default function TeacherList() {
                   <h3 className="font-medium">{teacher.full_name}</h3>
                   <p className="text-sm text-muted-foreground">{teacher.email}</p>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedTeacher(teacher)}
-                    >
-                      Ver Detalhes
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                      <DialogTitle>Detalhes do Professor</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 mt-4">
-                      <div>
-                        <h4 className="font-medium mb-1">Nome Completo</h4>
-                        <p>{teacher.full_name}</p>
+                <div className="flex gap-2">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedTeacher(teacher)}
+                      >
+                        Ver Detalhes
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>Detalhes do Professor</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <h4 className="font-medium mb-1">Nome Completo</h4>
+                          <p>{teacher.full_name}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Email</h4>
+                          <p>{teacher.email}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">WhatsApp</h4>
+                          <p>{teacher.whatsapp}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Formação Acadêmica</h4>
+                          <p className="whitespace-pre-wrap">{teacher.academic_background}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Experiência como Professor</h4>
+                          <p className="whitespace-pre-wrap">{teacher.teaching_experience}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Experiência com Gravação de Vídeos</h4>
+                          <p>{teacher.video_experience === "sim" ? "Sim" : "Não"}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Motivação</h4>
+                          <p className="whitespace-pre-wrap">{teacher.motivation}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Data de Inscrição</h4>
+                          <p>
+                            {new Date(teacher.created_at).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Email</h4>
-                        <p>{teacher.email}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">WhatsApp</h4>
-                        <p>{teacher.whatsapp}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Formação Acadêmica</h4>
-                        <p className="whitespace-pre-wrap">{teacher.academic_background}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Experiência como Professor</h4>
-                        <p className="whitespace-pre-wrap">{teacher.teaching_experience}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Experiência com Gravação de Vídeos</h4>
-                        <p>{teacher.video_experience === "sim" ? "Sim" : "Não"}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Motivação</h4>
-                        <p className="whitespace-pre-wrap">{teacher.motivation}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Data de Inscrição</h4>
-                        <p>
-                          {new Date(teacher.created_at).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                  </Dialog>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTeacherToDelete(teacher)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir a inscrição de <strong>{teacher.full_name}</strong>?
+                          Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setTeacherToDelete(null)}>
+                          Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(teacher)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </div>
           ))}
