@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { PersonalInfoFields } from "@/components/teacher-application/PersonalInfoFields";
 import { ExperienceFields } from "@/components/teacher-application/ExperienceFields";
 import { PrivacyField } from "@/components/teacher-application/PrivacyField";
@@ -34,9 +34,12 @@ export default function TeacherApplication() {
     setIsSubmitting(true);
     
     try {
-      console.log("Submitting form data:", values);
+      console.log("=== TEACHER APPLICATION SUBMISSION START ===");
+      console.log("Form data:", values);
+      console.log("Supabase client initialized:", !!supabase);
       
       // First save to database
+      console.log("Attempting to insert into teacher_applications table...");
       const { data, error: dbError } = await supabase
         .from("teacher_applications")
         .insert([{
@@ -52,7 +55,12 @@ export default function TeacherApplication() {
         .select();
 
       if (dbError) {
-        console.error("Database error:", dbError);
+        console.error("=== DATABASE ERROR ===");
+        console.error("Error code:", dbError.code);
+        console.error("Error message:", dbError.message);
+        console.error("Error details:", dbError.details);
+        console.error("Error hint:", dbError.hint);
+        
         // Check if the error is due to duplicate email
         if (dbError.code === '23505' && dbError.message.includes('teacher_applications_email_key')) {
           toast.error("Este email já está cadastrado em nossa base de dados. Se você não recebeu uma confirmação, por favor entre em contato conosco.");
@@ -62,10 +70,12 @@ export default function TeacherApplication() {
         throw dbError;
       }
 
-      console.log("Teacher application saved to database successfully:", data);
+      console.log("=== DATABASE SUCCESS ===");
+      console.log("Teacher application saved successfully:", data);
 
       // Try to send email notification, but don't block the submission if it fails
       try {
+        console.log("Attempting to send email notification...");
         const { error: functionError } = await supabase.functions.invoke('send-teacher-application-email', {
           body: {
             name: values.full_name,
@@ -74,15 +84,18 @@ export default function TeacherApplication() {
         });
 
         if (functionError) {
-          console.error("Email notification failed:", functionError);
+          console.error("=== EMAIL NOTIFICATION ERROR ===");
+          console.error("Function error:", functionError);
           // Show a success message but mention that email might be delayed
           toast.success(
             "Inscrição enviada com sucesso! Você receberá um email de confirmação em breve (pode haver um pequeno atraso)."
           );
         } else {
+          console.log("=== EMAIL SUCCESS ===");
           toast.success("Inscrição enviada com sucesso! Você receberá um email de confirmação em breve.");
         }
       } catch (emailError) {
+        console.error("=== EMAIL EXCEPTION ===");
         console.error("Failed to send email notification:", emailError);
         // Still show success but mention the email delay
         toast.success(
@@ -90,9 +103,15 @@ export default function TeacherApplication() {
         );
       }
 
+      console.log("=== FORM RESET ===");
       form.reset();
+      console.log("=== TEACHER APPLICATION SUBMISSION END ===");
     } catch (error) {
+      console.error("=== GENERAL ERROR ===");
       console.error("Error submitting application:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error constructor:", error?.constructor?.name);
+      
       toast.error(
         error instanceof Error 
           ? error.message 

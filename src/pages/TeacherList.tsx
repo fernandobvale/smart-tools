@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TeacherApplication {
   id: string;
@@ -32,12 +33,18 @@ export default function TeacherList() {
   const { data: teachers, isLoading } = useQuery({
     queryKey: ["teacher-applications"],
     queryFn: async () => {
+      console.log("=== FETCHING TEACHER APPLICATIONS ===");
       const { data, error } = await supabase
         .from("teacher_applications")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching teacher applications:", error);
+        throw error;
+      }
+      
+      console.log("Successfully fetched teacher applications:", data?.length || 0);
       return data as TeacherApplication[];
     },
   });
