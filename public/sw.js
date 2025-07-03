@@ -1,7 +1,7 @@
 
-const CACHE_NAME = 'ferramentas-v2'; // Incrementada a versão
-const STATIC_CACHE = 'ferramentas-static-v2';
-const DYNAMIC_CACHE = 'ferramentas-dynamic-v2';
+const CACHE_NAME = 'ferramentas-v3'; // Incrementada a versão
+const STATIC_CACHE = 'ferramentas-static-v3';
+const DYNAMIC_CACHE = 'ferramentas-dynamic-v3';
 
 // URLs estáticas que podem ser cachadas por mais tempo
 const staticUrlsToCache = [
@@ -94,8 +94,12 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Se falhou, tenta buscar no cache
-          return caches.match(event.request);
+          // Se falhou, tenta buscar no cache apenas para recursos estáticos
+          if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+            return caches.match(event.request);
+          }
+          // Para HTML e rota principal, sempre tenta buscar na rede primeiro
+          return new Response('Offline', { status: 503 });
         })
     );
   }
