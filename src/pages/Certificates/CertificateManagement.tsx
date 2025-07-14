@@ -64,10 +64,10 @@ export default function CertificateManagement() {
   });
 
   const nonShippedCertificates = certificates?.filter(
-    (cert) => !cert.codigo_rastreio
+    (cert) => cert.status_envio === 'pendente'
   ) || [];
   const shippedCertificates = certificates?.filter(
-    (cert) => cert.codigo_rastreio
+    (cert) => cert.status_envio === 'enviado'
   ) || [];
 
   const handleCheckboxChange = (certificateId: string) => {
