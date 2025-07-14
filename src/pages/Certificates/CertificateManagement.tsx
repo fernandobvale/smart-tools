@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -43,13 +43,14 @@ interface Certificate {
 }
 
 export default function CertificateManagement() {
+  const queryClient = useQueryClient();
   const [selectedCertificates, setSelectedCertificates] = useState<string[]>([]);
   const [trackingCode, setTrackingCode] = useState("");
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [isShippingDataDialogOpen, setIsShippingDataDialogOpen] = useState(false);
   const [certificateToDelete, setCertificateToDelete] = useState<string | null>(null);
 
-  const { data: certificates, refetch } = useQuery({
+  const { data: certificates } = useQuery({
     queryKey: ["certificates"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -94,7 +95,7 @@ export default function CertificateManagement() {
       if (error) throw error;
 
       toast.success("Certificado excluído com sucesso");
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
     } catch (error) {
       console.error("Error deleting certificate:", error);
       toast.error("Erro ao excluir certificado");
@@ -146,7 +147,7 @@ export default function CertificateManagement() {
       setTrackingCode("");
       setSelectedCertificates([]);
       setIsTrackingDialogOpen(false);
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
     } catch (error) {
       console.error("Error updating tracking code:", error);
       toast.error("Erro ao atualizar código de rastreio");
@@ -252,6 +253,7 @@ export default function CertificateManagement() {
         open={isShippingDataDialogOpen}
         onOpenChange={setIsShippingDataDialogOpen}
         certificate={selectedCertificate}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["certificates"] })}
       />
 
       <AlertDialog open={!!certificateToDelete} onOpenChange={() => setCertificateToDelete(null)}>

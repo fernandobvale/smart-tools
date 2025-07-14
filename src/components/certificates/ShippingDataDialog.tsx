@@ -27,6 +27,7 @@ interface Certificate {
   status_envio: string;
   site_referencia: string;
   numero_pedido: string;
+  codigo_rastreio: string | null;
   quantidade: number;
   observacoes: string | null;
 }
@@ -35,12 +36,14 @@ interface ShippingDataDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   certificate: Certificate | null;
+  onSuccess?: () => void;
 }
 
 export function ShippingDataDialog({
   open,
   onOpenChange,
   certificate,
+  onSuccess,
 }: ShippingDataDialogProps) {
   const [formData, setFormData] = useState<Partial<Certificate>>({});
 
@@ -75,6 +78,7 @@ export function ShippingDataDialog({
           status_envio: formData.status_envio,
           site_referencia: formData.site_referencia,
           numero_pedido: formData.numero_pedido,
+          codigo_rastreio: formData.codigo_rastreio,
           quantidade: formData.quantidade,
           observacoes: formData.observacoes,
         })
@@ -83,6 +87,7 @@ export function ShippingDataDialog({
       if (error) throw error;
 
       toast.success("Dados atualizados com sucesso!");
+      onSuccess?.();
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating shipping data:", error);
@@ -205,6 +210,16 @@ export function ShippingDataDialog({
                 name="numero_pedido"
                 value={formData.numero_pedido || ""}
                 onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="codigo_rastreio">Código de Rastreio</Label>
+              <Input
+                id="codigo_rastreio"
+                name="codigo_rastreio"
+                value={formData.codigo_rastreio || ""}
+                onChange={handleInputChange}
+                placeholder="Informe o código de rastreio"
               />
             </div>
             <div className="space-y-2">
