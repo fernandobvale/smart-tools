@@ -25,6 +25,7 @@ import PromptList from "./pages/PromptList";
 import CourseManagement from "./pages/CourseManagement";
 import NotFound from "./pages/NotFound";
 import Supabase from "./pages/Supabase"; // Novo import
+import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +44,7 @@ const App = () => {
           <AuthProvider>
             {/* Removed duplicate Toaster. Sonner will handle all toasts. */}
             <Sonner />
+            <ServiceWorkerNotification />
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />

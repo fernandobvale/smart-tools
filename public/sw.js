@@ -1,34 +1,61 @@
 
-const CACHE_NAME = 'ferramentas-v3'; // Incrementada a versão
-const STATIC_CACHE = 'ferramentas-static-v3';
-const DYNAMIC_CACHE = 'ferramentas-dynamic-v3';
+const CACHE_NAME = 'ferramentas-v4'; // Incrementada para v4
+const STATIC_CACHE = 'ferramentas-static-v4';
+const DYNAMIC_CACHE = 'ferramentas-dynamic-v4';
 
-// URLs estáticas que podem ser cachadas por mais tempo
+// URLs estáticas essenciais que podem ser cachadas com segurança
 const staticUrlsToCache = [
   '/manifest.json',
   '/icon-192x192.png',
   '/icon-512x512.png'
 ];
 
-// URLs que devem ser verificadas por atualizações mais frequentemente
-const dynamicUrlsToCache = [
-  '/',
-  '/index.html'
-];
+// Fallback HTML básico para quando tudo falhar
+const FALLBACK_HTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Carregando...</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    .loading { font-size: 18px; color: #666; }
+    .retry { margin-top: 20px; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="loading">Carregando aplicação...</div>
+  <div class="retry">
+    <button onclick="location.reload()">Tentar Novamente</button>
+    <button onclick="clearCacheAndReload()">Limpar Cache</button>
+  </div>
+  <script>
+    function clearCacheAndReload() {
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          Promise.all(names.map(name => caches.delete(name)))
+            .then(() => location.reload());
+        });
+      } else {
+        location.reload();
+      }
+    }
+    setTimeout(() => location.reload(), 3000);
+  </script>
+</body>
+</html>
+`;
 
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
   event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => {
-        console.log('Caching static assets');
-        return cache.addAll(staticUrlsToCache);
-      }),
-      caches.open(DYNAMIC_CACHE).then((cache) => {
-        console.log('Caching dynamic assets');
-        return cache.addAll(dynamicUrlsToCache);
-      })
-    ])
+    caches.open(STATIC_CACHE).then((cache) => {
+      console.log('Caching static assets only');
+      return cache.addAll(staticUrlsToCache);
+    }).catch(err => {
+      console.warn('Failed to cache static assets:', err);
+      // Continue installation even if caching fails
+    })
   );
   // Força a ativação imediata do novo service worker
   self.skipWaiting();
@@ -72,35 +99,57 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Ignora requisições para APIs externas
-  if (!event.request.url.startsWith(self.location.origin)) {
+  // Ignora requisições para APIs externas e websockets
+  if (!event.request.url.startsWith(self.location.origin) || 
+      event.request.url.includes('ws://') || 
+      event.request.url.includes('wss://')) {
     return;
   }
 
   const url = new URL(event.request.url);
   
-  // Estratégia Network First para arquivos HTML e JS/CSS para garantir atualizações
+  // Estratégia Stale While Revalidate para arquivos críticos
   if (url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname === '/') {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Se a requisição foi bem-sucedida, atualiza o cache
-          if (response && response.status === 200 && response.type === 'basic') {
-            const responseToCache = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(event.request, responseToCache);
+      caches.open(DYNAMIC_CACHE).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+          const fetchPromise = fetch(event.request)
+            .then(networkResponse => {
+              // Se a resposta da rede for válida, atualiza o cache
+              if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                cache.put(event.request, networkResponse.clone());
+              }
+              return networkResponse;
+            })
+            .catch(error => {
+              console.warn('Network fetch failed for:', event.request.url, error);
+              return null;
             });
+
+          // Se temos cache, retorna imediatamente e atualiza em background
+          if (cachedResponse) {
+            fetchPromise.catch(() => {}); // Silencia erros do background fetch
+            return cachedResponse;
           }
-          return response;
-        })
-        .catch(() => {
-          // Se falhou, tenta buscar no cache apenas para recursos estáticos
-          if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+
+          // Se não temos cache, aguarda a rede ou retorna fallback
+          return fetchPromise.then(networkResponse => {
+            if (networkResponse) {
+              return networkResponse;
+            }
+            
+            // Fallback para HTML
+            if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+              return new Response(FALLBACK_HTML, {
+                headers: { 'Content-Type': 'text/html' }
+              });
+            }
+            
+            // Para outros recursos, tenta buscar no cache global
             return caches.match(event.request);
-          }
-          // Para HTML e rota principal, sempre tenta buscar na rede primeiro
-          return new Response('Offline', { status: 503 });
-        })
+          });
+        });
+      })
     );
   }
   // Estratégia Cache First para assets estáticos (imagens, ícones, etc.)
@@ -119,6 +168,9 @@ self.addEventListener('fetch', (event) => {
             });
           }
           return response;
+        }).catch(error => {
+          console.warn('Failed to fetch static asset:', event.request.url, error);
+          return new Response('', { status: 404 });
         });
       })
     );
