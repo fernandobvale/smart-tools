@@ -8,7 +8,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Eye, EyeOff, ClipboardCopy, AlertCircle, User, UserX } from "lucide-react";
 import { useState } from "react";
 import bcrypt from "bcryptjs";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InfoTooltip } from "./InfoTooltip";
@@ -60,6 +60,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
     console.log("🔄 Iniciando salvamento do projeto...");
     console.log("📊 Session:", session);
     console.log("👤 User:", user);
+    console.log("📋 Form Values:", values);
     
     setIsSubmitting(true);
     
@@ -67,11 +68,8 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
       // Verificação robusta de autenticação
       if (!session || !user) {
         console.error("❌ Usuário não autenticado - session:", session, "user:", user);
-        toast({ 
-          title: "Erro de Autenticação", 
-          description: "Você precisa estar logado para salvar projetos. Faça login e tente novamente.", 
-          variant: "destructive" 
-        });
+        toast.error("Você precisa estar logado para salvar projetos. Faça login e tente novamente.");
+        setIsSubmitting(false);
         return;
       }
 
@@ -113,7 +111,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
           throw error;
         }
         
-        toast({ title: "✅ Projeto atualizado com sucesso" });
+        toast.success("Projeto atualizado com sucesso!");
       } else {
         console.log("🆕 Criando novo projeto...");
         // Insert
@@ -144,18 +142,15 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
           
           // Tratamento específico para erros de RLS
           if (error.message.includes("row-level security") || error.message.includes("RLS")) {
-            toast({ 
-              title: "❌ Erro de Permissão", 
-              description: "Problema de segurança de linha (RLS). Verifique se você está autenticado corretamente.", 
-              variant: "destructive" 
-            });
+            toast.error("Problema de segurança de linha (RLS). Verifique se você está autenticado corretamente.");
           } else {
-            throw error;
+            toast.error(`Erro ao salvar projeto: ${error.message}`);
           }
+          setIsSubmitting(false);
           return;
         }
         
-        toast({ title: "✅ Projeto salvo com sucesso" });
+        toast.success("Projeto salvo com sucesso!");
       }
       
       console.log("✅ Salvamento concluído com sucesso!");
@@ -176,11 +171,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
         errorMessage = "Erro de conexão. Verifique sua internet.";
       }
       
-      toast({ 
-        title: "❌ Erro ao salvar projeto", 
-        description: errorMessage, 
-        variant: "destructive" 
-      });
+      toast.error(`Erro ao salvar projeto: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -189,7 +180,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
   const copyToClipboard = (value: string | undefined) => {
     if (!value) return;
     navigator.clipboard.writeText(value);
-    toast({ title: "Copiado para área de transferência" });
+    toast.success("Copiado para área de transferência");
   };
 
   const renderPwField = (
@@ -434,7 +425,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
                 )}
               />
               <div className="flex justify-end pt-4">
-                <Button type="button" onClick={() => setStep("db")}>
+                <Button type="button" onClick={() => setStep("db")} disabled={!isAuthenticated}>
                   Próximo: Banco de Dados
                 </Button>
               </div>
