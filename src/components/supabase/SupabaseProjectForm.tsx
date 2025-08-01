@@ -5,13 +5,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Eye, EyeOff, ClipboardCopy } from "lucide-react";
+import { Eye, EyeOff, ClipboardCopy, AlertCircle, User, UserX } from "lucide-react";
 import { useState } from "react";
 import bcrypt from "bcryptjs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { InfoTooltip } from "./InfoTooltip";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   project_name: z.string().min(2, "Nome obrigatório"),
@@ -37,6 +39,7 @@ interface Props {
 }
 
 export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
+  const { session, user } = useAuth();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,21 +54,38 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
   const [dbPwVisible, setDbPwVisible] = useState(false);
   // O controle da etapa: "project" ou "db"
   const [step, setStep] = useState<"project" | "db">("project");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(values: FormValues) {
+    console.log("🔄 Iniciando salvamento do projeto...");
+    console.log("📊 Session:", session);
+    console.log("👤 User:", user);
+    
+    setIsSubmitting(true);
+    
     try {
-      const session = (await supabase.auth.getSession()).data.session;
-      if (!session) {
-        toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+      // Verificação robusta de autenticação
+      if (!session || !user) {
+        console.error("❌ Usuário não autenticado - session:", session, "user:", user);
+        toast({ 
+          title: "Erro de Autenticação", 
+          description: "Você precisa estar logado para salvar projetos. Faça login e tente novamente.", 
+          variant: "destructive" 
+        });
         return;
       }
+
+      console.log("✅ Usuário autenticado, prosseguindo com salvamento...");
+      
       let user_password_hash = undefined;
       if (values.user_password) {
         user_password_hash = await bcrypt.hash(values.user_password, 10);
       }
+
       if (defaultValues?.id) {
+        console.log("🔄 Atualizando projeto existente...");
         // Update
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from("supabase_projects")
           .update({
             project_name: values.project_name,
@@ -83,12 +103,21 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
             db_password: values.db_password,
             db_name: values.db_name,
           })
-          .eq("id", defaultValues.id);
-        if (error) throw error;
-        toast({ title: "Projeto atualizado com sucesso" });
+          .eq("id", defaultValues.id)
+          .select();
+          
+        console.log("📊 Resultado da atualização:", { error, data });
+        
+        if (error) {
+          console.error("❌ Erro na atualização:", error);
+          throw error;
+        }
+        
+        toast({ title: "✅ Projeto atualizado com sucesso" });
       } else {
+        console.log("🆕 Criando novo projeto...");
         // Insert
-        const { error } = await supabase.from("supabase_projects").insert([
+        const { error, data } = await supabase.from("supabase_projects").insert([
           {
             project_name: values.project_name,
             user_email: values.user_email,
@@ -104,17 +133,56 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
             db_user: values.db_user,
             db_password: values.db_password,
             db_name: values.db_name,
-            user_id: session.user.id,
+            user_id: user.id,
           },
-        ]);
-        if (error) throw error;
-        toast({ title: "Projeto salvo com sucesso" });
+        ]).select();
+        
+        console.log("📊 Resultado da inserção:", { error, data });
+        
+        if (error) {
+          console.error("❌ Erro na inserção:", error);
+          
+          // Tratamento específico para erros de RLS
+          if (error.message.includes("row-level security") || error.message.includes("RLS")) {
+            toast({ 
+              title: "❌ Erro de Permissão", 
+              description: "Problema de segurança de linha (RLS). Verifique se você está autenticado corretamente.", 
+              variant: "destructive" 
+            });
+          } else {
+            throw error;
+          }
+          return;
+        }
+        
+        toast({ title: "✅ Projeto salvo com sucesso" });
       }
+      
+      console.log("✅ Salvamento concluído com sucesso!");
       form.reset();
       setStep("project"); // Volta para primeira etapa após submit
       onSubmitDone();
     } catch (error: any) {
-      toast({ title: "Erro ao salvar projeto", description: error.message, variant: "destructive" });
+      console.error("❌ Erro durante salvamento:", error);
+      
+      let errorMessage = error.message;
+      
+      // Melhor tratamento de erros específicos
+      if (error.message.includes("JWT")) {
+        errorMessage = "Sessão expirada. Faça login novamente.";
+      } else if (error.message.includes("duplicate")) {
+        errorMessage = "Já existe um projeto com essas informações.";
+      } else if (error.message.includes("network")) {
+        errorMessage = "Erro de conexão. Verifique sua internet.";
+      }
+      
+      toast({ 
+        title: "❌ Erro ao salvar projeto", 
+        description: errorMessage, 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -192,8 +260,32 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
   const settingsApiLink = "https://app.supabase.com/project/_/settings/api";
   const settingsDbLink = "https://app.supabase.com/project/_/settings/database";
 
+  // Verificação de autenticação na interface
+  const isAuthenticated = !!session && !!user;
+
   return (
     <ScrollArea className="max-h-[80vh] pr-2">
+      {/* Indicador de Status de Autenticação */}
+      {!isAuthenticated && (
+        <Alert className="mb-4 border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">
+          <UserX className="h-4 w-4" />
+          <AlertDescription>
+            ⚠️ <strong>Usuário não autenticado!</strong> Você precisa fazer login para salvar projetos Supabase.
+            <br />
+            <a href="/login" className="underline font-medium">Clique aqui para fazer login</a>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {isAuthenticated && (
+        <Alert className="mb-4 border-green-500/50 text-green-700 dark:text-green-400 [&>svg]:text-green-600">
+          <User className="h-4 w-4" />
+          <AlertDescription>
+            ✅ <strong>Autenticado como:</strong> {user.email}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           {/* PARTE 1: DADOS DO PROJETO */}
@@ -443,8 +535,12 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
                 <Button type="button" variant="secondary" onClick={() => setStep("project")}>
                   Voltar
                 </Button>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {defaultValues?.id ? "Salvar Alterações" : "Salvar Projeto"}
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting || !isAuthenticated}
+                  className="min-w-[140px]"
+                >
+                  {isSubmitting ? "Salvando..." : (defaultValues?.id ? "Salvar Alterações" : "Salvar Projeto")}
                 </Button>
               </div>
             </div>
