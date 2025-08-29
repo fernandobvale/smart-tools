@@ -13,7 +13,8 @@ import {
   BookOpen,
   Calculator,
   Database, // Novo ícone
-  AlertTriangle
+  AlertTriangle,
+  Lightbulb
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -108,6 +109,13 @@ export default function Dashboard() {
       description: "Registre e acompanhe reclamações de cursos",
       icon: <AlertTriangle className="w-6 h-6 text-[#9b87f5]" />,
       href: "/reclamacoes-curso",
+      external: false
+    },
+    {
+      title: "Sugestões de Curso",
+      description: "Registre e acompanhe sugestões de cursos",
+      icon: <Lightbulb className="w-6 h-6 text-[#6E59A5]" />,
+      href: "/sugestoes-curso",
       external: false
     }
   ];
