@@ -27,7 +27,7 @@ const CourseSuggestions = () => {
 
   const fetchSuggestions = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('course_suggestions')
         .select('*')
         .order('created_at', { ascending: false });
