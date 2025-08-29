@@ -25,6 +25,7 @@ import PromptGenerator from "./pages/PromptGenerator";
 import PromptList from "./pages/PromptList";
 import CourseManagement from "./pages/CourseManagement";
 import CourseComplaints from "./pages/CourseComplaints";
+import CourseSuggestions from "./pages/CourseSuggestions";
 import NotFound from "./pages/NotFound";
 import Supabase from "./pages/Supabase";
 import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
@@ -54,6 +55,7 @@ const App = () => {
               <Route path="/certificates/success" element={<CertificateSuccess />} />
               <Route path="/teacher-application" element={<TeacherApplication />} />
               <Route path="/reclamacoes-curso" element={<CourseComplaints />} />
+              <Route path="/sugestoes-curso" element={<CourseSuggestions />} />
               {/* Rotas protegidas */}
               <Route
                 element={
