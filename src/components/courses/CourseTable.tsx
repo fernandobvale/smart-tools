@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns";
 import { Course } from "./types";
 import { TableActions } from "./TableActions";
 import { TableRowActions } from "./TableRowActions";
+import { CourseDetailsModal } from "./CourseDetailsModal";
 import CustomPagination from "@/components/cpf-consulta/CustomPagination";
 import {
   AlertDialog,
@@ -32,6 +33,8 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [detailsCourse, setDetailsCourse] = useState<Course | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const totalPages = Math.ceil(courses.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -85,6 +88,11 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
     return format(parseISO(dateString), 'dd/MM/yyyy');
   };
 
+  const handleRowClick = (course: Course) => {
+    setDetailsCourse(course);
+    setIsDetailsModalOpen(true);
+  };
+
   const totalValue = currentCourses.reduce((sum, course) => sum + Number(course.valor), 0);
 
   return (
@@ -136,13 +144,48 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
                     }}
                   />
                 </TableCell>
-                <TableCell>{course.nome_curso}</TableCell>
-                <TableCell>{course.numero_aulas}</TableCell>
-                <TableCell>{formatDate(course.data_entrega)}</TableCell>
-                <TableCell>R$ {Number(course.valor).toFixed(2)}</TableCell>
-                <TableCell>{formatDate(course.data_pagamento)}</TableCell>
-                <TableCell>{course.status_pagamento}</TableCell>
-                <TableCell>{course.nome_editor}</TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  {course.nome_curso}
+                </TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  {course.numero_aulas}
+                </TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  {formatDate(course.data_entrega)}
+                </TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  R$ {Number(course.valor).toFixed(2)}
+                </TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  {formatDate(course.data_pagamento)}
+                </TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  {course.status_pagamento}
+                </TableCell>
+                <TableCell 
+                  className="cursor-pointer hover:bg-muted/50" 
+                  onClick={() => handleRowClick(course)}
+                >
+                  {course.nome_editor}
+                </TableCell>
                 <TableCell>
                   <TableRowActions
                     course={course}
@@ -174,6 +217,12 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
           />
         </div>
       )}
+
+      <CourseDetailsModal
+        course={detailsCourse}
+        open={isDetailsModalOpen}
+        onOpenChange={setIsDetailsModalOpen}
+      />
 
       <AlertDialog open={!!deletingCourse} onOpenChange={() => setDeletingCourse(null)}>
         <AlertDialogContent>
