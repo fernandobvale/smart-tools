@@ -131,8 +131,19 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
           </TableHeader>
           <TableBody>
             {currentCourses.map((course) => (
-              <TableRow key={course.id}>
-                <TableCell>
+              <TableRow 
+                key={course.id}
+                className="cursor-pointer"
+                onClick={() => handleRowClick(course)}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(course);
+                  }
+                }}
+              >
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <Checkbox
                     checked={selectedIds.includes(course.id)}
                     onCheckedChange={(checked) => {
@@ -144,49 +155,14 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
                     }}
                   />
                 </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  {course.nome_curso}
-                </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  {course.numero_aulas}
-                </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  {formatDate(course.data_entrega)}
-                </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  R$ {Number(course.valor).toFixed(2)}
-                </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  {formatDate(course.data_pagamento)}
-                </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  {course.status_pagamento}
-                </TableCell>
-                <TableCell 
-                  className="cursor-pointer hover:bg-muted/50" 
-                  onClick={() => handleRowClick(course)}
-                >
-                  {course.nome_editor}
-                </TableCell>
-                <TableCell>
+                <TableCell>{course.nome_curso}</TableCell>
+                <TableCell>{course.numero_aulas}</TableCell>
+                <TableCell>{formatDate(course.data_entrega)}</TableCell>
+                <TableCell>R$ {Number(course.valor).toFixed(2)}</TableCell>
+                <TableCell>{formatDate(course.data_pagamento)}</TableCell>
+                <TableCell>{course.status_pagamento}</TableCell>
+                <TableCell>{course.nome_editor}</TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <TableRowActions
                     course={course}
                     isEditDialogOpen={isEditDialogOpen}
@@ -221,7 +197,12 @@ export function CourseTable({ courses, onUpdate }: CourseTableProps) {
       <CourseDetailsModal
         course={detailsCourse}
         open={isDetailsModalOpen}
-        onOpenChange={setIsDetailsModalOpen}
+        onOpenChange={(open) => {
+          setIsDetailsModalOpen(open);
+          if (!open) {
+            setDetailsCourse(null);
+          }
+        }}
       />
 
       <AlertDialog open={!!deletingCourse} onOpenChange={() => setDeletingCourse(null)}>
