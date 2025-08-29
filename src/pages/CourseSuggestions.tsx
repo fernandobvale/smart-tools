@@ -37,7 +37,7 @@ const CourseSuggestions = () => {
         return;
       }
 
-      setSuggestions(data || []);
+      setSuggestions((data || []) as CourseSuggestion[]);
     } catch (error) {
       console.error('Erro inesperado:', error);
     } finally {

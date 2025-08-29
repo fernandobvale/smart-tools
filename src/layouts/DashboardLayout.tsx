@@ -1,147 +1,104 @@
-import { useState } from 'react';
-import {
-  BarChart3,
-  FileText,
-  Receipt,
+
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { 
+  LogOut, 
+  User, 
+  FileText, 
+  Calculator, 
   Search,
   Globe,
-  Edit,
+  Edit3,
   StickyNote,
   Award,
   Users,
-  MessageSquare,
-  List,
-  BookOpen,
-  AlertTriangle,
   Lightbulb,
+  List,
+  GraduationCap,
+  MessageSquare,
   Database
-} from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/components/auth/AuthProvider';
-import { ScrollArea } from "@/components/ui/scroll-area"
+} from "lucide-react";
 
-interface NavItem {
-  name: string;
-  href: string;
-  icon: any;
-}
+const DashboardLayout = () => {
+  const { signOut } = useAuth();
+  const [activeItem, setActiveItem] = useState("");
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-  { name: 'Dividir Texto', href: '/text-splitter', icon: FileText },
-  { name: 'Recibos', href: '/receipts', icon: Receipt },
-  { name: 'Consulta CPF', href: '/cpf-consulta', icon: Search },
-  { name: 'Gerador SEO', href: '/seo-generator', icon: Globe },
-  { name: 'Editor Markdown', href: '/markdown-editor', icon: Edit },
-  { name: 'Notas', href: '/notes', icon: StickyNote },
-  { name: 'Certificados', href: '/certificates/manage', icon: Award },
-  { name: 'Lista de Professores', href: '/teacher-list', icon: Users },
-  { name: 'Gerador de Prompts', href: '/prompt-generator', icon: MessageSquare },
-  { name: 'Lista de Prompts', href: '/prompt-list', icon: List },
-  { name: 'Gerenciar Cursos', href: '/courses', icon: BookOpen },
-  { name: 'Reclamações de Curso', href: '/reclamacoes-curso', icon: AlertTriangle },
-  { name: 'Sugestões de Curso', href: '/sugestoes-curso', icon: Lightbulb },
-  { name: 'Supabase', href: '/supabase', icon: Database },
-];
+  const menuItems = [
+    { id: "dashboard", label: "Dashboard", icon: User, path: "/dashboard" },
+    { id: "text-splitter", label: "Quebrador de Texto", icon: FileText, path: "/text-splitter" },
+    { id: "receipts", label: "Recibos", icon: Calculator, path: "/receipts" },
+    { id: "cpf-consulta", label: "Consulta CPF", icon: Search, path: "/cpf-consulta" },
+    { id: "seo-generator", label: "Gerador SEO", icon: Globe, path: "/seo-generator" },
+    { id: "markdown-editor", label: "Editor Markdown", icon: Edit3, path: "/markdown-editor" },
+    { id: "notes", label: "Notas", icon: StickyNote, path: "/notes" },
+    { id: "certificates", label: "Certificados", icon: Award, path: "/certificates/manage" },
+    { id: "teacher-list", label: "Lista de Professores", icon: Users, path: "/teacher-list" },
+    { id: "prompt-generator", label: "Gerador de Prompts", icon: Lightbulb, path: "/prompt-generator" },
+    { id: "prompt-list", label: "Lista de Prompts", icon: List, path: "/prompt-list" },
+    { id: "courses", label: "Gerenciar Cursos", icon: GraduationCap, path: "/courses" },
+    { id: "sugestoes-curso", label: "Sugestões de Curso", icon: MessageSquare, path: "/sugestoes-curso" },
+    { id: "supabase", label: "Supabase Projects", icon: Database, path: "/supabase" },
+  ];
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
+  const handleSignOut = () => {
+    signOut();
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 text-gray-700">
-      {/* Sidebar (hidden on small screens) */}
-      <aside className="hidden md:flex md:w-64 flex-col border-r border-gray-200 bg-white">
-        <div className="flex items-center justify-center h-16 border-b border-gray-200">
-          <span className="text-lg font-semibold">Painel</span>
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div className="w-64 border-r bg-card">
+        <div className="p-4">
+          <h2 className="text-lg font-semibold">Dashboard</h2>
         </div>
-        <ScrollArea className="flex-1">
-          <nav className="p-4">
-            {navigation.map((item: NavItem) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="flex items-center p-2 rounded-md hover:bg-gray-100 transition-colors"
-              >
-                <item.icon className="w-4 h-4 mr-2" />
-                {item.name}
-              </Link>
-            ))}
-          </nav>
-        </ScrollArea>
-        <div className="p-4 border-t border-gray-200">
-          <button
-            onClick={handleLogout}
-            className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-          >
-            Sair
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile sidebar */}
-      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetTrigger asChild className="md:hidden">
-          <button className="p-2 hover:bg-gray-200 rounded-md">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64">
-          <SheetHeader className="text-left">
-            <SheetTitle>Painel</SheetTitle>
-          </SheetHeader>
-          <Separator />
-          <ScrollArea className="flex-1">
-            <nav className="p-4">
-              {navigation.map((item: NavItem) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="flex items-center p-2 rounded-md hover:bg-gray-100 transition-colors"
+        <Separator />
+        
+        <ScrollArea className="flex-1 px-3">
+          <div className="space-y-1 py-4">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.id}
+                  variant={activeItem === item.id ? "secondary" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setActiveItem(item.id);
+                    window.location.href = item.path;
+                  }}
                 >
-                  <item.icon className="w-4 h-4 mr-2" />
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-          </ScrollArea>
-          <div className="p-4 border-t">
-            <button
-              onClick={handleLogout}
-              className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-            >
-              Sair
-            </button>
+                  <Icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </Button>
+              );
+            })}
           </div>
-        </SheetContent>
-      </Sheet>
+        </ScrollArea>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-        <div className="container mx-auto p-4">
-          {children}
+        <Separator />
+        <div className="p-4">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleSignOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sair
+          </Button>
         </div>
-      </main>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden">
+        <main className="h-full overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

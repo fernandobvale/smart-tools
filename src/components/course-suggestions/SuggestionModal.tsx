@@ -61,7 +61,7 @@ export const SuggestionModal = ({
 
   const onSubmit = async (data: CourseSuggestionFormData) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("course_suggestions")
         .insert(data);
 

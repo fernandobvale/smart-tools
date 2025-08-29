@@ -82,7 +82,7 @@ export const EditSuggestionModal = ({
     if (!suggestion) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("course_suggestions")
         .update({
           ...data,
