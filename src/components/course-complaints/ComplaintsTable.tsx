@@ -30,8 +30,12 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
   const checkAdminStatus = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('Usuário não logado');
+        return;
+      }
 
+      console.log('Verificando admin para usuário:', user.id);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -39,8 +43,12 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
         .eq('role', 'admin')
         .single();
 
+      console.log('Resultado da verificação admin:', { data, error });
       if (!error && data) {
         setIsAdmin(true);
+        console.log('Usuário é admin');
+      } else {
+        console.log('Usuário não é admin ou não encontrado');
       }
     } catch (error) {
       console.error('Erro ao verificar status de admin:', error);
