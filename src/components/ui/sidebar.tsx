@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -14,7 +13,8 @@ import {
   BookOpen,
   LogOut,
   Calculator,
-  Database, // Novo ícone
+  Database,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { toast } from "sonner";
@@ -84,6 +84,12 @@ const menuItems = [
     title: "Pagamento Editores",
     href: "/courses",
     icon: <BookOpen className="w-4 h-4" />,
+    external: false
+  },
+  {
+    title: "Reclamações de Curso",
+    href: "/reclamacoes-curso",
+    icon: <AlertTriangle className="w-4 h-4" />,
     external: false
   },
   {

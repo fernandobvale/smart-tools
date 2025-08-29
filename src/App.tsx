@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -23,8 +24,9 @@ import TeacherList from "./pages/TeacherList";
 import PromptGenerator from "./pages/PromptGenerator";
 import PromptList from "./pages/PromptList";
 import CourseManagement from "./pages/CourseManagement";
+import CourseComplaints from "./pages/CourseComplaints";
 import NotFound from "./pages/NotFound";
-import Supabase from "./pages/Supabase"; // Novo import
+import Supabase from "./pages/Supabase";
 import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
 
 const queryClient = new QueryClient({
@@ -42,7 +44,6 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
           <AuthProvider>
-            {/* Removed duplicate Toaster. Sonner will handle all toasts. */}
             <Sonner />
             <ServiceWorkerNotification />
             <Routes>
@@ -52,6 +53,7 @@ const App = () => {
               <Route path="/certificates/new" element={<CertificateForm />} />
               <Route path="/certificates/success" element={<CertificateSuccess />} />
               <Route path="/teacher-application" element={<TeacherApplication />} />
+              <Route path="/reclamacoes-curso" element={<CourseComplaints />} />
               {/* Rotas protegidas */}
               <Route
                 element={
