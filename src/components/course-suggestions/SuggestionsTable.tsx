@@ -8,6 +8,7 @@ import { CourseSuggestion } from "./types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EditSuggestionModal } from "./EditSuggestionModal";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface SuggestionsTableProps {
   suggestions: CourseSuggestion[];
@@ -16,6 +17,7 @@ interface SuggestionsTableProps {
 }
 
 export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProps) => {
+  const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,14 +25,15 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
 
   useEffect(() => {
     checkAdminStatus();
-  }, []);
+  }, [user]);
 
   const checkAdminStatus = async () => {
     try {
       setIsCheckingAdmin(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         console.log('Usuário não logado');
+        setIsAdmin(false);
         setIsCheckingAdmin(false);
         return;
       }
@@ -90,7 +93,7 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
               <TableHead>Observações</TableHead>
               <TableHead>Buscas na Internet</TableHead>
               <TableHead>Curso Criado?</TableHead>
-              {isAdmin && <TableHead>Ações</TableHead>}
+              {(isAdmin && user) && <TableHead>Ações</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -126,7 +129,7 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
                   </Badge>
                 </TableCell>
                 
-                {isAdmin && (
+                {(isAdmin && user) && (
                   <TableCell className="min-w-[120px]">
                     <Button size="sm" variant="outline" onClick={() => handleEditClick(suggestion)}>
                       Editar
@@ -139,12 +142,14 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
         </Table>
       </div>
 
-      <EditSuggestionModal
-        open={isModalOpen}
-        onOpenChange={handleModalClose}
-        suggestion={selectedSuggestion}
-        onUpdated={onUpdate}
-      />
+      {user && (
+        <EditSuggestionModal
+          open={isModalOpen}
+          onOpenChange={handleModalClose}
+          suggestion={selectedSuggestion}
+          onUpdated={onUpdate}
+        />
+      )}
     </>
   );
 };
