@@ -12,7 +12,8 @@ import {
   Sparkles,
   BookOpen,
   Calculator,
-  Database // Novo ícone
+  Database, // Novo ícone
+  AlertTriangle
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -100,6 +101,13 @@ export default function Dashboard() {
       description: "Gerencie senhas de projetos Supabase",
       icon: <Database className="w-6 h-6 text-[#7E69AB]" />,
       href: "/supabase",
+      external: false
+    },
+    {
+      title: "Reclamações de Curso",
+      description: "Registre e acompanhe reclamações de cursos",
+      icon: <AlertTriangle className="w-6 h-6 text-[#9b87f5]" />,
+      href: "/reclamacoes-curso",
       external: false
     }
   ];
