@@ -61,9 +61,23 @@ export const SuggestionModal = ({
 
   const onSubmit = async (data: CourseSuggestionFormData) => {
     try {
-      const { error } = await (supabase as any)
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Erro",
+          description: "Você precisa estar logado para registrar uma sugestão.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
         .from("course_suggestions")
-        .insert(data);
+        .insert({
+          ...data,
+          user_id: user.id
+        });
 
       if (error) throw error;
 

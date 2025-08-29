@@ -36,7 +36,7 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
       }
 
       console.log('Verificando admin para usuário:', user.id);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)

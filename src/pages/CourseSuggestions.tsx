@@ -27,7 +27,7 @@ const CourseSuggestions = () => {
 
   const fetchSuggestions = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('course_suggestions')
         .select('*')
         .order('created_at', { ascending: false });
@@ -37,7 +37,7 @@ const CourseSuggestions = () => {
         return;
       }
 
-      setSuggestions((data || []) as CourseSuggestion[]);
+      setSuggestions(data || []);
     } catch (error) {
       console.error('Erro inesperado:', error);
     } finally {

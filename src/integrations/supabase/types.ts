@@ -140,6 +140,48 @@ export type Database = {
         }
         Relationships: []
       }
+      course_suggestions: {
+        Row: {
+          attendant: string
+          course_created: boolean
+          created_at: string
+          id: string
+          internet_searches: string
+          observations: string | null
+          school: string
+          suggested_course: string
+          suggestion_date: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          attendant: string
+          course_created?: boolean
+          created_at?: string
+          id?: string
+          internet_searches: string
+          observations?: string | null
+          school: string
+          suggested_course: string
+          suggestion_date: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          attendant?: string
+          course_created?: boolean
+          created_at?: string
+          id?: string
+          internet_searches?: string
+          observations?: string | null
+          school?: string
+          suggested_course?: string
+          suggestion_date?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cpf_searches: {
         Row: {
           cpf: string
