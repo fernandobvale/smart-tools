@@ -10,6 +10,7 @@ export interface CourseComplaint {
   analyst: string | null;
   action_taken: string | null;
   status: string;
+  feedback: string | null;
 }
 
 export interface CourseComplaintFormData {
@@ -20,4 +21,5 @@ export interface CourseComplaintFormData {
   analyst?: string;
   action_taken?: string;
   status: string;
+  feedback?: string;
 }

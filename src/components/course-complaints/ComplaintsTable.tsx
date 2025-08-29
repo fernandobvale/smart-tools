@@ -22,6 +22,7 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<CourseComplaint>>({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
 
   useEffect(() => {
     checkAdminStatus();
@@ -29,9 +30,11 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
 
   const checkAdminStatus = async () => {
     try {
+      setIsCheckingAdmin(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('Usuário não logado');
+        setIsCheckingAdmin(false);
         return;
       }
 
@@ -41,17 +44,21 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
         .select('role')
         .eq('user_id', user.id)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
       console.log('Resultado da verificação admin:', { data, error });
       if (!error && data) {
         setIsAdmin(true);
         console.log('Usuário é admin');
       } else {
+        setIsAdmin(false);
         console.log('Usuário não é admin ou não encontrado');
       }
     } catch (error) {
       console.error('Erro ao verificar status de admin:', error);
+      setIsAdmin(false);
+    } finally {
+      setIsCheckingAdmin(false);
     }
   };
 
@@ -64,6 +71,7 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
       analyst: complaint.analyst,
       action_taken: complaint.action_taken,
       status: complaint.status,
+      feedback: complaint.feedback,
     });
   };
 
@@ -112,6 +120,14 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
     }
   };
 
+  if (isCheckingAdmin) {
+    return (
+      <div className="border rounded-lg p-8 text-center">
+        <p>Carregando permissões...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="border rounded-lg">
       <Table>
@@ -124,6 +140,7 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
             <TableHead>Status</TableHead>
             <TableHead>Responsável</TableHead>
             <TableHead>Ação Tomada</TableHead>
+            <TableHead>Feedback/Observação</TableHead>
             {isAdmin && <TableHead>Ações</TableHead>}
           </TableRow>
         </TableHeader>
@@ -211,6 +228,19 @@ export const ComplaintsTable = ({ complaints, onUpdate }: ComplaintsTableProps) 
                   />
                 ) : (
                   <div className="line-clamp-3 text-sm">{complaint.action_taken || '-'}</div>
+                )}
+              </TableCell>
+
+              <TableCell className="max-w-[250px]">
+                {editingId === complaint.id ? (
+                  <Textarea
+                    value={editData.feedback || ''}
+                    onChange={(e) => setEditData({ ...editData, feedback: e.target.value })}
+                    className="min-h-[60px]"
+                    placeholder="Digite seu feedback ou observação..."
+                  />
+                ) : (
+                  <div className="line-clamp-3 text-sm">{complaint.feedback || '-'}</div>
                 )}
               </TableCell>
               

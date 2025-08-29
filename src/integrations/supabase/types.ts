@@ -106,6 +106,7 @@ export type Database = {
           complaint_date: string
           course: string
           created_at: string
+          feedback: string | null
           id: string
           school: string
           status: string
@@ -118,6 +119,7 @@ export type Database = {
           complaint_date: string
           course: string
           created_at?: string
+          feedback?: string | null
           id?: string
           school: string
           status?: string
@@ -130,6 +132,7 @@ export type Database = {
           complaint_date?: string
           course?: string
           created_at?: string
+          feedback?: string | null
           id?: string
           school?: string
           status?: string
