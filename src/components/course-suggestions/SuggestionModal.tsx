@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CourseSuggestionFormData } from "./types";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const formSchema = z.object({
   suggestion_date: z.string().min(1, "Data da sugestão é obrigatória"),
@@ -46,6 +47,7 @@ export const SuggestionModal = ({
   onOpenChange,
   onSuggestionSubmitted,
 }: SuggestionModalProps) => {
+  const { user } = useAuth();
   const form = useForm<CourseSuggestionFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,29 +63,32 @@ export const SuggestionModal = ({
 
   const onSubmit = async (data: CourseSuggestionFormData) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Erro",
-          description: "Você precisa estar logado para registrar uma sugestão.",
-          variant: "destructive",
-        });
-        return;
-      }
+      console.log('Enviando sugestão...', { user: !!user, data });
+
+      // Preparar dados para inserção
+      const insertData = {
+        ...data,
+        user_id: user ? user.id : null // Se não está logado, user_id será null
+      };
+
+      console.log('Dados para inserir:', insertData);
 
       const { error } = await supabase
         .from("course_suggestions")
-        .insert({
-          ...data,
-          user_id: user.id
-        });
+        .insert(insertData);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir sugestão:', error);
+        throw error;
+      }
+
+      console.log('Sugestão registrada com sucesso!');
 
       toast({
         title: "Sucesso",
-        description: "Sugestão de curso registrada com sucesso!",
+        description: user 
+          ? "Sugestão de curso registrada com sucesso!"
+          : "Sugestão de curso registrada com sucesso! Obrigado pela sua contribuição.",
       });
 
       onOpenChange(false);
@@ -104,6 +109,11 @@ export const SuggestionModal = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Registrar Sugestão de Curso</DialogTitle>
+          {!user && (
+            <p className="text-sm text-muted-foreground">
+              Você está sugerindo um curso como visitante. Sua sugestão será registrada anonimamente.
+            </p>
+          )}
         </DialogHeader>
 
         <Form {...form}>

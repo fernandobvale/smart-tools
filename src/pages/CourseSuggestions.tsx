@@ -1,13 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, LogIn } from "lucide-react";
+import { Plus } from "lucide-react";
 import { SuggestionModal } from "@/components/course-suggestions/SuggestionModal";
 import { SuggestionsTable } from "@/components/course-suggestions/SuggestionsTable";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseSuggestion } from "@/components/course-suggestions/types";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CourseSuggestions = () => {
   const { user } = useAuth();
@@ -61,12 +60,7 @@ const CourseSuggestions = () => {
 
   const handleRegisterClick = () => {
     console.log('Botão registrar clicado. Usuário logado:', !!user);
-    if (user) {
-      setIsModalOpen(true);
-    } else {
-      // Para usuários não logados, pode redirecionar para login ou mostrar uma mensagem
-      console.log('Usuário não está logado');
-    }
+    setIsModalOpen(true);
   };
 
   if (loading) {
@@ -90,26 +84,19 @@ const CourseSuggestions = () => {
           </p>
         </div>
         
-        {user ? (
-          <Button onClick={handleRegisterClick}>
-            <Plus className="w-4 h-4 mr-2" />
-            Registrar Sugestão
-          </Button>
-        ) : (
-          <Button variant="outline" onClick={() => window.location.href = '/login'}>
-            <LogIn className="w-4 h-4 mr-2" />
-            Fazer Login para Sugerir
-          </Button>
-        )}
+        <Button onClick={handleRegisterClick}>
+          <Plus className="w-4 h-4 mr-2" />
+          Registrar Sugestão
+        </Button>
       </div>
 
       {!user && (
-        <Alert>
-          <LogIn className="h-4 w-4" />
-          <AlertDescription>
-            Você pode visualizar as sugestões existentes, mas precisa fazer login para registrar novas sugestões ou editar existentes.
-          </AlertDescription>
-        </Alert>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-blue-800 text-sm">
+            💡 <strong>Dica:</strong> Você pode sugerir cursos mesmo sem fazer login! 
+            Clique em "Registrar Sugestão" acima ou em qualquer linha da tabela para ver mais detalhes.
+          </p>
+        </div>
       )}
 
       <div className="bg-card rounded-lg border p-6">
@@ -134,13 +121,11 @@ const CourseSuggestions = () => {
         )}
       </div>
 
-      {user && (
-        <SuggestionModal 
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          onSuggestionSubmitted={handleSuggestionSubmitted}
-        />
-      )}
+      <SuggestionModal 
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSuggestionSubmitted={handleSuggestionSubmitted}
+      />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { CourseSuggestion } from "./types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EditSuggestionModal } from "./EditSuggestionModal";
+import { SuggestionDetailsModal } from "./SuggestionDetailsModal";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 interface SuggestionsTableProps {
@@ -20,7 +21,8 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<CourseSuggestion | null>(null);
 
   useEffect(() => {
@@ -62,13 +64,26 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
     }
   };
 
-  const handleEditClick = (suggestion: CourseSuggestion) => {
+  const handleRowClick = (suggestion: CourseSuggestion) => {
+    console.log('Clicou na linha da sugestão:', suggestion.id);
     setSelectedSuggestion(suggestion);
-    setIsModalOpen(true);
+    setIsDetailsModalOpen(true);
   };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
+  const handleEditClick = (e: React.MouseEvent, suggestion: CourseSuggestion) => {
+    e.stopPropagation(); // Evita que o clique na linha seja acionado
+    console.log('Clicou no botão editar:', suggestion.id);
+    setSelectedSuggestion(suggestion);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDetailsModalClose = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedSuggestion(null);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
     setSelectedSuggestion(null);
   };
 
@@ -98,7 +113,11 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
           </TableHeader>
           <TableBody>
             {suggestions.map((suggestion) => (
-              <TableRow key={suggestion.id}>
+              <TableRow 
+                key={suggestion.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleRowClick(suggestion)}
+              >
                 <TableCell className="min-w-[100px]">
                   {format(new Date(suggestion.suggestion_date), "dd/MM/yyyy", { locale: ptBR })}
                 </TableCell>
@@ -131,7 +150,11 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
                 
                 {(isAdmin && user) && (
                   <TableCell className="min-w-[120px]">
-                    <Button size="sm" variant="outline" onClick={() => handleEditClick(suggestion)}>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={(e) => handleEditClick(e, suggestion)}
+                    >
                       Editar
                     </Button>
                   </TableCell>
@@ -142,10 +165,16 @@ export const SuggestionsTable = ({ suggestions, onUpdate }: SuggestionsTableProp
         </Table>
       </div>
 
+      <SuggestionDetailsModal
+        open={isDetailsModalOpen}
+        onOpenChange={handleDetailsModalClose}
+        suggestion={selectedSuggestion}
+      />
+
       {user && (
         <EditSuggestionModal
-          open={isModalOpen}
-          onOpenChange={handleModalClose}
+          open={isEditModalOpen}
+          onOpenChange={handleEditModalClose}
           suggestion={selectedSuggestion}
           onUpdated={onUpdate}
         />
