@@ -26,6 +26,7 @@ import PromptList from "./pages/PromptList";
 import CourseManagement from "./pages/CourseManagement";
 import CourseComplaints from "./pages/CourseComplaints";
 import CourseSuggestions from "./pages/CourseSuggestions";
+import BudgetPlan from "./pages/BudgetPlan";
 import NotFound from "./pages/NotFound";
 import Supabase from "./pages/Supabase";
 import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
@@ -77,6 +78,7 @@ const App = () => {
                 <Route path="/prompt-generator" element={<PromptGenerator />} />
                 <Route path="/prompt-list" element={<PromptList />} />
                 <Route path="/courses" element={<CourseManagement />} />
+                <Route path="/plano-orcamentario" element={<BudgetPlan />} />
                 <Route path="/supabase" element={<Supabase />} />
               </Route>
               {/* Rota 404 - deve ser a última */}

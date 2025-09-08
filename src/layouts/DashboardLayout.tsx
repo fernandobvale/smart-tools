@@ -21,7 +21,9 @@ import {
   List,
   GraduationCap,
   MessageSquare,
-  Database
+  Database,
+  BarChart3,
+  AlertTriangle
 } from "lucide-react";
 
 const DashboardLayout = () => {
@@ -39,8 +41,10 @@ const DashboardLayout = () => {
     { id: "teacher-list", label: "Lista de Professores", icon: Users, path: "/teacher-list" },
     { id: "prompt-generator", label: "Gerador de Prompts", icon: Lightbulb, path: "/prompt-generator" },
     { id: "prompt-list", label: "Lista de Prompts", icon: List, path: "/prompt-list" },
-    { id: "courses", label: "Gerenciar Cursos", icon: GraduationCap, path: "/courses" },
+    { id: "courses", label: "Pagamento de Editores", icon: GraduationCap, path: "/courses" },
+    { id: "reclamacoes-curso", label: "Reclamações de Cursos", icon: AlertTriangle, path: "/reclamacoes-curso" },
     { id: "sugestoes-curso", label: "Sugestões de Curso", icon: MessageSquare, path: "/sugestoes-curso" },
+    { id: "plano-orcamentario", label: "Plano Orçamentário", icon: BarChart3, path: "/plano-orcamentario" },
     { id: "supabase", label: "Supabase Projects", icon: Database, path: "/supabase" },
   ];
 
