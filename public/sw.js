@@ -1,10 +1,11 @@
 
-const CACHE_NAME = 'ferramentas-v4'; // Incrementada para v4
-const STATIC_CACHE = 'ferramentas-static-v4';
-const DYNAMIC_CACHE = 'ferramentas-dynamic-v4';
+const CACHE_NAME = 'ferramentas-v5'; // Incrementada para v5
+const STATIC_CACHE = 'ferramentas-static-v5';
+const DYNAMIC_CACHE = 'ferramentas-dynamic-v5';
 
 // URLs estáticas essenciais que podem ser cachadas com segurança
 const staticUrlsToCache = [
+  '/index.html',
   '/manifest.json',
   '/icon-192x192.png',
   '/icon-512x512.png'
@@ -107,6 +108,34 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url);
+  
+  // Network-first para navegação SPA
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+            return response;
+          }
+          throw new Error('Network response not ok');
+        })
+        .catch(() => {
+          return caches.match('/index.html').then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            return new Response(FALLBACK_HTML, {
+              headers: { 'Content-Type': 'text/html' }
+            });
+          });
+        })
+    );
+    return;
+  }
   
   // Estratégia Stale While Revalidate para arquivos críticos
   if (url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname.endsWith('.css') || url.pathname === '/') {

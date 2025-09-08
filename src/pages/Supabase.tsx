@@ -4,6 +4,7 @@ import { SupabaseProjectsList } from "@/components/supabase/SupabaseProjectsList
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 export default function Supabase() {
   const { user, session, signOut } = useAuth();
@@ -40,9 +41,9 @@ export default function Supabase() {
           <AlertDescription>
             <strong>Login necessário:</strong> Você precisa estar logado para gerenciar projetos Supabase.
             <br />
-            <a href="/login" className="underline font-medium mt-2 inline-block">
+            <Link to="/login" className="underline font-medium mt-2 inline-block">
               Fazer login agora
-            </a>
+            </Link>
           </AlertDescription>
         </Alert>
       )}

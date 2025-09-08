@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import React from "react";
+import { Outlet, NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -26,7 +26,6 @@ import {
 
 const DashboardLayout = () => {
   const { signOut } = useAuth();
-  const [activeItem, setActiveItem] = useState("");
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: User, path: "/dashboard" },
@@ -65,15 +64,19 @@ const DashboardLayout = () => {
               return (
                 <Button
                   key={item.id}
-                  variant={activeItem === item.id ? "secondary" : "ghost"}
+                  asChild
+                  variant="ghost"
                   className="w-full justify-start"
-                  onClick={() => {
-                    setActiveItem(item.id);
-                    window.location.href = item.path;
-                  }}
                 >
-                  <Icon className="mr-2 h-4 w-4" />
-                  {item.label}
+                  <NavLink 
+                    to={item.path}
+                    className={({ isActive }) => 
+                      isActive ? "bg-secondary text-secondary-foreground" : ""
+                    }
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    {item.label}
+                  </NavLink>
                 </Button>
               );
             })}

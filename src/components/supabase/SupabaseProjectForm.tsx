@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { InfoTooltip } from "./InfoTooltip";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 const formSchema = z.object({
   project_name: z.string().min(2, "Nome obrigatório"),
@@ -263,7 +264,7 @@ export function SupabaseProjectForm({ defaultValues, onSubmitDone }: Props) {
           <AlertDescription>
             ⚠️ <strong>Usuário não autenticado!</strong> Você precisa fazer login para salvar projetos Supabase.
             <br />
-            <a href="/login" className="underline font-medium">Clique aqui para fazer login</a>
+            <Link to="/login" className="underline font-medium">Clique aqui para fazer login</Link>
           </AlertDescription>
         </Alert>
       )}
