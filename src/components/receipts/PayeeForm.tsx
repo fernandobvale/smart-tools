@@ -69,7 +69,18 @@ const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProp
           description: "Os dados do beneficiário foram atualizados com sucesso!",
         });
       } else {
-        const { error } = await supabase.from("payees").insert([values]);
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          throw new Error("Você precisa estar autenticado para cadastrar um beneficiário.");
+        }
+
+        const { error } = await supabase.from("payees").insert([
+          {
+            ...values,
+            user_id: user.id
+          }
+        ]);
 
         if (error) {
           if (error.code === "23505") {
