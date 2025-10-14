@@ -23,7 +23,8 @@ import {
   MessageSquare,
   Database,
   BarChart3,
-  AlertTriangle
+  AlertTriangle,
+  BookOpen
 } from "lucide-react";
 
 const DashboardLayout = () => {
@@ -46,6 +47,7 @@ const DashboardLayout = () => {
     { id: "sugestoes-curso", label: "Sugestões de Curso", icon: MessageSquare, path: "/sugestoes-curso" },
     { id: "plano-orcamentario", label: "Plano Orçamentário", icon: BarChart3, path: "/plano-orcamentario" },
     { id: "supabase", label: "Supabase Projects", icon: Database, path: "/supabase" },
+    { id: "ebook", label: "Ebook", icon: BookOpen, path: "https://ebook.aidirectory.com.br", external: true },
   ];
 
   const handleSignOut = () => {
@@ -65,6 +67,27 @@ const DashboardLayout = () => {
           <div className="space-y-1 py-4">
             {menuItems.map((item) => {
               const Icon = item.icon;
+              
+              if (item.external) {
+                return (
+                  <Button
+                    key={item.id}
+                    asChild
+                    variant="ghost"
+                    className="w-full justify-start"
+                  >
+                    <a 
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon className="mr-2 h-4 w-4" />
+                      {item.label}
+                    </a>
+                  </Button>
+                );
+              }
+              
               return (
                 <Button
                   key={item.id}

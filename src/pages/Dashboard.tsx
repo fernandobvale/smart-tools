@@ -117,6 +117,13 @@ export default function Dashboard() {
       icon: <Lightbulb className="w-6 h-6 text-[#6E59A5]" />,
       href: "/sugestoes-curso",
       external: false
+    },
+    {
+      title: "Ebook",
+      description: "Acesse a plataforma de ebooks",
+      icon: <BookOpen className="w-6 h-6 text-[#9b87f5]" />,
+      href: "https://ebook.aidirectory.com.br",
+      external: true
     }
   ];
 
