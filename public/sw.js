@@ -1,7 +1,7 @@
 
-const CACHE_NAME = 'ferramentas-v5'; // Incrementada para v5
-const STATIC_CACHE = 'ferramentas-static-v5';
-const DYNAMIC_CACHE = 'ferramentas-dynamic-v5';
+const CACHE_NAME = 'ferramentas-v6'; // Incrementada para v6
+const STATIC_CACHE = 'ferramentas-static-v6';
+const DYNAMIC_CACHE = 'ferramentas-dynamic-v6';
 
 // URLs estáticas essenciais que podem ser cachadas com segurança
 const staticUrlsToCache = [
