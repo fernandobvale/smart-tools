@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
@@ -31,7 +30,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Set listener FIRST to avoid race conditions (best practice)
@@ -53,7 +51,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigate("/login");
       toast.success("Logout realizado com sucesso!");
     } catch (error) {
       console.error("Error signing out:", error);
