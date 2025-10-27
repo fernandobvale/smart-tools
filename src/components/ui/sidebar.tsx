@@ -15,6 +15,7 @@ import {
   Calculator,
   Database,
   AlertTriangle,
+  BookPlus,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { toast } from "sonner";
@@ -84,6 +85,12 @@ const menuItems = [
     title: "Pagamento Editores",
     href: "/courses",
     icon: <BookOpen className="w-4 h-4" />,
+    external: false
+  },
+  {
+    title: "Novos Cursos",
+    href: "/new-courses",
+    icon: <BookPlus className="w-4 h-4" />,
     external: false
   },
   {

@@ -24,7 +24,8 @@ import {
   Database,
   BarChart3,
   AlertTriangle,
-  BookOpen
+  BookOpen,
+  BookPlus
 } from "lucide-react";
 
 const DashboardLayout = () => {
@@ -43,6 +44,7 @@ const DashboardLayout = () => {
     { id: "prompt-generator", label: "Gerador de Prompts", icon: Lightbulb, path: "/prompt-generator" },
     { id: "prompt-list", label: "Lista de Prompts", icon: List, path: "/prompt-list" },
     { id: "courses", label: "Pagamento de Editores", icon: GraduationCap, path: "/courses" },
+    { id: "new-courses", label: "Novos Cursos", icon: BookPlus, path: "/new-courses" },
     { id: "reclamacoes-curso", label: "Reclamações de Cursos", icon: AlertTriangle, path: "/reclamacoes-curso" },
     { id: "sugestoes-curso", label: "Sugestões de Curso", icon: MessageSquare, path: "/sugestoes-curso" },
     { id: "plano-orcamentario", label: "Plano Orçamentário", icon: BarChart3, path: "/plano-orcamentario" },

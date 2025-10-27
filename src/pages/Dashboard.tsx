@@ -14,7 +14,8 @@ import {
   Calculator,
   Database, // Novo ícone
   AlertTriangle,
-  Lightbulb
+  Lightbulb,
+  BookPlus
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -88,6 +89,13 @@ export default function Dashboard() {
       description: "Gerencie pagamentos de aulas editadas",
       icon: <BookOpen className="w-6 h-6 text-[#7E69AB]" />,
       href: "/courses",
+      external: false
+    },
+    {
+      title: "Novos Cursos",
+      description: "Gerencie o pipeline de novos cursos",
+      icon: <BookPlus className="w-6 h-6 text-[#9b87f5]" />,
+      href: "/new-courses",
       external: false
     },
     {

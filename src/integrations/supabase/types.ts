@@ -272,6 +272,36 @@ export type Database = {
         }
         Relationships: []
       }
+      new_courses: {
+        Row: {
+          created_at: string
+          curso: string
+          id: string
+          professor: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          curso: string
+          id?: string
+          professor: string
+          status: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          curso?: string
+          id?: string
+          professor?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string
@@ -529,10 +559,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      convert_video_to_audio: {
-        Args: { video_path: string }
-        Returns: string
-      }
+      convert_video_to_audio: { Args: { video_path: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

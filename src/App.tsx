@@ -29,6 +29,7 @@ import CourseSuggestions from "./pages/CourseSuggestions";
 import BudgetPlan from "./pages/BudgetPlan";
 import NotFound from "./pages/NotFound";
 import Supabase from "./pages/Supabase";
+import NewCourses from "./pages/NewCourses";
 import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
 
 const queryClient = new QueryClient({
@@ -78,6 +79,7 @@ const App = () => {
                 <Route path="/prompt-generator" element={<PromptGenerator />} />
                 <Route path="/prompt-list" element={<PromptList />} />
                 <Route path="/courses" element={<CourseManagement />} />
+                <Route path="/new-courses" element={<NewCourses />} />
                 <Route path="/plano-orcamentario" element={<BudgetPlan />} />
                 <Route path="/supabase" element={<Supabase />} />
               </Route>
