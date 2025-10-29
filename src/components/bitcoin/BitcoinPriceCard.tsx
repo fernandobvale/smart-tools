@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Bitcoin } from "lucide-react";
+import { TrendingUp, TrendingDown, Bitcoin, ExternalLink } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useBitcoinPrice } from "@/hooks/useBitcoinPrice";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export const BitcoinPriceCard = () => {
   const { data, isLoading } = useBitcoinPrice();
@@ -48,6 +50,24 @@ export const BitcoinPriceCard = () => {
             {isPositive ? "+" : ""}{data?.change24h.toFixed(2)}% (24h)
           </span>
         </div>
+        
+        <Separator className="my-4" />
+        
+        <Button
+          variant="secondary"
+          className="w-full"
+          asChild
+        >
+          <a 
+            href="https://www.alfredp2p.io/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2"
+          >
+            Comprar P2P
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </Button>
       </CardContent>
     </Card>
   );
