@@ -137,7 +137,7 @@ export default function Dashboard() {
     {
       title: "Carteira Bitcoin",
       description: "Acompanhe seus investimentos em Bitcoin",
-      icon: <Bitcoin className="w-6 h-6" style={{ color: "#F7931A" }} />,
+      icon: <Bitcoin className="w-6 h-6 text-[#F7931A]" />,
       href: "/bitcoin-wallet",
       external: false
     }

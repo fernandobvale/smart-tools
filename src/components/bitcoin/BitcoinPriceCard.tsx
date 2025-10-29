@@ -30,7 +30,7 @@ export const BitcoinPriceCard = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Bitcoin className="w-5 h-5" style={{ color: "#F7931A" }} />
+          <Bitcoin className="w-5 h-5 text-[#F7931A]" />
           Cotação Bitcoin (BTC/BRL)
         </CardTitle>
       </CardHeader>
