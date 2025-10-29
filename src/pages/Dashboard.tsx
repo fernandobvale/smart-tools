@@ -12,10 +12,11 @@ import {
   Sparkles,
   BookOpen,
   Calculator,
-  Database, // Novo ícone
+  Database,
   AlertTriangle,
   Lightbulb,
-  BookPlus
+  BookPlus,
+  Bitcoin
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -132,6 +133,13 @@ export default function Dashboard() {
       icon: <BookOpen className="w-6 h-6 text-[#9b87f5]" />,
       href: "https://ebook.aidirectory.com.br",
       external: true
+    },
+    {
+      title: "Carteira Bitcoin",
+      description: "Acompanhe seus investimentos em Bitcoin",
+      icon: <Bitcoin className="w-6 h-6" style={{ color: "#F7931A" }} />,
+      href: "/bitcoin-wallet",
+      external: false
     }
   ];
 

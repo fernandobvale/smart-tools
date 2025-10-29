@@ -25,7 +25,8 @@ import {
   BarChart3,
   AlertTriangle,
   BookOpen,
-  BookPlus
+  BookPlus,
+  Bitcoin
 } from "lucide-react";
 
 const DashboardLayout = () => {
@@ -49,6 +50,7 @@ const DashboardLayout = () => {
     { id: "sugestoes-curso", label: "Sugestões de Curso", icon: MessageSquare, path: "/sugestoes-curso" },
     { id: "plano-orcamentario", label: "Plano Orçamentário", icon: BarChart3, path: "/plano-orcamentario" },
     { id: "supabase", label: "Supabase Projects", icon: Database, path: "/supabase" },
+    { id: "bitcoin-wallet", label: "Carteira Bitcoin", icon: Bitcoin, path: "/bitcoin-wallet" },
     { id: "ebook", label: "Ebook", icon: BookOpen, path: "https://ebook.aidirectory.com.br", external: true },
   ];
 

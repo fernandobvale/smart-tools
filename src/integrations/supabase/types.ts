@@ -29,6 +29,45 @@ export type Database = {
         }
         Relationships: []
       }
+      bitcoin_transactions: {
+        Row: {
+          amount_brl: number
+          amount_btc: number
+          created_at: string
+          id: string
+          notes: string | null
+          price_per_btc: number
+          transaction_date: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_brl: number
+          amount_btc: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          price_per_btc: number
+          transaction_date?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_brl?: number
+          amount_btc?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          price_per_btc?: number
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       certificates: {
         Row: {
           bairro: string
