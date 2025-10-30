@@ -1,15 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatCurrencyUSD } from "@/lib/utils";
 import { useBitcoinTransactions } from "@/hooks/useBitcoinTransactions";
 import { useBitcoinPrice } from "@/hooks/useBitcoinPrice";
+import { useUsdBrlRate } from "@/hooks/useUsdBrlRate";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const WalletSummary = () => {
   const { transactions, isLoading: isLoadingTransactions } = useBitcoinTransactions();
   const { data: priceData, isLoading: isLoadingPrice } = useBitcoinPrice();
+  const { data: usdBrlData, isLoading: isLoadingUsdBrl } = useUsdBrlRate();
 
-  if (isLoadingTransactions || isLoadingPrice) {
+  if (isLoadingTransactions || isLoadingPrice || isLoadingUsdBrl) {
     return (
       <Card>
         <CardHeader>
@@ -36,11 +38,20 @@ export const WalletSummary = () => {
     .filter(t => t.transaction_type === "compra")
     .reduce((sum, t) => sum + Number(t.amount_btc), 0);
 
-  const currentValue = totalBtc * (priceData?.price ?? 0);
-  const profit = currentValue - totalInvested;
-  const profitPercentage = totalInvested > 0 ? (profit / totalInvested) * 100 : 0;
-  const averagePrice = totalBtc > 0 ? totalInvested / totalBtc : 0;
-  const isProfit = profit >= 0;
+  const usdBrlRate = usdBrlData?.rate ?? 1;
+  
+  const currentValueBrl = totalBtc * (priceData?.priceBrl ?? 0);
+  const currentValueUsd = currentValueBrl / usdBrlRate;
+  
+  const profitBrl = currentValueBrl - totalInvested;
+  const profitUsd = profitBrl / usdBrlRate;
+  
+  const profitPercentage = totalInvested > 0 ? (profitBrl / totalInvested) * 100 : 0;
+  const averagePriceBrl = totalBtc > 0 ? totalInvested / totalBtc : 0;
+  const averagePriceUsd = averagePriceBrl / usdBrlRate;
+  const isProfit = profitBrl >= 0;
+  
+  const totalInvestedUsd = totalInvested / usdBrlRate;
 
   return (
     <Card>
@@ -53,7 +64,10 @@ export const WalletSummary = () => {
       <CardContent className="space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Investido:</span>
-          <span className="font-semibold">{formatCurrency(totalInvested)}</span>
+          <div className="text-right">
+            <div className="font-semibold">{formatCurrency(totalInvested)}</div>
+            <div className="text-sm text-muted-foreground">{formatCurrencyUSD(totalInvestedUsd)}</div>
+          </div>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Bitcoin:</span>
@@ -61,11 +75,17 @@ export const WalletSummary = () => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Valor Atual:</span>
-          <span className="font-semibold">{formatCurrency(currentValue)}</span>
+          <div className="text-right">
+            <div className="font-semibold">{formatCurrency(currentValueBrl)}</div>
+            <div className="text-sm text-muted-foreground">{formatCurrencyUSD(currentValueUsd)}</div>
+          </div>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Preço Médio:</span>
-          <span className="font-semibold">{formatCurrency(averagePrice)}/BTC</span>
+          <div className="text-right">
+            <div className="font-semibold">{formatCurrency(averagePriceBrl)}/BTC</div>
+            <div className="text-sm text-muted-foreground">{formatCurrencyUSD(averagePriceUsd)}/BTC</div>
+          </div>
         </div>
         <div className="pt-3 border-t">
           <div className="flex justify-between items-center">
@@ -79,7 +99,10 @@ export const WalletSummary = () => {
             </span>
             <div className="text-right">
               <div className={`font-bold ${isProfit ? "text-green-600" : "text-red-600"}`}>
-                {formatCurrency(Math.abs(profit))}
+                {formatCurrency(Math.abs(profitBrl))}
+              </div>
+              <div className={`text-sm ${isProfit ? "text-green-600" : "text-red-600"}`}>
+                {formatCurrencyUSD(Math.abs(profitUsd))}
               </div>
               <div className={`text-sm ${isProfit ? "text-green-600" : "text-red-600"}`}>
                 ({isProfit ? "+" : ""}{profitPercentage.toFixed(2)}%)

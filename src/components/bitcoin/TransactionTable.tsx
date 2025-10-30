@@ -2,8 +2,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, History } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatCurrencyUSD } from "@/lib/utils";
 import { useBitcoinTransactions } from "@/hooks/useBitcoinTransactions";
+import { useUsdBrlRate } from "@/hooks/useUsdBrlRate";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -21,10 +22,13 @@ import { Badge } from "@/components/ui/badge";
 
 export const TransactionTable = () => {
   const { transactions, isLoading, deleteTransaction } = useBitcoinTransactions();
+  const { data: usdBrlData } = useUsdBrlRate();
 
   if (isLoading) {
     return <div>Carregando transações...</div>;
   }
+
+  const usdBrlRate = usdBrlData?.rate ?? 1;
 
   if (transactions.length === 0) {
     return (
@@ -60,6 +64,7 @@ export const TransactionTable = () => {
               <TableHead>Tipo</TableHead>
               <TableHead className="text-right">Quantidade (BTC)</TableHead>
               <TableHead className="text-right">Valor (R$)</TableHead>
+              <TableHead className="text-right">Valor (US$)</TableHead>
               <TableHead className="text-right">Preço/BTC</TableHead>
               <TableHead>Observações</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -81,6 +86,9 @@ export const TransactionTable = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   {formatCurrency(Number(transaction.amount_brl))}
+                </TableCell>
+                <TableCell className="text-right">
+                  {formatCurrencyUSD(Number(transaction.amount_brl) / usdBrlRate)}
                 </TableCell>
                 <TableCell className="text-right">
                   {formatCurrency(Number(transaction.price_per_btc))}
