@@ -179,6 +179,42 @@ export type Database = {
         }
         Relationships: []
       }
+      course_images: {
+        Row: {
+          course_name: string
+          created_at: string
+          id: string
+          image_data: string | null
+          image_size: number | null
+          prompt_en: string
+          prompt_pt: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_name: string
+          created_at?: string
+          id?: string
+          image_data?: string | null
+          image_size?: number | null
+          prompt_en: string
+          prompt_pt: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_name?: string
+          created_at?: string
+          id?: string
+          image_data?: string | null
+          image_size?: number | null
+          prompt_en?: string
+          prompt_pt?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_suggestions: {
         Row: {
           attendant: string

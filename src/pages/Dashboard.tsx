@@ -16,7 +16,8 @@ import {
   AlertTriangle,
   Lightbulb,
   BookPlus,
-  Bitcoin
+  Bitcoin,
+  Image
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -139,6 +140,13 @@ export default function Dashboard() {
       description: "Acompanhe seus investimentos em Bitcoin",
       icon: <Bitcoin className="w-6 h-6 text-[#F7931A]" />,
       href: "/bitcoin-wallet",
+      external: false
+    },
+    {
+      title: "Gerador de Capas",
+      description: "Gere imagens para capas de cursos com IA",
+      icon: <Image className="w-6 h-6 text-[#9b87f5]" />,
+      href: "/course-image-generator",
       external: false
     }
   ];
