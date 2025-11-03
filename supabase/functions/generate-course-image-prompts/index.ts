@@ -34,6 +34,12 @@ serve(async (req) => {
 
 Sua tarefa é analisar o nome do curso fornecido e criar 2 prompts DIFERENTES e detalhados para gerar imagens profissionais no formato 16:9.
 
+REGRAS CRÍTICAS OBRIGATÓRIAS:
+- NUNCA inclua instruções para adicionar texto, palavras, letras, números, tipografia ou qualquer conteúdo escrito nas imagens
+- As imagens devem ser PURAMENTE VISUAIS - apenas pessoas, objetos, ambientes
+- Sempre enfatize "sem texto", "sem palavras", "puramente visual" em cada prompt
+- Formato OBRIGATÓRIO: 16:9 landscape (orientação horizontal wide, 1920x1080 ou similar)
+
 Para cada prompt, siga estas etapas:
 1. Analise o nome do curso e identifique o tema principal
 2. Descreva um ambiente relevante incluindo:
@@ -47,7 +53,7 @@ Para cada prompt, siga estas etapas:
    - Ações ou gestos relevantes para o curso
 4. Combine todos os elementos em um prompt coeso e visualmente atraente
 5. Estruture como: Descrição geral → Ambiente → Profissional → Elementos adicionais
-6. IMPORTANTE: Cada prompt deve ter NO MÁXIMO 100 palavras
+6. IMPORTANTE: Cada prompt deve ter NO MÁXIMO 100 palavras e deve enfatizar "sem texto"
 7. Os 2 prompts devem ser DIFERENTES entre si (ângulos, cenários ou estilos distintos)
 
 Retorne APENAS um JSON válido no seguinte formato:
@@ -55,13 +61,13 @@ Retorne APENAS um JSON válido no seguinte formato:
   "prompts": [
     {
       "id": 1,
-      "prompt_pt": "prompt em português aqui",
-      "prompt_en": "prompt in English here"
+      "prompt_pt": "prompt em português aqui (incluir 'sem texto' ou 'sem palavras')",
+      "prompt_en": "prompt in English here (include 'no text' or 'no words')"
     },
     {
       "id": 2,
-      "prompt_pt": "segundo prompt em português aqui",
-      "prompt_en": "second prompt in English here"
+      "prompt_pt": "segundo prompt em português aqui (incluir 'sem texto' ou 'sem palavras')",
+      "prompt_en": "second prompt in English here (include 'no text' or 'no words')"
     }
   ]
 }

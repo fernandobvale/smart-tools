@@ -16,16 +16,29 @@ export function ImagePreview({ image, courseName, onDownload, onRegenerate }: Im
     return (bytes / 1024).toFixed(2) + ' KB';
   };
 
+  const isLargeSize = image.size > 100000; // >100KB
+  const expectedDimensions = image.dimensions === '1920x1080' || image.dimensions === '1280x720';
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Imagem Gerada</h3>
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-base">{courseName}</CardTitle>
-              <CardDescription>
-                {image.dimensions} • {formatSize(image.size)}
+              <CardDescription className="flex items-center gap-2 flex-wrap">
+                <span>{image.dimensions}</span>
+                <span>•</span>
+                <span className={isLargeSize ? "text-destructive font-medium" : ""}>
+                  {formatSize(image.size)}
+                </span>
+                {isLargeSize && (
+                  <Badge variant="destructive" className="text-xs">Tamanho acima do ideal</Badge>
+                )}
+                {!expectedDimensions && (
+                  <Badge variant="outline" className="text-xs">Proporção diferente</Badge>
+                )}
               </CardDescription>
             </div>
             <Badge variant="secondary">{image.format.toUpperCase()}</Badge>

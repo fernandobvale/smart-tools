@@ -1,10 +1,65 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { Image } from "https://deno.land/x/imagescript@1.2.15/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+async function optimizeImage(base64Url: string) {
+  try {
+    // Decodificar base64
+    const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
+    const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+    // Carregar imagem
+    let image = await Image.decode(imageBytes);
+
+    // Forçar aspect ratio 16:9 (1920x1080)
+    const targetWidth = 1920;
+    const targetHeight = 1080;
+    image = image.resize(targetWidth, targetHeight);
+
+    // Comprimir progressivamente até <100KB
+    let quality = 85;
+    let compressedBytes: Uint8Array;
+    let attempts = 0;
+    const maxSize = 100000; // 100KB
+
+    do {
+      compressedBytes = await image.encodeJPEG(quality);
+      
+      if (compressedBytes.length < maxSize) break;
+      
+      quality -= 10;
+      attempts++;
+      
+      // Se mesmo com qualidade baixa ainda está grande, reduzir dimensões
+      if (quality < 40 && compressedBytes.length > maxSize) {
+        image = image.resize(1280, 720);
+        quality = 85;
+      }
+      
+    } while (compressedBytes.length > maxSize && attempts < 10);
+
+    // Converter para base64
+    const base64Compressed = btoa(String.fromCharCode(...compressedBytes));
+    const finalImageUrl = `data:image/jpeg;base64,${base64Compressed}`;
+
+    console.log(`Imagem otimizada: ${compressedBytes.length} bytes, qualidade: ${quality}%, dimensões: ${image.width}x${image.height}`);
+
+    return {
+      image: finalImageUrl,
+      size: compressedBytes.length,
+      format: 'jpeg',
+      dimensions: `${image.width}x${image.height}`
+    };
+  } catch (error) {
+    console.error('Erro ao otimizar imagem:', error);
+    throw new Error('Falha ao processar imagem');
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -33,6 +88,19 @@ serve(async (req) => {
     console.log('Gerando imagem para curso:', courseName);
     console.log('Prompt:', prompt.substring(0, 100) + '...');
 
+    const enhancedPrompt = `Create a professional course cover image in 16:9 landscape format (1920x1080 pixels wide horizontal orientation).
+
+CRITICAL REQUIREMENTS:
+- The image MUST contain ONLY VISUAL ELEMENTS
+- Absolutely NO TEXT, NO WORDS, NO LETTERS, NO TYPOGRAPHY of any kind
+- NO written content, labels, titles, or captions
+- Focus purely on photography, illustrations, or realistic graphics
+- The image must be purely visual without any textual elements
+
+Course theme: ${prompt}`;
+
+    console.log('Prompt aprimorado:', enhancedPrompt.substring(0, 150) + '...');
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -44,7 +112,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'user', 
-            content: `Create a professional 16:9 course cover image: ${prompt}` 
+            content: enhancedPrompt
           }
         ],
         modalities: ['image', 'text']
@@ -86,19 +154,15 @@ serve(async (req) => {
       );
     }
 
-    // Calcular tamanho aproximado do base64
-    const base64Data = imageUrl.split(',')[1] || imageUrl;
-    const sizeInBytes = Math.ceil((base64Data.length * 3) / 4);
+    console.log('Imagem recebida da IA, iniciando otimização...');
 
-    console.log('Imagem gerada com sucesso. Tamanho:', sizeInBytes, 'bytes');
+    // Processar e otimizar a imagem
+    const optimizedImage = await optimizeImage(imageUrl);
+
+    console.log('Imagem processada com sucesso:', optimizedImage.size, 'bytes');
 
     return new Response(
-      JSON.stringify({
-        image: imageUrl,
-        size: sizeInBytes,
-        format: 'png',
-        dimensions: '1920x1080'
-      }),
+      JSON.stringify(optimizedImage),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
