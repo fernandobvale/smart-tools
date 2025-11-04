@@ -1,60 +1,54 @@
 
-import React from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { 
-  LogOut, 
-  User, 
-  FileText, 
-  Calculator, 
-  Search,
-  Globe,
-  Edit3,
-  StickyNote,
-  Award,
-  Users,
-  Lightbulb,
-  List,
-  GraduationCap,
-  MessageSquare,
-  Database,
-  BarChart3,
-  AlertTriangle,
-  BookOpen,
-  BookPlus,
-  Bitcoin,
-  Image
-} from "lucide-react";
+import { LogOut, Menu, Home } from "lucide-react";
+import * as Icons from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useTools } from "@/hooks/useTools";
 
 const DashboardLayout = () => {
   const { signOut } = useAuth();
+  const { tools, isLoading } = useTools();
+  
+  // Load open categories from localStorage
+  const [openCategories, setOpenCategories] = useState<string[]>(() => {
+    const saved = localStorage.getItem('sidebar-open-categories');
+    return saved ? JSON.parse(saved) : ['Geral'];
+  });
 
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: User, path: "/dashboard" },
-    { id: "text-splitter", label: "Quebrador de Texto", icon: FileText, path: "/text-splitter" },
-    { id: "receipts", label: "Recibos", icon: Calculator, path: "/receipts" },
-    { id: "cpf-consulta", label: "Consulta CPF", icon: Search, path: "/cpf-consulta" },
-    { id: "seo-generator", label: "Gerador SEO", icon: Globe, path: "/seo-generator" },
-    { id: "markdown-editor", label: "Editor Markdown", icon: Edit3, path: "/markdown-editor" },
-    { id: "notes", label: "Notas", icon: StickyNote, path: "/notes" },
-    { id: "certificates", label: "Certificados", icon: Award, path: "/certificates/manage" },
-    { id: "teacher-list", label: "Lista de Professores", icon: Users, path: "/teacher-list" },
-    { id: "prompt-generator", label: "Gerador de Prompts", icon: Lightbulb, path: "/prompt-generator" },
-    { id: "prompt-list", label: "Lista de Prompts", icon: List, path: "/prompt-list" },
-    { id: "courses", label: "Pagamento de Editores", icon: GraduationCap, path: "/courses" },
-    { id: "new-courses", label: "Novos Cursos", icon: BookPlus, path: "/new-courses" },
-    { id: "reclamacoes-curso", label: "Reclamações de Cursos", icon: AlertTriangle, path: "/reclamacoes-curso" },
-    { id: "sugestoes-curso", label: "Sugestões de Curso", icon: MessageSquare, path: "/sugestoes-curso" },
-    { id: "plano-orcamentario", label: "Plano Orçamentário", icon: BarChart3, path: "/plano-orcamentario" },
-    { id: "supabase", label: "Supabase Projects", icon: Database, path: "/supabase" },
-    { id: "bitcoin-wallet", label: "Carteira Bitcoin", icon: Bitcoin, path: "/bitcoin-wallet" },
-    { id: "course-image-generator", label: "Gerador de Capas", icon: Image, path: "/course-image-generator" },
-    { id: "ebook", label: "Ebook", icon: BookOpen, path: "https://ebook.aidirectory.com.br", external: true },
-  ];
+  // Save open categories to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-open-categories', JSON.stringify(openCategories));
+  }, [openCategories]);
+
+  // Group tools by category
+  const toolsByCategory = useMemo(() => {
+    const grouped: Record<string, typeof tools> = {};
+    
+    tools.forEach((tool) => {
+      if (!grouped[tool.category]) {
+        grouped[tool.category] = [];
+      }
+      grouped[tool.category].push(tool);
+    });
+
+    // Sort tools within each category alphabetically
+    Object.keys(grouped).forEach((category) => {
+      grouped[category].sort((a, b) => a.name.localeCompare(b.name));
+    });
+
+    // Sort categories alphabetically
+    return Object.keys(grouped)
+      .sort()
+      .reduce((acc, key) => {
+        acc[key] = grouped[key];
+        return acc;
+      }, {} as Record<string, typeof tools>);
+  }, [tools]);
 
   const handleSignOut = () => {
     signOut();
@@ -63,61 +57,104 @@ const DashboardLayout = () => {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className="w-64 border-r bg-card">
-        <div className="p-4">
-          <h2 className="text-lg font-semibold">Dashboard</h2>
+      <aside className="w-64 border-r bg-card/50 backdrop-blur-sm">
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <Menu className="h-5 w-5" />
+            Menu
+          </h2>
         </div>
-        <Separator />
         
-        <ScrollArea className="flex-1 px-3">
-          <div className="space-y-1 py-4">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              
-              if (item.external) {
-                return (
-                  <Button
-                    key={item.id}
-                    asChild
-                    variant="ghost"
-                    className="w-full justify-start"
-                  >
-                    <a 
-                      href={item.path}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Icon className="mr-2 h-4 w-4" />
-                      {item.label}
-                    </a>
-                  </Button>
-                );
-              }
-              
-              return (
-                <Button
-                  key={item.id}
-                  asChild
-                  variant="ghost"
-                  className="w-full justify-start"
-                >
-                  <NavLink 
-                    to={item.path}
-                    className={({ isActive }) => 
-                      isActive ? "bg-secondary text-secondary-foreground" : ""
-                    }
-                  >
-                    <Icon className="mr-2 h-4 w-4" />
-                    {item.label}
-                  </NavLink>
-                </Button>
-              );
-            })}
+        <ScrollArea className="h-[calc(100vh-140px)]">
+          <div className="p-3">
+            {/* Dashboard always visible */}
+            <Button variant="ghost" asChild className="w-full justify-start mb-2">
+              <NavLink 
+                to="/dashboard"
+                className={({ isActive }) => 
+                  isActive ? "bg-secondary text-secondary-foreground" : ""
+                }
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Dashboard
+              </NavLink>
+            </Button>
+            
+            <Separator className="my-2" />
+            
+            {/* Accordion by categories */}
+            {!isLoading && (
+              <Accordion 
+                type="multiple" 
+                value={openCategories}
+                onValueChange={setOpenCategories}
+                className="w-full"
+              >
+                {Object.entries(toolsByCategory).map(([category, categoryTools]) => (
+                  <AccordionItem key={category} value={category} className="border-b-0">
+                    <AccordionTrigger className="text-sm font-semibold hover:no-underline py-2">
+                      {category}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-1 pl-4">
+                        {categoryTools.map((tool) => {
+                          const IconComponent = (Icons as any)[tool.icon] || Icons.HelpCircle;
+                          
+                          if (tool.external) {
+                            return (
+                              <Button
+                                key={tool.id}
+                                asChild
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start"
+                              >
+                                <a 
+                                  href={tool.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <IconComponent className="mr-2 h-4 w-4" />
+                                  {tool.name}
+                                </a>
+                              </Button>
+                            );
+                          }
+                          
+                          return (
+                            <Button
+                              key={tool.id}
+                              asChild
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start"
+                            >
+                              <NavLink 
+                                to={tool.href}
+                                className={({ isActive }) => 
+                                  isActive ? "bg-secondary text-secondary-foreground" : ""
+                                }
+                              >
+                                <IconComponent className="mr-2 h-4 w-4" />
+                                {tool.name}
+                              </NavLink>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )}
+
+            {isLoading && (
+              <p className="text-sm text-muted-foreground p-2">Carregando...</p>
+            )}
           </div>
         </ScrollArea>
 
-        <Separator />
-        <div className="p-4">
+        <div className="border-t p-3">
           <Button
             variant="outline"
             className="w-full"
@@ -127,7 +164,7 @@ const DashboardLayout = () => {
             Sair
           </Button>
         </div>
-      </div>
+      </aside>
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">

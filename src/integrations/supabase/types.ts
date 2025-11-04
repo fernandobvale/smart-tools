@@ -608,6 +608,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tools: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          external: boolean | null
+          href: string
+          icon: string
+          id: string
+          name: string
+          order_index: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          external?: boolean | null
+          href: string
+          icon: string
+          id?: string
+          name: string
+          order_index?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          external?: boolean | null
+          href?: string
+          icon?: string
+          id?: string
+          name?: string
+          order_index?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
