@@ -15,8 +15,37 @@ async function optimizeImage(base64Url: string) {
 
     // Carregar imagem
     let image = await Image.decode(imageBytes);
+    
+    console.log(`Imagem original: ${image.width}x${image.height}`);
 
-    // Forçar aspect ratio 16:9 (1920x1080)
+    // CROP INTELIGENTE para 16:9 antes de redimensionar
+    const targetRatio = 16 / 9;
+    const currentRatio = image.width / image.height;
+    
+    let cropWidth = image.width;
+    let cropHeight = image.height;
+    let cropX = 0;
+    let cropY = 0;
+    
+    if (currentRatio > targetRatio) {
+      // Imagem mais larga que 16:9 - cortar laterais
+      cropWidth = Math.round(image.height * targetRatio);
+      cropX = Math.round((image.width - cropWidth) / 2);
+      console.log(`Cortando laterais: ${cropX}px de cada lado`);
+    } else if (currentRatio < targetRatio) {
+      // Imagem mais alta que 16:9 - cortar topo/base (remove partes brancas!)
+      cropHeight = Math.round(image.width / targetRatio);
+      cropY = Math.round((image.height - cropHeight) / 2);
+      console.log(`Cortando topo/base: ${cropY}px de cada lado`);
+    }
+    
+    // Fazer crop centralizado
+    if (cropX > 0 || cropY > 0) {
+      image = image.crop(cropX, cropY, cropWidth, cropHeight);
+      console.log(`Após crop: ${image.width}x${image.height}`);
+    }
+
+    // Agora redimensionar para tamanho final (já na proporção correta)
     const targetWidth = 1920;
     const targetHeight = 1080;
     image = image.resize(targetWidth, targetHeight);
@@ -154,9 +183,9 @@ Course theme: ${prompt}`;
       );
     }
 
-    console.log('Imagem recebida da IA, iniciando otimização...');
+    console.log('Imagem recebida da IA, iniciando otimização com crop inteligente...');
 
-    // Processar e otimizar a imagem
+    // Processar e otimizar a imagem com crop inteligente
     const optimizedImage = await optimizeImage(imageUrl);
 
     console.log('Imagem processada com sucesso:', optimizedImage.size, 'bytes');

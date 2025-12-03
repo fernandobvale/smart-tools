@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GeneratedImage } from "./types";
@@ -16,46 +16,39 @@ export function ImagePreview({ image, courseName, onDownload, onRegenerate }: Im
     return (bytes / 1024).toFixed(2) + ' KB';
   };
 
-  const isLargeSize = image.size > 100000; // >100KB
-  const expectedDimensions = image.dimensions === '1920x1080' || image.dimensions === '1280x720';
+  const isLargeSize = image.size > 100000;
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Imagem Gerada</h3>
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-base">{courseName}</CardTitle>
-              <CardDescription className="flex items-center gap-2 flex-wrap">
-                <span>{image.dimensions}</span>
-                <span>•</span>
-                <span className={isLargeSize ? "text-destructive font-medium" : ""}>
-                  {formatSize(image.size)}
-                </span>
-                {isLargeSize && (
-                  <Badge variant="destructive" className="text-xs">Tamanho acima do ideal</Badge>
-                )}
-                {!expectedDimensions && (
-                  <Badge variant="outline" className="text-xs">Proporção diferente</Badge>
-                )}
-              </CardDescription>
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-base">{courseName}</CardTitle>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline">{image.dimensions}</Badge>
+              <Badge variant={isLargeSize ? "destructive" : "secondary"}>
+                {formatSize(image.size)}
+              </Badge>
+              <Badge>{image.format.toUpperCase()}</Badge>
             </div>
-            <Badge variant="secondary">{image.format.toUpperCase()}</Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+          {/* Container com background escuro e tamanho controlado */}
+          <div className="relative bg-muted rounded-lg overflow-hidden flex items-center justify-center p-4">
             <img 
               src={image.image} 
               alt={`Capa do curso ${courseName}`}
-              className="h-full w-full object-cover"
+              className="max-w-full max-h-[400px] w-auto h-auto rounded shadow-lg object-contain"
             />
           </div>
+          
+          {/* Botões lado a lado */}
           <div className="flex gap-2">
             <Button onClick={onDownload} className="flex-1">
               <Download className="mr-2 h-4 w-4" />
-              Baixar Imagem
+              Baixar {image.format.toUpperCase()}
             </Button>
             <Button onClick={onRegenerate} variant="outline" className="flex-1">
               <RefreshCw className="mr-2 h-4 w-4" />
