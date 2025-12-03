@@ -122,16 +122,27 @@ export default function CourseImageGenerator() {
   const handleDownload = () => {
     if (!generatedImage) return;
 
+    // Sanitizar nome do curso para usar como nome de arquivo
+    const sanitizedName = courseName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9]+/g, '-')     // Substitui caracteres especiais por hífen
+      .replace(/^-|-$/g, '');          // Remove hífens no início/fim
+
+    // Usar formato real da imagem
+    const extension = generatedImage.format || 'jpeg';
+
     const link = document.createElement('a');
     link.href = generatedImage.image;
-    link.download = `${courseName.replace(/\s+/g, '-').toLowerCase()}.png`;
+    link.download = `${sanitizedName}.${extension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     toast({
       title: "Download iniciado",
-      description: "A imagem está sendo baixada.",
+      description: `Salvando como ${sanitizedName}.${extension}`,
     });
   };
 
