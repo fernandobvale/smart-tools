@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { NumericFormat } from "react-number-format";
 import { generateReceiptPDF } from "@/utils/pdfGenerator";
 import { Loader2 } from "lucide-react";
