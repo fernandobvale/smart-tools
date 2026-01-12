@@ -55,7 +55,23 @@ export default function CertificateForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { error } = await supabase.from("certificates").insert([values]);
+      const { error } = await supabase.from("certificates").insert({
+        email_aluno: values.email_aluno,
+        canal_contato: values.canal_contato,
+        status_pagamento: values.status_pagamento,
+        dados_confirmados: values.dados_confirmados === "sim",
+        nome_aluno: values.nome_aluno,
+        endereco: values.endereco,
+        complemento: values.complemento || null,
+        bairro: values.bairro,
+        cidade_estado: values.cidade_estado,
+        cep: values.cep,
+        status_envio: values.status_envio,
+        site_referencia: values.site_referencia,
+        numero_pedido: values.numero_pedido,
+        quantidade: values.quantidade,
+        observacoes: values.observacoes || null,
+      });
 
       if (error) throw error;
 

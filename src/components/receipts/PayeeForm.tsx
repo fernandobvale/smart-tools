@@ -75,12 +75,13 @@ const PayeeForm = ({ payee, mode = "create", onClose, onSuccess }: PayeeFormProp
           throw new Error("Você precisa estar autenticado para cadastrar um beneficiário.");
         }
 
-        const { error } = await supabase.from("payees").insert([
-          {
-            ...values,
-            user_id: user.id
-          }
-        ]);
+        const { error } = await supabase.from("payees").insert({
+          full_name: values.full_name,
+          cpf: values.cpf,
+          pix_key: values.pix_key,
+          bank_name: values.bank_name,
+          user_id: user.id
+        });
 
         if (error) {
           if (error.code === "23505") {
