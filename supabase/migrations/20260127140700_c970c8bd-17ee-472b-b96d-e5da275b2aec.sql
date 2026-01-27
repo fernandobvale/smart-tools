@@ -1,0 +1,2 @@
+INSERT INTO public.tools (name, href, icon, category, description, external)
+VALUES ('Apostila Slitter', 'https://apostilato-prompt-splitter.vercel.app/dashboard', 'Scissors', 'Produtividade', 'Ferramenta para dividir apostilas em partes menores', true);
