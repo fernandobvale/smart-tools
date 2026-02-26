@@ -16,6 +16,9 @@ import { NoteHeader } from "@/components/notes/NoteHeader";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { useNoteMutations } from "@/components/notes/NoteMutations";
 import { toast } from "sonner";
+import { htmlToDocx } from "@/utils/htmlToDocx";
+import { Packer } from "docx";
+import { saveAs } from "file-saver";
 
 const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -69,37 +72,20 @@ const Notes = () => {
     }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (selectedNoteId && editor) {
-      const content = editor.getHTML();
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-          <meta charset="UTF-8">
-          <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
-            img { max-width: 100%; height: auto; }
-            p { margin-bottom: 1em; }
-            h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; }
-          </style>
-        </head>
-        <body>${content}</body>
-        </html>
-      `;
-
-      const blob = new Blob([htmlContent], { type: 'application/msword;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const selectedNote = notes?.find((note) => note.id === selectedNoteId);
-      const fileName = `${selectedNote?.title || 'nota'}.doc`;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      try {
+        const content = editor.getHTML();
+        const doc = htmlToDocx(content);
+        const blob = await Packer.toBlob(doc);
+        const selectedNote = notes?.find((note) => note.id === selectedNoteId);
+        const fileName = `${selectedNote?.title || 'nota'}.docx`;
+        saveAs(blob, fileName);
+        toast.success('Nota exportada como .docx');
+      } catch (error) {
+        console.error('Erro ao exportar:', error);
+        toast.error('Erro ao exportar nota');
+      }
     }
   };
 
