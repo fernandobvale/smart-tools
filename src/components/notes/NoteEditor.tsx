@@ -24,7 +24,7 @@ export const NoteEditor = ({ editor, onSave, onExport, addImage }: NoteEditorPro
       <div className="p-4 border-t flex justify-end gap-2">
         <NoteCopyButton content={editor.getHTML()} />
         <Button variant="outline" onClick={onExport}>
-          Exportar como DOC
+          Exportar como .docx
         </Button>
         <Button onClick={onSave}>Salvar</Button>
       </div>
