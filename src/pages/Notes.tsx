@@ -17,8 +17,6 @@ import { NoteEditor } from "@/components/notes/NoteEditor";
 import { useNoteMutations } from "@/components/notes/NoteMutations";
 import { toast } from "sonner";
 import { htmlToDocx } from "@/utils/htmlToDocx";
-import { Packer } from "docx";
-import { saveAs } from "file-saver";
 
 const Notes = () => {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -77,6 +75,8 @@ const Notes = () => {
       try {
         const content = editor.getHTML();
         const doc = htmlToDocx(content);
+        const { Packer } = await import("docx");
+        const { saveAs } = await import("file-saver");
         const blob = await Packer.toBlob(doc);
         const selectedNote = notes?.find((note) => note.id === selectedNoteId);
         const fileName = `${selectedNote?.title || 'nota'}.docx`;
