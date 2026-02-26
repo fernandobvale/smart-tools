@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneratedPrompt } from "./types";
-import { Image, Loader2 } from "lucide-react";
+import { Image, Loader2, Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 
 interface GeneratedPromptsProps {
   prompts: GeneratedPrompt[];
@@ -20,9 +21,17 @@ export function GeneratedPrompts({
   generatingPromptId 
 }: GeneratedPromptsProps) {
   const [expandedPrompts, setExpandedPrompts] = useState<{ [key: number]: boolean }>({});
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   const toggleExpand = (id: number) => {
     setExpandedPrompts(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const copyPrompt = (promptEn: string, id: number) => {
+    navigator.clipboard.writeText(promptEn);
+    setCopiedId(id);
+    toast.success("Prompt copiado!");
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   if (prompts.length === 0) return null;
@@ -79,23 +88,36 @@ export function GeneratedPrompts({
                   )}
                 </TabsContent>
               </Tabs>
-              <Button
-                onClick={() => onGenerateImage(prompt.prompt_en, prompt.id)}
-                disabled={isGeneratingImage}
-                className="w-full"
-              >
-                {isGeneratingImage && generatingPromptId === prompt.id ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando Imagem...
-                  </>
-                ) : (
-                  <>
-                    <Image className="mr-2 h-4 w-4" />
-                    Gerar Imagem
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => copyPrompt(prompt.prompt_en, prompt.id)}
+                  className="shrink-0"
+                >
+                  {copiedId === prompt.id ? (
+                    <><Check className="mr-2 h-4 w-4" /> Copiado</>
+                  ) : (
+                    <><Copy className="mr-2 h-4 w-4" /> Copiar Prompt</>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => onGenerateImage(prompt.prompt_en, prompt.id)}
+                  disabled={isGeneratingImage}
+                  className="w-full"
+                >
+                  {isGeneratingImage && generatingPromptId === prompt.id ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Gerando Imagem...
+                    </>
+                  ) : (
+                    <>
+                      <Image className="mr-2 h-4 w-4" />
+                      Gerar Imagem
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
