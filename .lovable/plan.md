@@ -1,21 +1,28 @@
 
 
-## Corrigir exportacao de notas para formato compativel com Word
+## Exportar notas como .docx real
 
 ### Problema
-O arquivo exportado e um HTML salvo com extensao `.docx` e MIME type de Word, mas nao e um arquivo `.docx` real (que e um ZIP com XMLs internos). O Word rejeita porque o conteudo nao corresponde ao formato.
+O arquivo `.doc` (HTML renomeado) funciona, mas o usuario quer o formato `.docx` moderno. Um `.docx` real e um arquivo ZIP contendo XMLs estruturados -- nao basta renomear HTML.
 
 ### Solucao
-Alterar para exportar como `.doc` (formato antigo) usando MIME type `application/msword`. O Word abre arquivos `.doc` contendo HTML sem problemas -- este e um formato suportado nativamente.
+Usar a biblioteca `docx` (npm) para gerar arquivos `.docx` reais a partir do conteudo HTML do editor.
 
 ### Alteracoes
 
-**`src/pages/Notes.tsx`** (2 mudancas):
-- Linha 92: Alterar o MIME type do Blob para `application/msword`
-- Linha 97: Alterar a extensao do arquivo de `.docx` para `.doc`
+1. **Instalar dependencia `docx`** e `file-saver` para download
+   - `docx` gera documentos Word reais
+   - `file-saver` facilita o download do blob
 
-**`src/components/notes/NoteEditor.tsx`**:
-- Alterar o texto do botao de "Exportar como .docx" para "Exportar como .doc"
+2. **Criar utilitario `src/utils/htmlToDocx.ts`**
+   - Funcao que converte HTML do TipTap em objetos do `docx` (paragrafos, headings, texto formatado)
+   - Parseia o HTML com DOMParser e mapeia elementos para a API do `docx`
+   - Suporta: paragrafos, headings (h1-h6), negrito, italico, sublinhado, listas, imagens, links
 
-Isso garante que o Word consiga abrir o arquivo corretamente, pois o formato `.doc` aceita conteudo HTML embutido.
+3. **Atualizar `src/pages/Notes.tsx`**
+   - Substituir a funcao `handleExport` para usar o utilitario `htmlToDocx`
+   - Gerar o documento com `docx.Packer.toBlob()` e baixar com `file-saver`
+
+4. **Atualizar `src/components/notes/NoteEditor.tsx`**
+   - Alterar texto do botao para "Exportar como .docx"
 
