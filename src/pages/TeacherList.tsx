@@ -1,17 +1,10 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, UserPlus, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +33,6 @@ interface TeacherApplication {
 
 export default function TeacherList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherApplication | null>(null);
   const [teacherToDelete, setTeacherToDelete] = useState<TeacherApplication | null>(null);
   const queryClient = useQueryClient();
 
@@ -139,64 +131,9 @@ export default function TeacherList() {
                   <p className="text-sm text-muted-foreground">{teacher.email}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedTeacher(teacher)}
-                      >
-                        Ver Detalhes
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
-                      <DialogHeader>
-                        <DialogTitle>Detalhes do Professor</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 mt-4">
-                        <div>
-                          <h4 className="font-medium mb-1">Nome Completo</h4>
-                          <p>{teacher.full_name}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">Email</h4>
-                          <p>{teacher.email}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">WhatsApp</h4>
-                          <p>{teacher.whatsapp}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">Formação Acadêmica</h4>
-                          <p className="whitespace-pre-wrap">{teacher.academic_background}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">Experiência como Professor</h4>
-                          <p className="whitespace-pre-wrap">{teacher.teaching_experience}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">Experiência com Gravação de Vídeos</h4>
-                          <p>{teacher.video_experience === "sim" ? "Sim" : "Não"}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">Motivação</h4>
-                          <p className="whitespace-pre-wrap">{teacher.motivation}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-1">Data de Inscrição</h4>
-                          <p>
-                            {new Date(teacher.created_at).toLocaleDateString("pt-BR", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/teacher-list/${teacher.id}`}>Ver Detalhes</Link>
+                  </Button>
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

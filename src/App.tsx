@@ -20,6 +20,7 @@ import CertificateSuccess from "./pages/Certificates/CertificateSuccess";
 import CertificateManagement from "./pages/Certificates/CertificateManagement";
 import TeacherApplication from "./pages/TeacherApplication";
 import TeacherList from "./pages/TeacherList";
+import TeacherDetail from "./pages/TeacherDetail";
 import PromptGenerator from "./pages/PromptGenerator";
 import PromptList from "./pages/PromptList";
 import CourseManagement from "./pages/CourseManagement";
@@ -77,6 +78,7 @@ const App = () => {
                 <Route path="/notes" element={<Notes />} />
                 <Route path="/certificates/manage" element={<CertificateManagement />} />
                 <Route path="/teacher-list" element={<TeacherList />} />
+                <Route path="/teacher-list/:id" element={<TeacherDetail />} />
                 <Route path="/prompt-generator" element={<PromptGenerator />} />
                 <Route path="/prompt-list" element={<PromptList />} />
                 <Route path="/courses" element={<CourseManagement />} />
