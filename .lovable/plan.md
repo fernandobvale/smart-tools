@@ -1,8 +1,21 @@
 
-## Definir "Grazielle" como editor padrao no formulario de novo lancamento
 
-Alteracao simples no arquivo `src/components/courses/CourseForm.tsx`:
+## Corrigir exportacao de notas para formato compativel com Word
 
-- Na linha 54, alterar o valor padrao de `nome_editor` de `""` para `"Grazielle"` (apenas quando nao ha `initialData`, ou seja, ao criar novo lancamento)
+### Problema
+O arquivo exportado e um HTML salvo com extensao `.docx` e MIME type de Word, mas nao e um arquivo `.docx` real (que e um ZIP com XMLs internos). O Word rejeita porque o conteudo nao corresponde ao formato.
 
-Isso fara com que ao abrir o formulario de "Novo Lancamento", o campo Editor ja venha pre-selecionado com "Grazielle". Ao editar um lancamento existente, o editor original sera mantido.
+### Solucao
+Alterar para exportar como `.doc` (formato antigo) usando MIME type `application/msword`. O Word abre arquivos `.doc` contendo HTML sem problemas -- este e um formato suportado nativamente.
+
+### Alteracoes
+
+**`src/pages/Notes.tsx`** (2 mudancas):
+- Linha 92: Alterar o MIME type do Blob para `application/msword`
+- Linha 97: Alterar a extensao do arquivo de `.docx` para `.doc`
+
+**`src/components/notes/NoteEditor.tsx`**:
+- Alterar o texto do botao de "Exportar como .docx" para "Exportar como .doc"
+
+Isso garante que o Word consiga abrir o arquivo corretamente, pois o formato `.doc` aceita conteudo HTML embutido.
+
