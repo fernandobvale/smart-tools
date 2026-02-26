@@ -4,8 +4,23 @@ import {
   TextRun,
   HeadingLevel,
   AlignmentType,
-  ExternalHyperlink,
 } from "docx";
+
+function normalizeDocxColor(value: string): string | undefined {
+  if (!value) return undefined;
+  if (value.startsWith("#") && value.length === 7) return value.substring(1);
+  if (value.startsWith("#") && value.length === 4) {
+    const [, r, g, b] = value;
+    return `${r}${r}${g}${g}${b}${b}`;
+  }
+  const rgbMatch = value.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    return [rgbMatch[1], rgbMatch[2], rgbMatch[3]]
+      .map((v) => parseInt(v, 10).toString(16).padStart(2, "0"))
+      .join("");
+  }
+  return undefined;
+}
 
 const HEADING_MAP: Record<string, (typeof HeadingLevel)[keyof typeof HeadingLevel]> = {
   H1: HeadingLevel.HEADING_1,
@@ -61,7 +76,8 @@ function extractRuns(node: Node, inherited: RunOptions = {}): TextRun[] {
       const style = el.getAttribute("style") || "";
       const colorMatch = style.match(/color:\s*([^;]+)/);
       if (colorMatch) {
-        opts.color = colorMatch[1].trim().replace("#", "");
+        const normalized = normalizeDocxColor(colorMatch[1].trim());
+        if (normalized) opts.color = normalized;
       }
     }
 
