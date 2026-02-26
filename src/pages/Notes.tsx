@@ -89,12 +89,12 @@ const Notes = () => {
         </html>
       `;
 
-      const blob = new Blob([htmlContent], { type: 'application/vnd.ms-word;charset=utf-8' });
+      const blob = new Blob([htmlContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       const selectedNote = notes?.find((note) => note.id === selectedNoteId);
-      const fileName = `${selectedNote?.title || 'nota'}.doc`;
+      const fileName = `${selectedNote?.title || 'nota'}.docx`;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
