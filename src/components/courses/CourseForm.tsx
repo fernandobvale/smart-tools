@@ -51,7 +51,7 @@ export function CourseForm({ initialData, onSuccess }: CourseFormProps) {
       valor: 0,
       data_pagamento: "",
       status_pagamento: "Pendente",
-      nome_editor: "",
+      nome_editor: "Grazielle",
     },
   });
 
