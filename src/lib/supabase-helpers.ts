@@ -1,18 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-// Create a special admin client for storage operations
-const adminSupabase = createClient(
-  'https://bgznszxombwvwhufowpm.supabase.co',
-  import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 // Função para verificar conexão com Supabase
 const checkSupabaseConnection = async () => {
@@ -31,26 +18,16 @@ const checkSupabaseConnection = async () => {
   }
 };
 
-// Função para verificar/criar bucket
+// Função para verificar bucket via Edge Function
 const checkBucketExists = async (bucketName: string) => {
   try {
-    const { data: buckets, error } = await adminSupabase.storage.listBuckets();
-    
-    if (error) {
-      console.error('Erro ao listar buckets:', error);
-      throw error;
-    }
+    const { data, error } = await supabase.functions.invoke('manage-storage-bucket', {
+      body: { bucketName },
+    });
 
-    const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
-    
-    if (!bucketExists) {
-      const { error: createError } = await adminSupabase.storage.createBucket(bucketName, {
-        public: true,
-        fileSizeLimit: 52428800
-      });
+    if (error) throw error;
 
-      if (createError) throw createError;
-      
+    if (data?.created) {
       toast({
         title: "Bucket Criado",
         description: `O bucket ${bucketName} foi criado com sucesso.`,

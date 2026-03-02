@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,9 +13,31 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { courseName } = await req.json();
 
-    if (!courseName || courseName.trim() === '') {
+    if (!courseName || typeof courseName !== 'string' || courseName.trim() === '') {
       return new Response(
         JSON.stringify({ error: 'Nome do curso é obrigatório' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -116,17 +139,12 @@ Não adicione texto antes ou depois do JSON. Apenas o JSON puro.`;
     const data = await response.json();
     const generatedText = data.choices[0].message.content;
 
-    console.log('Resposta da IA:', generatedText);
-
-    // Parse do JSON retornado pela IA
     let prompts;
     try {
-      // Remove markdown code blocks se houver
       const cleanedText = generatedText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       prompts = JSON.parse(cleanedText);
     } catch (parseError) {
       console.error('Erro ao fazer parse do JSON:', parseError);
-      console.error('Texto recebido:', generatedText);
       return new Response(
         JSON.stringify({ error: 'Erro ao processar resposta da IA' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -141,7 +159,7 @@ Não adicione texto antes ou depois do JSON. Apenas o JSON puro.`;
   } catch (error) {
     console.error('Erro na função:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      JSON.stringify({ error: 'Erro interno do servidor' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
