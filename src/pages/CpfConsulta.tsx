@@ -80,7 +80,8 @@ const CpfConsulta = () => {
         .select("*", { count: "exact" });
 
       if (searchTerm) {
-        query = query.or(`nome.ilike.%${searchTerm}%,cpf.ilike.%${searchTerm}%`);
+        const sanitized = searchTerm.replace(/[^a-zA-ZÀ-ÿ0-9\s.\-]/g, '').slice(0, 100);
+        query = query.or(`nome.ilike.%${sanitized}%,cpf.ilike.%${sanitized}%`);
       }
 
       const { data, error, count } = await query

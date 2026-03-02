@@ -34,7 +34,7 @@ serve(async (req) => {
       });
     }
 
-    const { bucketName } = await req.json();
+    const { bucketName, isPublic = false } = await req.json();
     if (!bucketName || typeof bucketName !== 'string' || bucketName.length > 63) {
       return new Response(JSON.stringify({ error: 'Invalid bucket name' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -58,8 +58,9 @@ serve(async (req) => {
       });
     }
 
+    
     const { error: createError } = await adminClient.storage.createBucket(bucketName, {
-      public: true,
+      public: isPublic,
       fileSizeLimit: 52428800,
     });
     if (createError) throw createError;
