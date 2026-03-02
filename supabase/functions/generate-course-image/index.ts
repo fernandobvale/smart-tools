@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.2.15/mod.ts";
 
 const corsHeaders = {
@@ -9,16 +10,12 @@ const corsHeaders = {
 
 async function optimizeImage(base64Url: string) {
   try {
-    // Decodificar base64
     const base64Data = base64Url.replace(/^data:image\/\w+;base64,/, '');
     const imageBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-
-    // Carregar imagem
     let image = await Image.decode(imageBytes);
     
     console.log(`Imagem original: ${image.width}x${image.height}`);
 
-    // CROP INTELIGENTE para 16:9 antes de redimensionar
     const targetRatio = 16 / 9;
     const currentRatio = image.width / image.height;
     
@@ -28,55 +25,39 @@ async function optimizeImage(base64Url: string) {
     let cropY = 0;
     
     if (currentRatio > targetRatio) {
-      // Imagem mais larga que 16:9 - cortar laterais
       cropWidth = Math.round(image.height * targetRatio);
       cropX = Math.round((image.width - cropWidth) / 2);
-      console.log(`Cortando laterais: ${cropX}px de cada lado`);
     } else if (currentRatio < targetRatio) {
-      // Imagem mais alta que 16:9 - cortar topo/base (remove partes brancas!)
       cropHeight = Math.round(image.width / targetRatio);
       cropY = Math.round((image.height - cropHeight) / 2);
-      console.log(`Cortando topo/base: ${cropY}px de cada lado`);
     }
     
-    // Fazer crop centralizado
     if (cropX > 0 || cropY > 0) {
       image = image.crop(cropX, cropY, cropWidth, cropHeight);
-      console.log(`Após crop: ${image.width}x${image.height}`);
     }
 
-    // Agora redimensionar para tamanho final (já na proporção correta)
     const targetWidth = 1920;
     const targetHeight = 1080;
     image = image.resize(targetWidth, targetHeight);
 
-    // Comprimir progressivamente até <100KB
     let quality = 85;
     let compressedBytes: Uint8Array;
     let attempts = 0;
-    const maxSize = 100000; // 100KB
+    const maxSize = 100000;
 
     do {
       compressedBytes = await image.encodeJPEG(quality);
-      
       if (compressedBytes.length < maxSize) break;
-      
       quality -= 10;
       attempts++;
-      
-      // Se mesmo com qualidade baixa ainda está grande, reduzir dimensões
       if (quality < 40 && compressedBytes.length > maxSize) {
         image = image.resize(1280, 720);
         quality = 85;
       }
-      
     } while (compressedBytes.length > maxSize && attempts < 10);
 
-    // Converter para base64
     const base64Compressed = btoa(String.fromCharCode(...compressedBytes));
     const finalImageUrl = `data:image/jpeg;base64,${base64Compressed}`;
-
-    console.log(`Imagem otimizada: ${compressedBytes.length} bytes, qualidade: ${quality}%, dimensões: ${image.width}x${image.height}`);
 
     return {
       image: finalImageUrl,
@@ -96,9 +77,31 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { prompt, courseName } = await req.json();
 
-    if (!prompt || prompt.trim() === '') {
+    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
       return new Response(
         JSON.stringify({ error: 'Prompt é obrigatório' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -107,7 +110,6 @@ serve(async (req) => {
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!lovableApiKey) {
-      console.error('LOVABLE_API_KEY não configurada');
       return new Response(
         JSON.stringify({ error: 'Configuração da API não encontrada' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -115,7 +117,6 @@ serve(async (req) => {
     }
 
     console.log('Gerando imagem para curso:', courseName);
-    console.log('Prompt:', prompt.substring(0, 100) + '...');
 
     const enhancedPrompt = `Create a professional course cover image in 16:9 landscape format (1920x1080 pixels wide horizontal orientation).
 
@@ -128,8 +129,6 @@ CRITICAL REQUIREMENTS:
 
 Course theme: ${prompt}`;
 
-    console.log('Prompt aprimorado:', enhancedPrompt.substring(0, 150) + '...');
-
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -139,10 +138,7 @@ Course theme: ${prompt}`;
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash-image',
         messages: [
-          { 
-            role: 'user', 
-            content: enhancedPrompt
-          }
+          { role: 'user', content: enhancedPrompt }
         ],
         modalities: ['image', 'text']
       }),
@@ -171,24 +167,16 @@ Course theme: ${prompt}`;
     }
 
     const data = await response.json();
-    
-    // Extrair a imagem do resultado
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (!imageUrl) {
-      console.error('Imagem não encontrada na resposta:', JSON.stringify(data));
       return new Response(
         JSON.stringify({ error: 'Imagem não foi gerada' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Imagem recebida da IA, iniciando otimização com crop inteligente...');
-
-    // Processar e otimizar a imagem com crop inteligente
     const optimizedImage = await optimizeImage(imageUrl);
-
-    console.log('Imagem processada com sucesso:', optimizedImage.size, 'bytes');
 
     return new Response(
       JSON.stringify(optimizedImage),
@@ -198,7 +186,7 @@ Course theme: ${prompt}`;
   } catch (error) {
     console.error('Erro na função:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      JSON.stringify({ error: 'Erro interno do servidor' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
