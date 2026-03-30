@@ -1,0 +1,2 @@
+INSERT INTO public.tools (name, description, href, icon, category, external, order_index)
+VALUES ('Contratos Unova', 'Gerencie contratos da Unova', 'https://contratos-unova.lovable.app', 'FileText', 'Contratos', true, 0);
