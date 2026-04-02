@@ -1,7 +1,6 @@
 
-import React from "react";
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,35 +9,28 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { session } = useAuth();
-  const from = location.state?.from?.pathname || "/dashboard";
-
-  useEffect(() => {
-    if (session) {
-      navigate(from, { replace: true });
-    }
-  }, [session, navigate, from]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        toast.error('Credenciais inválidas');
+      if (event === "SIGNED_OUT") {
+        toast.error("Credenciais inválidas");
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  if (session) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Bem-vindo</CardTitle>
-          <CardDescription>
-            Entre com sua conta para continuar
-          </CardDescription>
+          <CardDescription>Entre com sua conta para continuar</CardDescription>
         </CardHeader>
         <CardContent>
           <Auth
@@ -48,18 +40,18 @@ const Login = () => {
               variables: {
                 default: {
                   colors: {
-                    brand: 'rgb(var(--primary))',
-                    brandAccent: 'rgb(var(--primary))',
-                    inputText: 'white',
+                    brand: "hsl(var(--primary))",
+                    brandAccent: "hsl(var(--primary))",
+                    inputText: "hsl(var(--foreground))",
                   },
                 },
               },
               className: {
-                container: 'w-full',
-                button: 'w-full',
-                anchor: 'text-primary hover:text-primary/80',
-                input: 'text-white bg-background',
-                label: 'text-foreground',
+                container: "w-full",
+                button: "w-full",
+                anchor: "text-primary hover:text-primary/80",
+                input: "bg-background text-foreground",
+                label: "text-foreground",
               },
             }}
             providers={[]}
