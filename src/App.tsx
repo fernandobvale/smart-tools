@@ -88,6 +88,7 @@ const App = () => {
                 <Route path="/supabase" element={<Supabase />} />
                 <Route path="/bitcoin-wallet" element={<BitcoinWallet />} />
                 <Route path="/course-image-generator" element={<CourseImageGenerator />} />
+                <Route path="/postal-invoices" element={<PostalInvoices />} />
               </Route>
               {/* Rota 404 - deve ser a última */}
               <Route path="*" element={<NotFound />} />
