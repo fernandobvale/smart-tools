@@ -434,6 +434,83 @@ export type Database = {
         }
         Relationships: []
       }
+      postal_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          entry_date: string
+          id: string
+          invoice_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          entry_date: string
+          id?: string
+          invoice_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          entry_date?: string
+          id?: string
+          invoice_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "postal_entries_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "postal_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      postal_invoices: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          reference_month: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          reference_month: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          reference_month?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
