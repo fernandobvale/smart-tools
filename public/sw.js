@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'ferramentas-static-v9';
-const ASSET_CACHE = 'ferramentas-assets-v9';
+const STATIC_CACHE = 'ferramentas-static-v10';
+const ASSET_CACHE = 'ferramentas-assets-v10';
 
 const staticUrlsToCache = [
   '/manifest.json',
