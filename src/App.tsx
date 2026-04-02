@@ -32,6 +32,7 @@ import Supabase from "./pages/Supabase";
 import NewCourses from "./pages/NewCourses";
 import BitcoinWallet from "./pages/BitcoinWallet";
 import CourseImageGenerator from "./pages/CourseImageGenerator";
+import PostalInvoices from "./pages/PostalInvoices";
 import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
 
 const queryClient = new QueryClient({
