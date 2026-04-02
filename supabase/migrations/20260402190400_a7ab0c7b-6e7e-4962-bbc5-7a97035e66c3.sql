@@ -1,0 +1,2 @@
+INSERT INTO public.tools (name, description, href, icon, category, external, order_index)
+VALUES ('Faturas Correios', 'Controle de postagens e faturas mensais dos Correios', '/postal-invoices', 'Mail', 'Financeiro', false, 0);
