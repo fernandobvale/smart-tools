@@ -1,0 +1,2 @@
+INSERT INTO public.tools (name, description, icon, href, external, category)
+VALUES ('Publicar Instagram', 'Ferramenta para criação e publicação de posts no Instagram', 'Instagram', 'https://publicar-instagram.vercel.app/', true, 'Produtividade');
