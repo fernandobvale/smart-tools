@@ -35,6 +35,7 @@ export default function PostalInvoices() {
   // Load/create invoice for selected month
   useEffect(() => {
     if (session?.user?.id) {
+      setCurrentInvoice(null);
       getOrCreateInvoice.mutate(selectedMonth, {
         onSuccess: (invoice) => setCurrentInvoice(invoice),
       });
