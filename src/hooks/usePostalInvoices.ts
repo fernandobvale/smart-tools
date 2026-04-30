@@ -69,6 +69,7 @@ export function usePostalInvoices() {
         .from("postal_invoices")
         .select("*")
         .eq("reference_month", refMonth)
+        .eq("user_id", userId!)
         .maybeSingle();
       if (existing) return existing as PostalInvoice;
       // Create
