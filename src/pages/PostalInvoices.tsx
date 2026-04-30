@@ -128,6 +128,18 @@ export default function PostalInvoices() {
             </CardContent>
           </Card>
 
+          {/* Locked invoice notice */}
+          {isInvoiceLocked && currentInvoice && (
+            <Card className="border-amber-500/50 bg-amber-500/5">
+              <CardContent className="pt-6">
+                <p className="text-sm text-muted-foreground">
+                  Esta fatura está <strong>{statusConfig[currentInvoice.status]?.label.toLowerCase()}</strong> e não aceita novos lançamentos.
+                  Para adicionar postagens, navegue para outro mês usando as setas acima, ou reabra esta fatura clicando em <strong>"Reabrir"</strong> abaixo.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Entry form */}
           {!isInvoiceLocked && (
             <Card>
