@@ -33,6 +33,7 @@ import NewCourses from "./pages/NewCourses";
 import BitcoinWallet from "./pages/BitcoinWallet";
 import CourseImageGenerator from "./pages/CourseImageGenerator";
 import PostalInvoices from "./pages/PostalInvoices";
+import CepConsulta from "./pages/CepConsulta";
 import { ServiceWorkerNotification } from "./components/ServiceWorkerNotification";
 
 const queryClient = new QueryClient({
@@ -89,6 +90,7 @@ const App = () => {
                 <Route path="/bitcoin-wallet" element={<BitcoinWallet />} />
                 <Route path="/course-image-generator" element={<CourseImageGenerator />} />
                 <Route path="/postal-invoices" element={<PostalInvoices />} />
+                <Route path="/cep-consulta" element={<CepConsulta />} />
               </Route>
               {/* Rota 404 - deve ser a última */}
               <Route path="*" element={<NotFound />} />
