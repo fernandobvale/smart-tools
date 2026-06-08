@@ -1,61 +1,45 @@
+# Consulta de CEP
 
+## API escolhida
+**ViaCEP** (https://viacep.com.br) — gratuita, sem necessidade de chave, sem limite prático, retorna JSON com rua, bairro, cidade, estado, etc.
 
-## Fatura dos Correios — Plano de Implementação
+Endpoint: `https://viacep.com.br/ws/{cep}/json/`
 
-### O que será construído
+Resposta:
+```json
+{
+  "cep": "01310-100",
+  "logradouro": "Avenida Paulista",
+  "bairro": "Bela Vista",
+  "localidade": "São Paulo",
+  "uf": "SP"
+}
+```
 
-Uma página para registrar postagens diárias nos Correios (data + valor), agrupadas por mês em "faturas". Cada fatura mensal pode ser fechada, conferida e marcada como paga.
+Como é uma API pública sem chave, a chamada será feita direto do frontend (sem edge function / sem secret).
 
-### Estrutura do banco de dados
+## O que será criado
 
-**Tabela `postal_invoices`** (faturas mensais):
-- `id` (uuid, PK)
-- `user_id` (uuid, NOT NULL)
-- `reference_month` (date) — primeiro dia do mês de referência (ex: 2026-04-01)
-- `status` (text, default 'aberta') — valores: `aberta`, `fechada`, `paga`
-- `total_amount` (numeric, default 0) — valor total calculado
-- `closed_at` (timestamptz, nullable)
-- `paid_at` (timestamptz, nullable)
-- `notes` (text, nullable)
-- `created_at`, `updated_at`
-- RLS: usuário vê/edita/deleta apenas seus próprios registros
+1. **Nova página `/cep-consulta`** (`src/pages/CepConsulta.tsx`)
+   - Campo de input com máscara `00000-000`
+   - Botão "Consultar"
+   - Card com resultado: CEP, Logradouro, Bairro, Cidade, Estado
+   - Botão para copiar o endereço completo
+   - Tratamento de erros (CEP inválido / não encontrado)
+   - Histórico opcional em memória da sessão (sem persistência — não foi solicitada)
 
-**Tabela `postal_entries`** (lançamentos diários):
-- `id` (uuid, PK)
-- `invoice_id` (uuid, FK → postal_invoices)
-- `user_id` (uuid, NOT NULL)
-- `entry_date` (date, NOT NULL)
-- `amount` (numeric, NOT NULL)
-- `description` (text, nullable)
-- `created_at`
-- RLS: usuário vê/edita/deleta apenas seus próprios registros
+2. **Rota** em `src/App.tsx` dentro do bloco protegido por `RequireAuth`:
+   - `/cep-consulta` → `CepConsulta`
 
-### Componentes e páginas
+3. **Menu lateral** (`src/components/ui/sidebar.tsx`)
+   - Novo item "Consulta CEP" com ícone `MapPin`
 
-1. **`src/pages/PostalInvoices.tsx`** — Página principal com duas abas:
-   - **Lançamentos**: formulário para adicionar data + valor, selecionar mês de referência; tabela dos lançamentos do mês selecionado com total parcial
-   - **Faturas**: lista de faturas mensais com status (aberta/fechada/paga), valor total, botões para fechar e marcar como paga
+4. **Command Menu** (`src/components/CommandMenu.tsx`)
+   - Adicionar atalho "Consulta CEP"
 
-2. **`src/hooks/usePostalInvoices.ts`** — Hook com queries e mutations para ambas as tabelas
+5. **Dashboard** (`src/pages/Dashboard.tsx`)
+   - Adicionar card linkando para `/cep-consulta` (segue padrão dinâmico de tools se aplicável)
 
-3. **Rota**: `/postal-invoices` (protegida, dentro do DashboardLayout)
-
-4. **Menu/Card**: Inserir registro na tabela `tools` com categoria "Financeiro" e ícone `Mail`
-
-### Fluxo do usuário
-
-1. Acessa a página, seleciona o mês atual (ou cria automaticamente a fatura do mês se não existir)
-2. Lança data e valor de cada postagem diária
-3. Vê o total acumulado em tempo real
-4. No fim do mês, clica "Fechar Fatura" — status muda para `fechada`
-5. Após conferir com a fatura dos Correios e pagar, clica "Marcar como Paga"
-6. Histórico de faturas anteriores visível na aba Faturas
-
-### Passos de implementação
-
-1. Criar migração com as duas tabelas + políticas RLS
-2. Criar hook `usePostalInvoices`
-3. Criar página `PostalInvoices.tsx`
-4. Adicionar rota no `App.tsx`
-5. Inserir ferramenta na tabela `tools` via insert
-
+## Fora de escopo
+- Persistência de histórico em banco (pode ser adicionada depois se quiser)
+- Edge function (não necessária — API pública sem chave)
