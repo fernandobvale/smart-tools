@@ -2,7 +2,10 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import * as Icons from "lucide-react";
+import { Star } from "lucide-react";
 import type { Tool } from "@/hooks/useTools";
+import { useFavoriteTools } from "@/hooks/useFavoriteTools";
+import { cn } from "@/lib/utils";
 
 interface ToolCardProps {
   tool: Tool;
@@ -10,9 +13,32 @@ interface ToolCardProps {
 
 export function ToolCard({ tool }: ToolCardProps) {
   const IconComponent = (Icons as any)[tool.icon] || Icons.HelpCircle;
+  const { isFavorite, toggleFavorite } = useFavoriteTools();
+  const favorited = isFavorite(tool.id);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(tool.id);
+  };
 
   const cardContent = (
     <Card className="group relative h-28 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer border-2 hover:border-primary/50">
+      <button
+        type="button"
+        onClick={handleFavoriteClick}
+        aria-label={favorited ? "Desfavoritar" : "Favoritar"}
+        className="absolute top-1.5 right-1.5 z-10 p-1 rounded-full hover:bg-accent transition-colors"
+      >
+        <Star
+          className={cn(
+            "h-4 w-4 transition-colors",
+            favorited
+              ? "fill-yellow-400 text-yellow-400"
+              : "text-muted-foreground/50 hover:text-yellow-400"
+          )}
+        />
+      </button>
       <CardContent className="p-4 flex flex-col items-center justify-center gap-2 h-full">
         <div className="text-primary group-hover:scale-110 transition-transform">
           <IconComponent className="h-8 w-8" />
