@@ -6,9 +6,11 @@ import { Plus, Sparkles } from "lucide-react";
 import { ToolCard } from "@/components/dashboard/ToolCard";
 import { AddToolDialog } from "@/components/dashboard/AddToolDialog";
 import { useTools } from "@/hooks/useTools";
+import { useFavoriteTools } from "@/hooks/useFavoriteTools";
 
 const Dashboard = () => {
   const { tools, isLoading } = useTools();
+  const { isFavorite } = useFavoriteTools();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -30,8 +32,13 @@ const Dashboard = () => {
           categoryFilter === "all" || tool.category === categoryFilter;
         return matchesSearch && matchesCategory;
       })
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [tools, search, categoryFilter]);
+      .sort((a, b) => {
+        const favA = isFavorite(a.id) ? 1 : 0;
+        const favB = isFavorite(b.id) ? 1 : 0;
+        if (favA !== favB) return favB - favA;
+        return a.name.localeCompare(b.name);
+      });
+  }, [tools, search, categoryFilter, isFavorite]);
 
   if (isLoading) {
     return (
